@@ -6,6 +6,8 @@ permissions: {contents: write}
 jobs:
   run:
     runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}  # tomt = hoppa över publicering till Simply
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,6 +25,13 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
           PORTAL_URL: ${{ vars.PORTAL_URL }}
         run: python digest.py --prev "$RUNNER_TEMP/prev.json"
+      - name: Publicera färsk data på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: curl --fail --ssl-reqd -sS -T leads.json --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/${FTP_DIR}leads.json"
       - run: |
           git config user.name bot && git config user.email bot@users.noreply.github.com
           git add leads.json && git commit -m "daglig uppdatering" || exit 0

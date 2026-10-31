@@ -28,6 +28,7 @@ def main():
     ap.add_argument('--site', required=True, help='publik adress till sajten, t.ex. https://kommunradar.se')
     ap.add_argument('--price-sek', type=int, default=990)
     ap.add_argument('--trial-days', type=int, default=7)
+    ap.add_argument('--require-terms', action='store_true', help='kräver att kunden godkänner villkoren i kassan (sätt villkors-URL i Stripe först)')
     a = ap.parse_args()
     key = os.environ.get('STRIPE_SECRET_KEY', '')
     if not key.startswith(('sk_', 'rk_')): sys.exit('Sätt STRIPE_SECRET_KEY.')
@@ -64,6 +65,7 @@ def main():
             params[f'custom_fields[1][dropdown][options][{i}][value]'] = value
             params[f'custom_fields[1][dropdown][options][{i}][label]'] = label or 'Hela Sverige'
         if a.trial_days: params['subscription_data[trial_period_days]'] = a.trial_days
+        if a.require_terms: params['consent_collection[terms_of_service]'] = 'required'
         link = call(key, 'payment_links', params)
     print('\nPayment Link:', link['url'])
     print("Klistra in den i config.js: window.KOMMUNRADAR = { paymentLink: '" + link['url'] + "' }")

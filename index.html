@@ -6,6 +6,10 @@
 <meta property="og:title" content="Över 1 000 öppna offentliga upphandlingar just nu. Vilka passar dig?">
 <meta property="og:description" content="Kommunradar mejlar dig nya upphandlingar som matchar din bransch — varje morgon.">
 <meta name="theme-color" content="#070b18">
+<link rel="canonical" href="https://kommunradar.online/">
+<meta property="og:url" content="https://kommunradar.online/">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
 <script src="config.js"></script>
@@ -60,13 +64,14 @@ h2{font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.04em;margin:0;f
 .inbox .row{padding:12px 20px;border-bottom:1px solid #e5e7eb}.inbox .row b{display:block}.inbox .row span{color:#64748b;font-size:13px}
 .price{max-width:560px;margin:40px auto 0;border-radius:28px;padding:2px;background:linear-gradient(135deg,var(--y),var(--o),var(--c))}
 .price>div{background:var(--ink2);border-radius:26px;padding:36px;text-align:center}
-.amt{font-size:76px;font-weight:900;letter-spacing:-.05em;line-height:1}.amt small{font-size:20px;color:var(--mut);font-weight:700}
+.amt{font-size:76px;font-weight:900;letter-spacing:-.05em;line-height:1}.amt small{font-size:20px;color:var(--mut);font-weight:700;letter-spacing:0;margin-left:6px}
 .price ul{list-style:none;padding:0;margin:24px 0;text-align:left}.price li{padding:8px 0;border-bottom:1px solid var(--line)}.price li:before{content:"✓";color:var(--y);font-weight:900;margin-right:10px}
 .roi{margin-top:16px;color:#a5f3fc;font-weight:700}
 details{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:10px;background:#ffffff06}summary{cursor:pointer;font-weight:800;font-size:18px}details p{color:var(--mut);margin:10px 0 0}
 .final{border-radius:32px;background:var(--y);color:#111;text-align:center;padding:70px 20px;position:relative;overflow:hidden}
 .final h2{color:#111}.final .btn{background:#111;color:var(--y)}
 footer{color:var(--mut);font-size:13px;padding:30px 0 110px;border-top:1px solid var(--line)}
+footer a{color:#dbe3f5}
 .sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 12px;background:#070b18ee;backdrop-filter:blur(8px);border-top:1px solid var(--line);display:none;z-index:9}
 .sticky .btn{width:100%;justify-content:center}
 @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}.steps,.mail{grid-template-columns:1fr}.search{flex-wrap:wrap}.search select{max-width:none;flex:1;padding:12px}.search .btn{width:100%;justify-content:center}.sticky{display:block}.hide-m{display:none}.card{grid-template-columns:1fr}.val{text-align:left}}
@@ -121,6 +126,7 @@ footer{color:var(--mut);font-size:13px;padding:30px 0 110px;border-top:1px solid
     <ul><li>Dagligt mejl med nya matchande upphandlingar</li><li>Alla branscher, hela Sverige eller ditt län</li><li>Köpare, uppskattat värde och sista anbudsdag</li><li>Direktlänk till underlaget</li><li id="trialli">Prova gratis i 7 dagar</li></ul>
     <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
     <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
+    <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
   </div></div>
 </section>
 
@@ -136,7 +142,11 @@ footer{color:var(--mut);font-size:13px;padding:30px 0 110px;border-top:1px solid
 
 <section><div class="final"><h2>Nästa affär publiceras i morgon bitti.</h2><p style="font-size:20px;font-weight:700;opacity:.75">Var först att se den.</p><a class="btn" data-buy href="#" style="margin-top:14px">Starta min bevakning →</a></div></section>
 
-<footer><div>Kommunradar · Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
+<footer><div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap">
+  <div><b style="color:#fff">Kommunradar</b> drivs av <span data-co="name"></span> · org.nr <span data-co="orgnr"></span><br><span data-co="address"></span><br>Kontakt: <a data-co="email"></a><span data-row> · <span data-co="phone" data-optional></span></span></div>
+  <div><a href="villkor.html">Allmänna villkor</a> · <a href="integritet.html">Integritetspolicy</a> · <a data-portal>Hantera prenumeration</a></div>
+</div>
+<div style="margin-top:14px">Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
 </div>
 <div class="sticky"><a class="btn y" data-buy href="#">Starta bevakning — 990 kr/mån →</a></div>
 
@@ -175,4 +185,5 @@ fetch('leads.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
   const sample=L.slice(0,4);$('mailrows').innerHTML=sample.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');$('mailn').textContent=`${L.filter(l=>l.published>=wk).length} nya upphandlingar denna vecka`;$('mailq').textContent='Bevakning: alla branscher · hela Sverige';
 }).catch(()=>{$('upd').textContent='Uppdateras varje morgon'});
 </script>
+<script src="site.js"></script>
 </body></html>

@@ -1,0 +1,13 @@
+# Kommunradar på Simply.com
+# Upphandlingsdatan uppdateras varje morgon — låt webbläsare alltid hämta senaste versionen.
+<Files "leads.json">
+  Header set Cache-Control "no-cache"
+</Files>
+# Den interna vyn ska inte publiceras.
+<Files "radar.html">
+  Require all denied
+</Files>
+# Tvinga https NÄR SSL-certifikatet är aktivt i Simply.com (ta bort # på de tre raderna nedan):
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
