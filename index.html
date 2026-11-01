@@ -158,7 +158,7 @@ const mkr=v=>!v?'':v>=1e9?(v/1e9).toFixed(1).replace('.',',')+' mdr kr':v>=1e6?M
 const days=d=>{if(!d)return null;const x=Math.ceil((new Date(d)-new Date())/864e5);return x};
 // Buttons go straight to Stripe once the Payment Link is configured; otherwise to the pricing section.
 document.querySelectorAll('[data-buy]').forEach(a=>{if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
-if(CFG.trialDays===0)$('trialli').remove();
+if(CFG.trialDays===0)$('trialli').remove();else if(CFG.trialDays>0)$('trialli').textContent=`Prova gratis i ${CFG.trialDays} dagar`;
 let L=[];
 function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
 function search(){

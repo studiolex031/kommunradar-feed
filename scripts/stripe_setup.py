@@ -47,7 +47,8 @@ def main():
     prices = call(key, 'prices', {'lookup_keys[]': 'kommunradar_pro_monthly', 'active': 'true'}, 'GET')['data']
     p0 = prices[0] if prices else {}
     if p0 and p0['unit_amount'] == a.price_sek * 100 and p0['currency'] == 'sek' \
-            and (p0.get('recurring') or {}).get('interval') == 'month' and p0.get('tax_behavior') == 'exclusive':
+            and (p0.get('recurring') or {}).get('interval') == 'month' \
+            and (p0.get('recurring') or {}).get('interval_count', 1) == 1 and p0.get('tax_behavior') == 'exclusive':
         price = prices[0]
     else:
         product = prices[0]['product'] if prices else call(key, 'products', {
@@ -82,7 +83,7 @@ def main():
         if a.moms: params['automatic_tax[enabled]'] = 'true'
         link = call(key, 'payment_links', params)
     print('\nPayment Link:', link['url'])
-    print("Klistra in den i config.js: window.KOMMUNRADAR = { paymentLink: '" + link['url'] + "' }")
+    print("Klistra in den i config.js: paymentLink: '" + link['url'] + "', trialDays: " + str(a.trial_days))
     print('\nAktivera även kundportalen: Stripe Dashboard → Settings → Billing → Customer portal, och sätt PORTAL_URL.')
 
 
