@@ -7,7 +7,7 @@ Operatören kan skriva över per kund med metadata på prenumerationen: keywords
   python digest.py --prev prev.json --dry-run  # visar vad som skulle skickas
 Miljö: STRIPE_SECRET_KEY, SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_FROM, SITE_URL, PORTAL_URL
 """
-import os, re, sys, json, html, smtplib, datetime as dt, urllib.request, urllib.parse
+import os, re, sys, json, html, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
 from email.message import EmailMessage
 
 LAN_KEYS = {"alla": "", "stockholm": "Stockholm", "uppsala": "Uppsala", "sodermanland": "Södermanland",
@@ -35,11 +35,8 @@ def subscribers():
             if after: params["starting_after"] = after
             page = stripe_get("subscriptions", params)
             for sub in page["data"]:
-                answers = {}
                 sessions = stripe_get("checkout/sessions", {"subscription": sub["id"], "limit": 1})["data"]
-                if sessions:
-                    for f in sessions[0].get("custom_fields") or []:
-                        answers[f["key"]] = (f.get("text") or {}).get("value") or (f.get("dropdown") or {}).get("value") or ""
+                answers = read_answers(sessions[0].get("custom_fields") or []) if sessions else {}
                 meta = sub.get("metadata") or {}
                 customer = sub["customer"] if isinstance(sub["customer"], dict) else {}
                 email = customer.get("email") or (sessions[0].get("customer_details") or {}).get("email") if sessions else customer.get("email")
@@ -48,6 +45,25 @@ def subscribers():
                            "lan": meta.get("lan") or answers.get("lan", "alla")}
             if not page.get("has_more"): break
             after = page["data"][-1]["id"]
+
+
+def fold(text):
+    return unicodedata.normalize("NFKD", str(text or "")).encode("ascii", "ignore").decode().lower().replace(" ", "")
+
+
+def read_answers(fields):
+    """Bevakningsord and län from the checkout's custom fields — whether created by stripe_setup.py
+    (keys "bevakning"/"lan") or by hand in the Stripe Dashboard (any key; län recognised by label or value)."""
+    out = {}
+    for f in fields:
+        value = (f.get("text") or {}).get("value") or (f.get("dropdown") or {}).get("value") or ""
+        label = fold((f.get("label") or {}).get("custom") or f.get("key"))
+        if f.get("key") == "lan" or label.startswith("lan") or fold(value) in {fold(v) for v in LAN_KEYS.values() if v}:
+            county = next((k for k, v in LAN_KEYS.items() if fold(value) in (k, fold(v))), "alla")
+            out.setdefault("lan", county)
+        elif value:
+            out.setdefault("bevakning", value)
+    return out
 
 
 def keywords(raw):

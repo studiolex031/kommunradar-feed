@@ -43,5 +43,14 @@ class DigestTest(unittest.TestCase):
         self.assertNotIn("<script>", out); self.assertIn("1 nya upphandlingar", out)
 
 
+    def test_reads_answers_from_script_and_dashboard_payment_links(self):
+        script = [{"key": "bevakning", "text": {"value": "städ, fönster"}}, {"key": "lan", "dropdown": {"value": "skane"}}]
+        self.assertEqual(digest.read_answers(script), {"bevakning": "städ, fönster", "lan": "skane"})
+        manual = [{"key": "bevakningsord", "label": {"custom": "Bevakningsord"}, "text": {"value": "IT-konsult"}},
+                  {"key": "ln", "label": {"custom": "Län"}, "text": {"value": "Västra Götaland"}}]
+        self.assertEqual(digest.read_answers(manual), {"bevakning": "IT-konsult", "lan": "vastragotaland"})
+        self.assertEqual(digest.read_answers([{"key": "x", "label": {"custom": "Län"}, "text": {"value": "hela sverige"}}]), {"lan": "alla"})
+
+
 if __name__ == "__main__":
     unittest.main()
