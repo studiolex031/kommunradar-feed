@@ -14,7 +14,7 @@ Hela tjänsten körs utan egen server:
 
 ## Lansera (ca 20 min)
 
-1. **Publicera sajten** — koppla repot till Netlify/Vercel/GitHub Pages (statisk sajt, ingen build).
+1. **Publicera sajten** — ladda upp filerna till webbhotellet (t.ex. Simply.com). Sajten hämtar själv morgonens `leads.json` från GitHub, så ingen FTP behövs; FTP-hemligheterna är valfria.
 2. **Stripe**:
    ```bash
    STRIPE_SECRET_KEY=sk_test_... python scripts/stripe_setup.py --site https://<din-sajt> --trial-days 7

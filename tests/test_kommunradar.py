@@ -51,6 +51,15 @@ class FetchRetryTest(unittest.TestCase):
         self.assertEqual(len(calls), 3)
 
 
+class RetryAfterTest(unittest.TestCase):
+    def test_seconds_date_and_garbage(self):
+        import email.utils, datetime as dt
+        self.assertEqual(feed.retry_after("7"), 7)
+        self.assertIsNone(feed.retry_after("soon"))
+        later = email.utils.format_datetime(dt.datetime.now(dt.timezone.utc) + dt.timedelta(seconds=60))
+        self.assertTrue(50 <= feed.retry_after(later) <= 60)
+
+
 class DigestTest(unittest.TestCase):
     lead = {"id": "1", "title": "Lokalvård skolor", "buyer": "Malmö stad", "city": "MALMÖ", "region": "Skåne",
             "categories": ["Avfall, städ & miljö"], "url": "https://ted", "deadline": "2026-11-20", "value_sek": 2500000}
@@ -67,6 +76,28 @@ class DigestTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
             json.dump({"leads": [{"id": "1"}]}, f)
         self.assertEqual([l["id"] for l in digest.new_leads([{"id": "1"}, {"id": "2"}], f.name)], ["2"])
+
+    def test_missing_key_fails_unless_dry_run(self):
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": ""}), mock.patch.object(sys, "argv", ["digest.py", "--prev", "x"]), \
+                mock.patch("digest.new_leads", return_value=[]), mock.patch("builtins.open", mock.mock_open(read_data='{"leads": []}')):
+            with self.assertRaises(SystemExit) as e: digest.main()
+            self.assertTrue(str(e.exception.code).startswith("STRIPE_SECRET_KEY saknas"))
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": ""}), mock.patch.object(sys, "argv", ["digest.py", "--dry-run"]), \
+                mock.patch("digest.new_leads", return_value=[]), mock.patch("builtins.open", mock.mock_open(read_data='{"leads": []}')), \
+                mock.patch("sys.stdout"):
+            digest.main()  # dry-run without key is fine
+
+    def test_more_than_max_matches_are_split_across_mails(self):
+        from unittest import mock
+        leads = [{**self.lead, "id": str(i)} for i in range(digest.MAX_PER_MAIL + 5)]
+        smtp = mock.MagicMock()
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": "sk_test_x"}), mock.patch.object(sys, "argv", ["digest.py"]), \
+                mock.patch("digest.new_leads", return_value=leads), mock.patch("builtins.open", mock.mock_open(read_data='{"leads": []}')), \
+                mock.patch("digest.smtp_connect", return_value=smtp), mock.patch("sys.stdout"), \
+                mock.patch("digest.subscribers", return_value=iter([{"email": "a@b.se", "keywords": "", "lan": "alla"}])):
+            digest.main()
+        self.assertEqual(smtp.send_message.call_count, 2)
 
     def test_email_escapes_content(self):
         out = digest.render([{**self.lead, "title": "<script>x</script>"}], {"keywords": "städ", "lan": "skane"}, "https://k", "")

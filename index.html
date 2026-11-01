@@ -172,7 +172,10 @@ function search(){
   const top=hits.slice(0,4);$('mailn').textContent=`${hits.length} nya upphandlingar för dig`;$('mailq').textContent='Bevakning: '+(words.join(', ')||'alla')+' · '+(lan||'hela Sverige');$('mailrows').innerHTML=top.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');
 }
 $('go').onclick=search;$('q').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(search,250)});$('lan').onchange=search;
-fetch('leads.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+const DATA=CFG.dataUrl||'https://raw.githubusercontent.com/studiolex031/kommunradar-feed/main/leads.json';
+const getJSON=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw r.status;return r.json()});
+// Freshest of: the copy GitHub updates every morning, and the copy uploaded with the site.
+Promise.allSettled([getJSON(DATA),getJSON('leads.json')]).then(rs=>{const ok=rs.filter(r=>r.status==='fulfilled'&&(r.value.leads||[]).every(l=>'region' in l)).map(r=>r.value).sort((a,b)=>String(b.updated).localeCompare(String(a.updated)));if(!ok.length)throw 'no data';return ok[0]}).then(d=>{
   L=d.leads||[];const n=L.length;$('cnt').textContent=fmt(n);$('s1').textContent=fmt(n);
   $('s2').textContent=mkr(L.reduce((s,l)=>s+(l.value_sek||0),0));
   const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,10);$('s3').textContent=fmt(L.filter(l=>l.published>=wk).length);

@@ -3,7 +3,7 @@ och skriver leads.json som sajten och det dagliga mejlutskicket läser.
   python feed.py            -> uppdaterar leads.json
   python feed.py --probe    -> skriver ut ett rått svar
 Endast standardbiblioteket, så GitHub Actions behöver inga beroenden."""
-import sys, json, time, datetime as dt, urllib.error, urllib.request
+import sys, json, time, email.utils, datetime as dt, urllib.error, urllib.request
 
 URL = "https://api.ted.europa.eu/v3/notices/search"
 FIELDS = ["publication-number", "notice-title", "buyer-name", "buyer-city", "publication-date",
@@ -47,6 +47,17 @@ def score(n):
     return min(s, 100)
 
 
+def retry_after(value):
+    """Seconds to wait from a Retry-After header (integer seconds or HTTP-date); None if absent/invalid."""
+    if not value: return None
+    if value.strip().isdigit(): return int(value)
+    try:
+        when = email.utils.parsedate_to_datetime(value)
+        return max(0, int((when - dt.datetime.now(dt.timezone.utc)).total_seconds()))
+    except (TypeError, ValueError):
+        return None
+
+
 def fetch(page=1, limit=100):
     since = (dt.date.today() - dt.timedelta(days=DAYS)).strftime("%Y%m%d")
     body = json.dumps({"query": f"buyer-country=SWE AND publication-date>={since}",
@@ -58,7 +69,7 @@ def fetch(page=1, limit=100):
                 return json.load(r)
         except urllib.error.HTTPError as e:
             if e.code != 429 and e.code < 500 or attempt == 5: raise
-            wait = int(e.headers.get("Retry-After") or 0) or 5 * 2 ** attempt
+            wait = retry_after(e.headers.get("Retry-After")) or 5 * 2 ** attempt
             print(f"TED svarade {e.code}, väntar {wait} s", file=sys.stderr); time.sleep(min(wait, 120))
 
 

@@ -161,6 +161,9 @@ def main():
     leads = new_leads(json.load(open("leads.json", encoding="utf8"))["leads"], prev)
     site, portal = os.environ.get("SITE_URL", ""), os.environ.get("PORTAL_URL", "")
     print(f"{len(leads)} nya upphandlingar sedan förra körningen")
+    if not dry and not os.environ.get("STRIPE_SECRET_KEY"):
+        # Fail so the workflow stops before committing leads.json — otherwise these leads would never be sent.
+        sys.exit("STRIPE_SECRET_KEY saknas; avbryter utan att markera upphandlingarna som skickade.")
     if not leads or not os.environ.get("STRIPE_SECRET_KEY"):
         print("Inget att skicka (inga nya upphandlingar eller ingen STRIPE_SECRET_KEY)."); return
     smtp = None
@@ -170,14 +173,16 @@ def main():
     for sub in subscribers():
         hits = [l for l in leads if matches(l, keywords(sub["keywords"]), sub["lan"])]
         if not hits: continue
-        msg = EmailMessage()
-        msg["Subject"] = f"{len(hits)} nya upphandlingar: {hits[0]['title'][:60]}"
-        msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
-        msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in hits[:MAX_PER_MAIL]))
-        msg.add_alternative(render(hits, sub, site, portal), subtype="html")
-        if dry: print(f"[dry-run] {sub['email']}: {len(hits)} träffar")
-        else: smtp.send_message(msg)
-        sent += 1
+        for start in range(0, len(hits), MAX_PER_MAIL):  # every match is delivered, MAX_PER_MAIL per message
+            batch = hits[start:start + MAX_PER_MAIL]
+            msg = EmailMessage()
+            msg["Subject"] = f"{len(batch)} nya upphandlingar: {batch[0]['title'][:60]}"
+            msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
+            msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch))
+            msg.add_alternative(render(batch, sub, site, portal), subtype="html")
+            if dry: print(f"[dry-run] {sub['email']}: {len(batch)} träffar")
+            else: smtp.send_message(msg)
+            sent += 1
     if smtp: smtp.quit()
     print(f"{sent} mejl {'skulle skickas' if dry else 'skickade'}")
 
