@@ -14,6 +14,10 @@ on:
         description: 'Kunden måste godkänna villkoren i kassan (kräver villkors-URL i Stripe → Public details)'
         type: boolean
         default: true
+      moms:
+        description: 'Lägg på 25 % moms i kassan (kräver att du är momsregistrerad och lagt in registreringen i Stripe → Tax)'
+        type: boolean
+        default: false
 permissions: {contents: read}
 jobs:
   setup:
@@ -29,5 +33,6 @@ jobs:
           if [ -z "$STRIPE_SECRET_KEY" ]; then echo "::error::Lägg först in secret STRIPE_SECRET_KEY"; exit 1; fi
           args="--site https://kommunradar.online --price-sek ${{ inputs.price_sek }} --trial-days ${{ inputs.trial_days }}"
           if [ "${{ inputs.require_terms }}" = "true" ]; then args="$args --require-terms"; fi
+          if [ "${{ inputs.moms }}" = "true" ]; then args="$args --moms"; fi
           python scripts/stripe_setup.py $args | tee out.txt
           { echo '## Klart'; echo; echo 'Kopiera **Payment Link** nedan till `paymentLink` i config.js:'; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
