@@ -34,6 +34,23 @@ class FeedTest(unittest.TestCase):
         self.assertFalse(feed.is_open({"type": "cn-standard", "deadline": "2026-10-01"}, "2026-11-01"))
 
 
+class FetchRetryTest(unittest.TestCase):
+    def test_retries_on_rate_limit(self):
+        import io, urllib.error
+        from unittest import mock
+        calls = []
+        class Resp(io.BytesIO):
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+        def fake(req, timeout):
+            calls.append(1)
+            if len(calls) < 3: raise urllib.error.HTTPError(req.full_url, 429, "Too Many Requests", {}, None)
+            return Resp(b'{"notices": []}')
+        with mock.patch("urllib.request.urlopen", fake), mock.patch("time.sleep"), mock.patch("sys.stderr"):
+            self.assertEqual(feed.fetch(), {"notices": []})
+        self.assertEqual(len(calls), 3)
+
+
 class DigestTest(unittest.TestCase):
     lead = {"id": "1", "title": "Lokalvård skolor", "buyer": "Malmö stad", "city": "MALMÖ", "region": "Skåne",
             "categories": ["Avfall, städ & miljö"], "url": "https://ted", "deadline": "2026-11-20", "value_sek": 2500000}

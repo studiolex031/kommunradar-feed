@@ -3,7 +3,7 @@ och skriver leads.json som sajten och det dagliga mejlutskicket läser.
   python feed.py            -> uppdaterar leads.json
   python feed.py --probe    -> skriver ut ett rått svar
 Endast standardbiblioteket, så GitHub Actions behöver inga beroenden."""
-import sys, json, datetime as dt, urllib.request
+import sys, json, time, datetime as dt, urllib.error, urllib.request
 
 URL = "https://api.ted.europa.eu/v3/notices/search"
 FIELDS = ["publication-number", "notice-title", "buyer-name", "buyer-city", "publication-date",
@@ -52,8 +52,14 @@ def fetch(page=1, limit=100):
     body = json.dumps({"query": f"buyer-country=SWE AND publication-date>={since}",
                        "fields": FIELDS, "page": page, "limit": limit}).encode()
     req = urllib.request.Request(URL, data=body, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+    for attempt in range(6):  # TED rate-limits (429) and has occasional 5xx; back off and retry
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            if e.code != 429 and e.code < 500 or attempt == 5: raise
+            wait = int(e.headers.get("Retry-After") or 0) or 5 * 2 ** attempt
+            print(f"TED svarade {e.code}, väntar {wait} s", file=sys.stderr); time.sleep(min(wait, 120))
 
 
 def txt(v):  # TED returnerar ofta {språk: [värden]} eller listor
@@ -112,7 +118,7 @@ def main():
         notices = fetch(page).get("notices", [])
         raw += notices
         if len(notices) < 100: break
-        page += 1
+        page += 1; time.sleep(1)  # be gentle with the public API
     today = dt.date.today().isoformat()
     seen, out = set(), []
     for x in raw:
