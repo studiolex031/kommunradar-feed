@@ -127,7 +127,35 @@ def render(leads, sub, site, portal):
 {f'<a href="{portal}" style="color:#94a3b8">Hantera prenumeration</a>' if portal else ''}</p></div>"""
 
 
+def smtp_connect():
+    smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
+    smtp.starttls(context=ssl.create_default_context())
+    smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
+    return smtp
+
+
+def check():
+    """Verify the secrets without emailing anyone: Stripe answers, SMTP accepts the login."""
+    ok = True
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    try:
+        products = kommunradar_products()
+        subs = sum(1 for _ in subscribers())
+        print(f"Stripe OK ({'LIVE' if '_live_' in key else 'TEST'}): {len(products)} Kommunradar-produkt(er), {subs} aktiva/provande prenumeranter")
+        if not products: print("  OBS: ingen Kommunradar-produkt ännu — kör workflowen Stripe-uppsättning")
+    except Exception as e:  # noqa: BLE001 — report and continue to the SMTP check
+        ok = False; print(f"Stripe FEL: {type(e).__name__}: {getattr(e, 'code', '')} {getattr(e, 'reason', e)}")
+    try:
+        smtp_connect().quit(); print(f"SMTP OK: inloggning på {os.environ['SMTP_HOST']} lyckades")
+    except Exception as e:  # noqa: BLE001
+        ok = False; print(f"SMTP FEL: {type(e).__name__}: {e}")
+    portal = os.environ.get("PORTAL_URL", "")
+    print("PORTAL_URL:", "saknas" if not portal else "satt")
+    return ok
+
+
 def main():
+    if "--check" in sys.argv: sys.exit(0 if check() else 1)
     dry = "--dry-run" in sys.argv
     prev = sys.argv[sys.argv.index("--prev") + 1] if "--prev" in sys.argv else "prev.json"
     leads = new_leads(json.load(open("leads.json", encoding="utf8"))["leads"], prev)
@@ -137,9 +165,7 @@ def main():
         print("Inget att skicka (inga nya upphandlingar eller ingen STRIPE_SECRET_KEY)."); return
     smtp = None
     if not dry:
-        smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
-        smtp.starttls(context=ssl.create_default_context())
-        smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
+        smtp = smtp_connect()
     sent = 0
     for sub in subscribers():
         hits = [l for l in leads if matches(l, keywords(sub["keywords"]), sub["lan"])]

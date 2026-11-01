@@ -12,6 +12,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
+      - name: Kontrollera nycklar (bara vid manuell körning, skickar inget mejl)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          PORTAL_URL: ${{ vars.PORTAL_URL }}
+        run: python digest.py --check
       - run: cp leads.json "$RUNNER_TEMP/prev.json"
       - run: python feed.py
       - name: Mejla prenumeranter
