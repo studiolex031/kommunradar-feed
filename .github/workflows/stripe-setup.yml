@@ -42,4 +42,4 @@ jobs:
           if [ "$REQUIRE_TERMS" = "true" ]; then args+=(--require-terms); fi
           if [ "$MOMS" = "true" ]; then args+=(--moms); fi
           python scripts/stripe_setup.py "${args[@]}" | tee out.txt
-          { echo '## Klart'; echo; echo 'Kopiera **Payment Link** nedan till `paymentLink` i config.js:'; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo '## Klart'; echo; echo "Kopiera **Payment Link** nedan till \`paymentLink\` i config.js och sätt \`trialDays: $TRIAL_DAYS\`:"; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
