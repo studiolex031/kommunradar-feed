@@ -6,11 +6,42 @@ permissions: {contents: write}
 jobs:
   run:
     runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}  # tomt = hoppa över publicering till Simply
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - run: pip install requests && python feed.py
+      - name: Kontrollera nycklar (bara vid manuell körning, skickar inget mejl)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          PORTAL_URL: ${{ vars.PORTAL_URL }}
+        run: python digest.py --check
+      - run: cp leads.json "$RUNNER_TEMP/prev.json"
+      - run: python feed.py
+      - name: Mejla prenumeranter
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          PORTAL_URL: ${{ vars.PORTAL_URL }}
+        run: python digest.py --prev "$RUNNER_TEMP/prev.json"
+      - name: Publicera färsk data på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: curl --fail --ssl-reqd -sS -T leads.json --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/${FTP_DIR}leads.json"
       - run: |
           git config user.name bot && git config user.email bot@users.noreply.github.com
           git add leads.json && git commit -m "daglig uppdatering" || exit 0

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /tack.html
+Sitemap: https://kommunradar.online/sitemap.xml

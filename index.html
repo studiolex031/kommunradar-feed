@@ -1,59 +1,192 @@
 <!doctype html>
 <html lang="sv"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kommunradar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kommunradar — offentliga upphandlingar i din inkorg varje morgon</title>
+<meta name="description" content="Alla svenska offentliga upphandlingar över EU:s tröskelvärden, filtrerade på din bransch och ditt län, i mejlen varje morgon. 990 kr/mån.">
+<meta property="og:title" content="Över 1 000 öppna offentliga upphandlingar just nu. Vilka passar dig?">
+<meta property="og:description" content="Kommunradar mejlar dig nya upphandlingar som matchar din bransch — varje morgon.">
+<meta name="theme-color" content="#070b18">
+<link rel="canonical" href="https://kommunradar.online/">
+<meta property="og:url" content="https://kommunradar.online/">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
+<script src="config.js"></script>
 <style>
-:root{--bg:#f6f5f1;--fg:#1b1a18;--mut:#6a675f;--card:#fff;--bd:#e1ded5;--ac:#1f5fbf;--ok:#2d7a4b;--wa:#b5651d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#141517;--fg:#e9e8e4;--mut:#9a9890;--card:#1d1f22;--bd:#33363a;--ac:#6ea2f0;--ok:#6cc08b;--wa:#e0a060;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:960px;margin:0 auto;padding:18px 14px 60px}
-h1{font-size:22px;margin:0}.s{color:var(--mut);font-size:13px;margin:2px 0 14px}
-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-nav button,.b{border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:8px;padding:7px 13px;font:inherit;cursor:pointer}
-nav button.on{background:var(--ac);border-color:var(--ac);color:#fff}
-input{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font:inherit}
-.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;color:var(--mut);font-size:13px}
-.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
-.k{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}.k b{display:block;font-size:24px}
-.r{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;margin-bottom:8px}
-.r a{color:var(--ac);font-weight:600;text-decoration:none}.m{color:var(--mut);font-size:13px;margin-top:3px}
-.sc{float:right;font-weight:700;border-radius:6px;padding:1px 8px;border:1px solid var(--bd)}.hi{color:var(--ok);border-color:var(--ok)}.md{color:var(--wa);border-color:var(--wa)}
-.na{color:var(--wa)}
-</style></head><body><main>
-<h1>Kommunradar</h1><p class="s" id="up">Laddar…</p>
-<nav id="nav"></nav><div id="v"></div>
+:root{--ink:#070b18;--ink2:#0e1530;--line:#ffffff1a;--mut:#9aa6c4;--txt:#f4f6fb;--y:#fbbf24;--o:#fb7185;--c:#22d3ee;--b:#6366f1}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--txt);font:16px/1.5 "Inter Tight",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
+a{color:inherit}.w{max-width:1180px;margin:auto;padding:0 18px}
+.glow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(55rem 35rem at 90% -10%,#6366f155,transparent),radial-gradient(45rem 30rem at -10% 25%,#22d3ee33,transparent),radial-gradient(40rem 30rem at 50% 120%,#fbbf2422,transparent)}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 0;position:relative}
+.logo{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:-.02em;font-size:19px;text-decoration:none}
+.radar{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 0deg,#22d3ee00 0 270deg,#22d3ee 360deg),#0e1530;border:2px solid #22d3ee66;animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:16px 24px;font:800 17px/1 "Inter Tight",system-ui,sans-serif;text-decoration:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px)}.y{background:var(--y);color:#111;box-shadow:0 10px 40px #fbbf2455}.g{border:1px solid var(--line);color:var(--txt);background:#ffffff08}
+.sm{padding:10px 16px;font-size:14px;border-radius:10px}
+.hero{position:relative;padding:40px 0 30px;text-align:center}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid #22d3ee55;background:#22d3ee14;color:#a5f3fc;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#22d3ee;box-shadow:0 0 0 0 #22d3eeaa;animation:ping 1.6s infinite}@keyframes ping{70%{box-shadow:0 0 0 10px #22d3ee00}}
+h1{font-size:clamp(42px,7.5vw,92px);line-height:.95;letter-spacing:-.045em;margin:22px auto 0;max-width:1000px;font-weight:900}
+.num{background:linear-gradient(90deg,var(--y),var(--o),var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,2vw,21px);color:#c7d0e6;max-width:720px;margin:20px auto 0}
+.search{max-width:760px;margin:34px auto 0;background:#ffffff0d;border:1px solid #ffffff26;border-radius:22px;padding:10px;display:flex;gap:8px;box-shadow:0 30px 80px #0008}
+.search input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font:600 19px "Inter Tight",system-ui,sans-serif;padding:12px 14px}
+.search select{background:#0e1530;color:#fff;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:600 15px "Inter Tight",system-ui,sans-serif;max-width:38%}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px auto 0;max-width:900px}
+.chip{border:1px solid var(--line);background:#ffffff08;color:#dbe3f5;border-radius:99px;padding:8px 13px;font:600 13px "Inter Tight",system-ui,sans-serif;cursor:pointer}
+.chip:hover,.chip.on{background:var(--y);color:#111;border-color:var(--y)}
+.res{max-width:900px;margin:26px auto 0;text-align:left;position:relative}
+.rhead{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.big{font-size:40px;font-weight:900;letter-spacing:-.03em}
+.card{background:linear-gradient(180deg,#121a38,#0d1430);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:10px}
+.card a{font-weight:800;font-size:17px;text-decoration:none}.card a:hover{color:var(--y)}
+.meta{color:var(--mut);font-size:14px;margin-top:4px}.val{font-weight:900;color:var(--y);white-space:nowrap;text-align:right}
+.dl{font-size:12px;color:#fda4af;font-weight:700}
+.lock{position:relative}.lock .card{filter:blur(6px);opacity:.6;user-select:none;pointer-events:none}
+.gate{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:linear-gradient(180deg,#070b1800,#070b18 70%)}
+.gate div{max-width:520px;padding:20px}
+section{padding:90px 0;position:relative}
+h2{font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.04em;margin:0;font-weight:900}
+.sub{color:var(--mut);font-size:19px;max-width:640px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
+.stat{border:1px solid var(--line);border-radius:20px;padding:22px;background:#ffffff06}.stat b{display:block;font-size:38px;font-weight:900;letter-spacing:-.03em}.stat span{color:var(--mut)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.step{border:1px solid var(--line);border-radius:24px;padding:28px;background:#ffffff06;position:relative;overflow:hidden}
+.step i{position:absolute;right:-6px;top:-30px;font:900 120px/1 "Inter Tight",system-ui,sans-serif;color:#ffffff08;font-style:normal}
+.step h3{font-size:24px;margin:14px 0 6px}.step p{color:var(--mut);margin:0}
+.ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--y);color:#111;font-weight:900;font-size:22px}
+.mail{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.inbox{background:#fff;color:#0b1020;border-radius:22px;overflow:hidden;box-shadow:0 40px 100px #0009;transform:rotate(1.5deg)}
+.inbox .top{background:#0b1020;color:#fff;padding:18px 20px}.inbox .top b{color:var(--y);font-size:24px;display:block}
+.inbox .row{padding:12px 20px;border-bottom:1px solid #e5e7eb}.inbox .row b{display:block}.inbox .row span{color:#64748b;font-size:13px}
+.price{max-width:560px;margin:40px auto 0;border-radius:28px;padding:2px;background:linear-gradient(135deg,var(--y),var(--o),var(--c))}
+.price>div{background:var(--ink2);border-radius:26px;padding:36px;text-align:center}
+.amt{font-size:76px;font-weight:900;letter-spacing:-.05em;line-height:1}.amt small{font-size:20px;color:var(--mut);font-weight:700;letter-spacing:0;margin-left:6px}
+.price ul{list-style:none;padding:0;margin:24px 0;text-align:left}.price li{padding:8px 0;border-bottom:1px solid var(--line)}.price li:before{content:"✓";color:var(--y);font-weight:900;margin-right:10px}
+.roi{margin-top:16px;color:#a5f3fc;font-weight:700}
+details{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:10px;background:#ffffff06}summary{cursor:pointer;font-weight:800;font-size:18px}details p{color:var(--mut);margin:10px 0 0}
+.final{border-radius:32px;background:var(--y);color:#111;text-align:center;padding:70px 20px;position:relative;overflow:hidden}
+.final h2{color:#111}.final .btn{background:#111;color:var(--y)}
+footer{color:var(--mut);font-size:13px;padding:30px 0 110px;border-top:1px solid var(--line)}
+footer a{color:#dbe3f5}
+.sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 12px;background:#070b18ee;backdrop-filter:blur(8px);border-top:1px solid var(--line);display:none;z-index:9}
+.sticky .btn{width:100%;justify-content:center}
+@media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}.steps,.mail{grid-template-columns:1fr}.search{flex-wrap:wrap}.search select{max-width:none;flex:1;padding:12px}.search .btn{width:100%;justify-content:center}.sticky{display:block}.hide-m{display:none}.card{grid-template-columns:1fr}.val{text-align:left}}
+@media(prefers-reduced-motion:reduce){.radar,.dot{animation:none}}
+</style></head><body><div class="glow"></div>
+<div class="w">
+<header><a class="logo" href="#"><span class="radar"></span>KOMMUNRADAR</a><a class="btn y sm hide-m" data-buy href="#pris">Starta bevakning</a></header>
+
+<div class="hero">
+  <span class="pill"><span class="dot"></span><span id="upd">Uppdateras varje morgon från EU:s upphandlingsdatabas</span></span>
+  <h1><span class="num" id="cnt">Över 1 000</span> öppna offentliga upphandlingar just nu. Vilka är dina?</h1>
+  <p class="lead">Kommunen, regionen och staten köper för miljarder varje månad. Kommunradar hittar de affärer som passar <b>din bransch i ditt län</b> — och mejlar dem till dig varje morgon.</p>
+  <form class="search" id="f" onsubmit="return false">
+    <input id="q" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
+    <select id="lan" aria-label="Län"><option value="">Hela Sverige</option></select>
+    <button class="btn y" type="button" id="go">Visa mina affärer →</button>
+  </form>
+  <div class="chips" id="chips"></div>
+  <div class="res" id="res"></div>
+</div>
+
+<section>
+  <h2>Pengarna finns.<br><span style="color:var(--mut)">Du ser dem bara inte.</span></h2>
+  <p class="sub">Upphandlingar publiceras utspritt, med korta svarstider. De flesta småföretag hittar dem för sent — eller aldrig.</p>
+  <div class="stats">
+    <div class="stat"><b id="s1">—</b><span>öppna anbudsförfrågningar</span></div>
+    <div class="stat"><b id="s2">—</b><span>uppskattat värde</span></div>
+    <div class="stat"><b id="s3">—</b><span>nya senaste 7 dagarna</span></div>
+    <div class="stat"><b id="s4">—</b><span>olika köpare</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Så funkar det</h2>
+  <div class="steps">
+    <div class="step"><i>1</i><div class="ico">⌕</div><h3>Säg vad du säljer</h3><p>Skriv dina bevakningsord och välj län. Tar 30 sekunder.</p></div>
+    <div class="step"><i>2</i><div class="ico">◎</div><h3>Vi skannar varje natt</h3><p>Alla nya svenska upphandlingar från EU:s databas TED, matchade mot din bevakning.</p></div>
+    <div class="step"><i>3</i><div class="ico">✉</div><h3>Affärer i inkorgen</h3><p>Varje morgon: nya träffar med köpare, värde, sista anbudsdag och direktlänk.</p></div>
+  </div>
+  <div class="mail">
+    <div><h2>Ditt morgonmejl.</h2><p class="sub">Inga konton att logga in på. Inga portaler. Bara de upphandlingar som är värda din tid — innan konkurrenterna hunnit läsa dem.</p><a class="btn y" data-buy href="#pris">Starta bevakning →</a></div>
+    <div class="inbox"><div class="top">KOMMUNRADAR<b id="mailn">7 nya upphandlingar för dig</b><span style="color:#94a3b8;font-size:13px" id="mailq">Bevakning: städ · Stockholm</span></div><div id="mailrows"></div></div>
+  </div>
+</section>
+
+<section id="pris">
+  <h2 style="text-align:center">Ett pris. Alla affärer.</h2>
+  <p class="sub" style="text-align:center;margin:12px auto 0">Ingen bindningstid. Säg upp när du vill.</p>
+  <div class="price"><div>
+    <div style="font-weight:800;color:var(--y)">KOMMUNRADAR PRO</div>
+    <div class="amt">990 kr<small> /mån · ingen moms</small></div>
+    <ul><li>Dagligt mejl med nya matchande upphandlingar</li><li>Alla branscher, hela Sverige eller ditt län</li><li>Köpare, uppskattat värde och sista anbudsdag</li><li>Direktlänk till underlaget</li><li id="trialli">Prova gratis i 7 dagar</li></ul>
+    <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
+    <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
+    <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
+  </div></div>
+</section>
+
+<section>
+  <h2>Frågor</h2>
+  <div style="margin-top:30px;max-width:820px">
+    <details><summary>Vilka upphandlingar ingår?</summary><p>Alla svenska anbudsförfrågningar som publiceras i TED, EU:s officiella databas — det vill säga upphandlingar över EU:s tröskelvärden från kommuner, regioner, myndigheter och kommunala bolag. Mindre direktupphandlingar under tröskelvärdena publiceras inte där.</p></details>
+    <details><summary>Hur ändrar jag min bevakning?</summary><p>Svara på valfritt morgonmejl med dina nya ord eller län, så uppdaterar vi den.</p></details>
+    <details><summary>Kan jag säga upp?</summary><p>Ja, när som helst. Ingen bindningstid — prenumerationen löper månad för månad.</p></details>
+    <details><summary>Tillkommer moms?</summary><p>Nej. Priset är 990 kr per månad, och det är det du betalar. Kommunradar är inte momsregistrerat, så ingen moms läggs på. Du får kvitto per mejl från Stripe.</p></details>
+  </div>
+</section>
+
+<section><div class="final"><h2>Nästa affär publiceras i morgon bitti.</h2><p style="font-size:20px;font-weight:700;opacity:.75">Var först att se den.</p><a class="btn" data-buy href="#" style="margin-top:14px">Starta min bevakning →</a></div></section>
+
+<footer><div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap">
+  <div><b style="color:#fff">Kommunradar</b> drivs av <span data-co="name"></span> · org.nr <span data-co="orgnr"></span><br><span data-co="address"></span><br>Kontakt: <a data-co="email"></a><span data-row> · <span data-co="phone" data-optional></span></span></div>
+  <div><a href="villkor.html">Allmänna villkor</a> · <a href="integritet.html">Integritetspolicy</a> · <a data-portal>Hantera prenumeration</a></div>
+</div>
+<div style="margin-top:14px">Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
+</div>
+<div class="sticky"><a class="btn y" data-buy href="#">Starta bevakning — 990 kr/mån →</a></div>
+
 <script>
-const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let L=[],view='Bevakning',q='',min=0;
-const V=['Bevakning','Affärsvy','Inköpssystem','Prospekt'];
-const dl=l=>{const d=new Date((l.deadline||'').slice(0,10));return isNaN(d)?null:Math.ceil((d-new Date())/864e5)};
-const ok=(x,n)=>x?E(x):`<span class="na">${n} saknas</span>`;
-const row=l=>{const d=dl(l);return `<div class="r"><span class="sc ${l.score>=50?'hi':l.score>=25?'md':''}">${l.score}</span><a href="${E(l.url)}" target="_blank" rel="noopener">${ok(l.title,'titel')}</a><div class="m">${ok(l.buyer,'köpare')} · publicerad ${ok((l.published||'').slice(0,10),'datum')} · ${d===null?'<span class="na">deadline saknas</span>':d>=0?'deadline om '+d+' dagar':'deadline passerad'}${l.cpv?.length?' · CPV '+E(l.cpv.slice(0,3).join(', ')):''}</div></div>`};
-const hay=l=>(l.title+' '+l.buyer).toLowerCase();
-function draw(){
- $('nav').innerHTML=V.map(n=>`<button class="${n===view?'on':''}" data-v="${n}">${n}</button>`).join('');
- let f=L.filter(l=>l.score>=min&&(!q||hay(l).includes(q))),h='';
- const bar=`<div class="bar"><input id="q" type="search" placeholder="Sök köpare eller titel" value="${E(q)}"><label>Minsta poäng <input id="mn" type="number" min="0" max="100" value="${min}" style="width:70px"></label><span>${f.length} träffar</span></div>`;
- if(view==='Bevakning')h=bar+f.map(row).join('');
- if(view==='Affärsvy'){
-  const soon=L.filter(l=>{const d=dl(l);return d!==null&&d>=0&&d<=14}).length;
-  h=`<div class="kp"><div class="k"><b>${L.length}</b>upphandlingar</div><div class="k"><b>${L.filter(l=>l.score>=50).length}</b>hög poäng (50+)</div><div class="k"><b>${soon}</b>deadline inom 14 dagar</div><div class="k"><b>${new Set(L.map(l=>l.buyer)).size}</b>unika köpare</div></div><h3>Topp 10</h3>`+L.slice(0,10).map(row).join('');
- }
- if(view==='Inköpssystem'){
-  const r=/ekonomi|affärssystem|inköp|faktura|upphandlingssystem|peppol/;
-  h=bar+f.filter(l=>r.test(hay(l))||l.cpv?.some(c=>c.startsWith('48')||c.startsWith('72'))).map(row).join('')||'Inga träffar.';
- }
- if(view==='Prospekt'){
-  const g={};f.forEach(l=>{const b=l.buyer||'(okänd köpare)';(g[b]=g[b]||[]).push(l)});
-  h=bar+Object.entries(g).sort((a,b)=>Math.max(...b[1].map(x=>x.score))-Math.max(...a[1].map(x=>x.score))).slice(0,40).map(([b,a])=>`<div class="r"><span class="sc">${Math.max(...a.map(x=>x.score))}</span><b>${E(b)}</b><div class="m">${a.length} upphandling(ar)</div><button class="b cp" data-b="${E(b)}" data-t="${E(a[0].title)}" style="margin-top:6px">Kopiera mejlutkast</button></div>`).join('');
- }
- $('v').innerHTML=h;
- const qi=$('q');if(qi)qi.oninput=e=>{q=e.target.value.toLowerCase();const p=e.target.selectionStart;draw();$('q').focus();$('q').setSelectionRange(p,p)};
- const mn=$('mn');if(mn)mn.onchange=e=>{min=+e.target.value||0;draw()};
+const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CFG=window.KOMMUNRADAR||{};const FREE=3;
+const fmt=n=>n.toLocaleString('sv-SE');
+const mkr=v=>!v?'':v>=1e9?(v/1e9).toFixed(1).replace('.',',')+' mdr kr':v>=1e6?Math.round(v/1e6)+' mkr':Math.round(v/1e3)+' tkr';
+const days=d=>{if(!d)return null;const x=Math.ceil((new Date(d)-new Date())/864e5);return x};
+// Buttons go straight to Stripe once the Payment Link is configured; otherwise to the pricing section.
+document.querySelectorAll('[data-buy]').forEach(a=>{if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
+if(CFG.trialDays===0)$('trialli').remove();else if(CFG.trialDays>0)$('trialli').textContent=`Prova gratis i ${CFG.trialDays} dagar`;
+let L=[];
+function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
+function search(){
+  const words=$('q').value.toLowerCase().split(/[,;]+/).map(s=>s.trim()).filter(s=>s.length>1),lan=$('lan').value;
+  const hits=L.filter(l=>(!lan||!(l.regions||[l.region]).filter(Boolean).length||(l.regions||[l.region]).includes(lan))&&(!words.length||words.some(w=>(l.title+' '+l.buyer+' '+l.city+' '+(l.categories||[]).join(' ')).toLowerCase().includes(w))));
+  const value=hits.reduce((s,l)=>s+(l.value_sek||0),0);
+  if(!words.length&&!lan){$('res').innerHTML='';return}
+  $('res').innerHTML=`<div class="rhead"><div><div class="big">${fmt(hits.length)} öppna affärer</div><div class="meta">${value?'värda ca '+mkr(value)+' · ':''}${E(words.join(', ')||'alla branscher')} · ${E(lan||'hela Sverige')}</div></div></div>`+
+   (hits.length?hits.slice(0,FREE).map(card).join(''):'<p class="meta">Inga öppna just nu — men nya publiceras varje dag. Starta bevakning så får du dem direkt.</p>')+
+   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><a class="btn y" href="${E(CFG.paymentLink||'#pris')}">Starta bevakning →</a></div></div></div>`:'');
+  const top=hits.slice(0,4);$('mailn').textContent=`${hits.length} nya upphandlingar för dig`;$('mailq').textContent='Bevakning: '+(words.join(', ')||'alla')+' · '+(lan||'hela Sverige');$('mailrows').innerHTML=top.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');
 }
-document.addEventListener('click',e=>{
- const n=e.target.closest('nav button');if(n){view=n.dataset.v;draw()}
- const c=e.target.closest('.cp');if(c){const t=`Hej,\n\nJag såg att ${c.dataset.b} nyligen publicerat upphandlingen "${c.dataset.t}". Vi hjälper offentliga verksamheter att ta emot och skicka e-fakturor via Peppol, utan att byta ekonomisystem.\n\nHar ni 15 minuter för ett kort samtal i veckan?\n\nVänliga hälsningar\nAlexander`;try{navigator.clipboard.writeText(t);c.textContent='Kopierat ✓'}catch(_){c.textContent='Kunde inte kopiera'}}
-});
-fetch('leads.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{L=d.leads||[];$('up').textContent=`Uppdaterad ${(d.updated||'').slice(0,16).replace('T',' ')} UTC · ${L.length} upphandlingar från TED`;draw()}).catch(()=>{$('up').textContent='Kunde inte läsa leads.json. Öppna sidan via GitHub Pages, inte som lokal fil.'});
-</script></main></body></html>
+$('go').onclick=search;$('q').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(search,250)});$('lan').onchange=search;
+const DATA=CFG.dataUrl||'https://raw.githubusercontent.com/studiolex031/kommunradar-feed/main/leads.json';
+const getJSON=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw r.status;return r.json()});
+// Freshest of: the copy GitHub updates every morning, and the copy uploaded with the site.
+Promise.allSettled([getJSON(DATA),getJSON('leads.json')]).then(rs=>{const ok=rs.filter(r=>r.status==='fulfilled'&&(r.value.leads||[]).every(l=>'region' in l)).map(r=>r.value).sort((a,b)=>String(b.updated).localeCompare(String(a.updated)));if(!ok.length)throw 'no data';return ok[0]}).then(d=>{
+  L=d.leads||[];const n=L.length;$('cnt').textContent=fmt(n);$('s1').textContent=fmt(n);
+  $('s2').textContent=mkr(L.reduce((s,l)=>s+(l.value_sek||0),0));
+  const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,10);$('s3').textContent=fmt(L.filter(l=>l.published>=wk).length);
+  $('s4').textContent=fmt(new Set(L.map(l=>l.buyer)).size);
+  $('upd').textContent='Uppdaterad '+new Date(d.updated).toLocaleDateString('sv-SE',{day:'numeric',month:'long'})+' · data från EU:s upphandlingsdatabas';
+  [...new Set(L.flatMap(l=>l.regions||[l.region]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'sv')).forEach(r=>$('lan').add(new Option(r,r)));
+  const cats={};L.forEach(l=>(l.categories||[]).forEach(c=>cats[c]=(cats[c]||0)+1));
+  $('chips').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([c,k])=>`<button class="chip" data-c="${E(c)}">${E(c)} · ${k}</button>`).join('');
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('q').value=b.dataset.c;search();$('res').scrollIntoView({behavior:'smooth',block:'start'})});
+  const sample=L.slice(0,4);$('mailrows').innerHTML=sample.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');$('mailn').textContent=`${L.filter(l=>l.published>=wk).length} nya upphandlingar denna vecka`;$('mailq').textContent='Bevakning: alla branscher · hela Sverige';
+}).catch(()=>{$('upd').textContent='Uppdateras varje morgon'});
+</script>
+<script src="site.js"></script>
+</body></html>

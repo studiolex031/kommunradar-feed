@@ -1,0 +1,45 @@
+name: Stripe-uppsättning (kör manuellt)
+# Skapar produkt, pris och betallänk i Stripe med nyckeln i secret STRIPE_SECRET_KEY.
+# Säkert att köra flera gånger — befintliga saker återanvänds. Länken visas i körningens sammanfattning.
+on:
+  workflow_dispatch:
+    inputs:
+      price_sek:
+        description: 'Pris per månad i kronor'
+        default: '990'
+      trial_days:
+        description: 'Gratis provdagar (0 = ingen provperiod)'
+        default: '7'
+      require_terms:
+        description: 'Kunden måste godkänna villkoren i kassan (kräver villkors-URL i Stripe → Public details)'
+        type: boolean
+        default: true
+      moms:
+        description: 'Lägg på 25 % moms i kassan (kräver att du är momsregistrerad och lagt in registreringen i Stripe → Tax)'
+        type: boolean
+        default: false
+permissions: {contents: read}
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Skapa i Stripe
+        shell: bash
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          PRICE_SEK: ${{ inputs.price_sek }}
+          TRIAL_DAYS: ${{ inputs.trial_days }}
+          REQUIRE_TERMS: ${{ inputs.require_terms }}
+          MOMS: ${{ inputs.moms }}
+        run: |
+          set -euo pipefail
+          if [ -z "$STRIPE_SECRET_KEY" ]; then echo "::error::Lägg först in secret STRIPE_SECRET_KEY"; exit 1; fi
+          [[ "$PRICE_SEK" =~ ^[0-9]+$ && "$TRIAL_DAYS" =~ ^[0-9]+$ ]] || { echo "::error::Pris och provdagar måste vara heltal"; exit 1; }
+          args=(--site https://kommunradar.online --price-sek "$PRICE_SEK" --trial-days "$TRIAL_DAYS")
+          if [ "$REQUIRE_TERMS" = "true" ]; then args+=(--require-terms); fi
+          if [ "$MOMS" = "true" ]; then args+=(--moms); fi
+          python scripts/stripe_setup.py "${args[@]}" | tee out.txt
+          { echo '## Klart'; echo; echo "Kopiera **Payment Link** nedan till \`paymentLink\` i config.js och sätt \`trialDays: $TRIAL_DAYS\`:"; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
