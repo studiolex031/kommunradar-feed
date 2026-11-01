@@ -16,6 +16,18 @@ class FeedTest(unittest.TestCase):
         self.assertEqual(n["deadline"], "2026-11-20")
         self.assertEqual(n["value_sek"], 2500000)  # placeholder value ignored
 
+    def test_non_sek_lot_makes_value_unknown_and_all_regions_kept(self):
+        base = {"publication-number": "2-2026", "notice-type": "cn-standard", "place-of-performance": ["SE110", "SE224"],
+                "estimated-value-lot": ["100", "200"]}
+        self.assertIsNone(feed.normalize({**base, "estimated-value-cur-lot": ["SEK", "EUR"]})["value_sek"])
+        n = feed.normalize({**base, "estimated-value-cur-lot": ["SEK", "SEK"]})
+        self.assertEqual((n["value_sek"], n["regions"]), (300, ["Stockholm", "Skåne"]))
+
+    def test_multi_lot_notice_open_while_any_lot_open(self):
+        n = feed.normalize({"publication-number": "3", "notice-type": "cn-standard",
+                            "deadline-receipt-tender-date-lot": ["2026-10-01Z", "2026-12-01Z"]})
+        self.assertTrue(feed.is_open(n, "2026-11-01"))
+
     def test_only_open_calls_for_tender(self):
         self.assertTrue(feed.is_open({"type": "cn-standard", "deadline": "2026-12-01"}, "2026-11-01"))
         self.assertFalse(feed.is_open({"type": "can-standard", "deadline": ""}, "2026-11-01"))
@@ -32,6 +44,7 @@ class DigestTest(unittest.TestCase):
         self.assertFalse(digest.matches(self.lead, digest.keywords("städ"), "stockholm"))
         self.assertFalse(digest.matches(self.lead, digest.keywords("catering"), "skane"))
         self.assertTrue(digest.matches({**self.lead, "region": ""}, [], "stockholm"))  # unknown region kept
+        self.assertTrue(digest.matches({**self.lead, "regions": ["Stockholm", "Skåne"]}, [], "skane"))
 
     def test_new_leads_against_previous_snapshot(self):
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
@@ -49,6 +62,8 @@ class DigestTest(unittest.TestCase):
         manual = [{"key": "bevakningsord", "label": {"custom": "Bevakningsord"}, "text": {"value": "IT-konsult"}},
                   {"key": "ln", "label": {"custom": "Län"}, "text": {"value": "Västra Götaland"}}]
         self.assertEqual(digest.read_answers(manual), {"bevakning": "IT-konsult", "lan": "vastragotaland"})
+        city_keyword = [{"key": "bevakning", "text": {"value": "Stockholm"}}, {"key": "lan", "dropdown": {"value": "skane"}}]
+        self.assertEqual(digest.read_answers(city_keyword), {"bevakning": "Stockholm", "lan": "skane"})
         self.assertEqual(digest.read_answers([{"key": "x", "label": {"custom": "Län"}, "text": {"value": "hela sverige"}}]), {"lan": "alla"})
 
 

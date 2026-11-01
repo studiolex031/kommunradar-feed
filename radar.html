@@ -32,16 +32,16 @@ const row=l=>{const d=dl(l);return `<div class="r"><span class="sc ${l.score>=50
 const hay=l=>(l.title+' '+l.buyer).toLowerCase();
 function draw(){
  $('nav').innerHTML=V.map(n=>`<button class="${n===view?'on':''}" data-v="${n}">${n}</button>`).join('');
+ const isys=l=>/ekonomi|affärssystem|inköp|faktura|upphandlingssystem|peppol/.test(hay(l))||l.cpv?.some(c=>c.startsWith('48')||c.startsWith('72'));
  let f=L.filter(l=>l.score>=min&&(!q||hay(l).includes(q))),h='';
- const bar=`<div class="bar"><input id="q" type="search" placeholder="Sök köpare eller titel" value="${E(q)}"><label>Minsta poäng <input id="mn" type="number" min="0" max="100" value="${min}" style="width:70px"></label><span>${f.length} träffar</span></div>`;
+ const bar=`<div class="bar"><input id="q" type="search" placeholder="Sök köpare eller titel" value="${E(q)}"><label>Minsta poäng <input id="mn" type="number" min="0" max="100" value="${min}" style="width:70px"></label><span>${(view==='Inköpssystem'?f.filter(isys):f).length} träffar</span></div>`;
  if(view==='Bevakning')h=bar+f.map(row).join('');
  if(view==='Affärsvy'){
   const soon=L.filter(l=>{const d=dl(l);return d!==null&&d>=0&&d<=14}).length;
-  h=`<div class="kp"><div class="k"><b>${L.length}</b>upphandlingar</div><div class="k"><b>${L.filter(l=>l.score>=50).length}</b>hög poäng (50+)</div><div class="k"><b>${soon}</b>deadline inom 14 dagar</div><div class="k"><b>${new Set(L.map(l=>l.buyer)).size}</b>unika köpare</div></div><h3>Topp 10</h3>`+L.slice(0,10).map(row).join('');
+  h=`<div class="kp"><div class="k"><b>${L.length}</b>upphandlingar</div><div class="k"><b>${L.filter(l=>l.score>=50).length}</b>hög poäng (50+)</div><div class="k"><b>${soon}</b>deadline inom 14 dagar</div><div class="k"><b>${new Set(L.map(l=>l.buyer)).size}</b>unika köpare</div></div><h3>Topp 10</h3>`+[...L].sort((a,b)=>b.score-a.score).slice(0,10).map(row).join('');
  }
  if(view==='Inköpssystem'){
-  const r=/ekonomi|affärssystem|inköp|faktura|upphandlingssystem|peppol/;
-  h=bar+f.filter(l=>r.test(hay(l))||l.cpv?.some(c=>c.startsWith('48')||c.startsWith('72'))).map(row).join('')||'Inga träffar.';
+  const hits=f.filter(isys);h=bar+(hits.map(row).join('')||'Inga träffar.');
  }
  if(view==='Prospekt'){
   const g={};f.forEach(l=>{const b=l.buyer||'(okänd köpare)';(g[b]=g[b]||[]).push(l)});
@@ -53,7 +53,7 @@ function draw(){
 }
 document.addEventListener('click',e=>{
  const n=e.target.closest('nav button');if(n){view=n.dataset.v;draw()}
- const c=e.target.closest('.cp');if(c){const t=`Hej,\n\nJag såg att ${c.dataset.b} nyligen publicerat upphandlingen "${c.dataset.t}". Vi hjälper offentliga verksamheter att ta emot och skicka e-fakturor via Peppol, utan att byta ekonomisystem.\n\nHar ni 15 minuter för ett kort samtal i veckan?\n\nVänliga hälsningar\nAlexander`;try{navigator.clipboard.writeText(t);c.textContent='Kopierat ✓'}catch(_){c.textContent='Kunde inte kopiera'}}
+ const c=e.target.closest('.cp');if(c){const t=`Hej,\n\nJag såg att ${c.dataset.b} nyligen publicerat upphandlingen "${c.dataset.t}". Vi hjälper offentliga verksamheter att ta emot och skicka e-fakturor via Peppol, utan att byta ekonomisystem.\n\nHar ni 15 minuter för ett kort samtal i veckan?\n\nVänliga hälsningar\nAlexander`;Promise.resolve().then(()=>navigator.clipboard.writeText(t)).then(()=>{c.textContent='Kopierat ✓'},()=>{c.textContent='Kunde inte kopiera'})}
 });
 fetch('leads.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{L=d.leads||[];$('up').textContent=`Uppdaterad ${(d.updated||'').slice(0,16).replace('T',' ')} UTC · ${L.length} upphandlingar från TED`;draw()}).catch(()=>{$('up').textContent='Kunde inte läsa leads.json. Öppna sidan via GitHub Pages, inte som lokal fil.'});
 </script></main></body></html>

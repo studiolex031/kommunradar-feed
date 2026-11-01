@@ -8,7 +8,7 @@ import sys, json, datetime as dt, urllib.request
 URL = "https://api.ted.europa.eu/v3/notices/search"
 FIELDS = ["publication-number", "notice-title", "buyer-name", "buyer-city", "publication-date",
           "deadline-receipt-tender-date-lot", "notice-type", "classification-cpv",
-          "place-of-performance", "estimated-value-lot"]
+          "place-of-performance", "estimated-value-lot", "estimated-value-cur-lot"]
 DAYS = 45
 MAX_PAGES = 40  # 40 x 100 notices — well above Sweden's monthly volume
 
@@ -77,16 +77,21 @@ def normalize(x):
     cpv = sorted({txt(c) for c in as_list(x.get("classification-cpv")) if txt(c)})
     places = [txt(p) for p in as_list(x.get("place-of-performance"))]
     # TED contains placeholder values (e.g. 99 999 999 999 999); anything above 5 bn SEK is treated as unknown.
-    values = [v for v in (num(v) for v in as_list(x.get("estimated-value-lot"))) if v and v <= 5e9]
+    # Only SEK amounts are summed; a lot in another currency makes the total unknown rather than wrong.
+    amounts, currencies = as_list(x.get("estimated-value-lot")), as_list(x.get("estimated-value-cur-lot"))
+    values = [v for v, cur in zip((num(a) for a in amounts), currencies + ["SEK"] * (len(amounts) - len(currencies)))
+              if v and v <= 5e9 and txt(cur).upper() == "SEK"]
+    if len(values) < len([a for a in amounts if num(a) and num(a) <= 5e9]): values = []
+    regions = list(dict.fromkeys(LAN[p] for p in places if p in LAN))
     deadlines = sorted(txt(d)[:10] for d in as_list(x.get("deadline-receipt-tender-date-lot")) if txt(d))
     title = txt(x.get("notice-title"))
     pid = x.get("publication-number")
     return {"id": pid,
             "title": title.split(" – ", 2)[-1] if title.startswith("Sverige – ") else title,
             "buyer": txt(x.get("buyer-name")), "city": txt(x.get("buyer-city")),
-            "region": next((LAN[p] for p in places if p in LAN), ""),
+            "region": regions[0] if regions else "", "regions": regions,
             "published": txt(x.get("publication-date"))[:10],
-            "deadline": deadlines[0] if deadlines else "",
+            "deadline": deadlines[0] if deadlines else "", "deadlines": deadlines,
             "type": txt(x.get("notice-type")),
             "cpv": cpv, "categories": sorted({CPV[c[:2]] for c in cpv if c[:2] in CPV}),
             "value_sek": round(sum(values)) if values and sum(values) <= 5e9 else None,  # many-lot frameworks sum to implausible totals
@@ -94,8 +99,9 @@ def normalize(x):
 
 
 def is_open(n, today):
-    """Only calls for tender (cn-*) whose deadline has not passed: what a supplier can still bid on."""
-    return n["type"].startswith("cn") and (not n["deadline"] or n["deadline"] >= today)
+    """Only calls for tender (cn-*) with at least one lot still open: what a supplier can still bid on."""
+    last = max(n.get("deadlines") or [n["deadline"]])
+    return n["type"].startswith("cn") and (not last or last >= today)
 
 
 def main():
@@ -112,6 +118,7 @@ def main():
     for x in raw:
         n = normalize(x)
         if n["id"] in seen or not is_open(n, today): continue
+        n["deadline"] = next((d for d in n.pop("deadlines", []) if d >= today), n["deadline"])  # earliest open lot
         n["score"] = score(n); seen.add(n["id"]); out.append(n)
     out.sort(key=lambda n: (n["published"], n["id"]), reverse=True)
     json.dump({"updated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "source": "TED (ted.europa.eu)",

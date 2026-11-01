@@ -23,6 +23,15 @@ def call(key, path, params=None, method='POST'):
         sys.exit(f'Stripe-fel på {path}: {e.read().decode()}')
 
 
+def same_settings(link, a):
+    """Reuse a link only when it gives the customer exactly the checkout asked for now."""
+    redirect = ((link.get('after_completion') or {}).get('redirect') or {}).get('url')
+    return (bool((link.get('automatic_tax') or {}).get('enabled')) == a.moms
+            and ((link.get('subscription_data') or {}).get('trial_period_days') or 0) == a.trial_days
+            and ((link.get('consent_collection') or {}).get('terms_of_service') == 'required') == a.require_terms
+            and redirect == a.site.rstrip('/') + '/tack.html')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--site', required=True, help='publik adress till sajten, t.ex. https://kommunradar.se')
@@ -36,7 +45,9 @@ def main():
     print('Stripe-läge:', 'LIVE' if '_live_' in key else 'TEST')
 
     prices = call(key, 'prices', {'lookup_keys[]': 'kommunradar_pro_monthly', 'active': 'true'}, 'GET')['data']
-    if prices and prices[0]['unit_amount'] == a.price_sek * 100:
+    p0 = prices[0] if prices else {}
+    if p0 and p0['unit_amount'] == a.price_sek * 100 and p0['currency'] == 'sek' \
+            and (p0.get('recurring') or {}).get('interval') == 'month' and p0.get('tax_behavior') == 'exclusive':
         price = prices[0]
     else:
         product = prices[0]['product'] if prices else call(key, 'products', {
@@ -50,7 +61,7 @@ def main():
 
     links = [l for l in call(key, 'payment_links', {'active': 'true', 'limit': 100}, 'GET')['data']
              if (l.get('metadata') or {}).get('app') == 'kommunradar' and (l.get('metadata') or {}).get('price') == price['id']
-             and bool((l.get('automatic_tax') or {}).get('enabled')) == a.moms]
+             and same_settings(l, a)]
     if links:
         link = links[0]
     else:

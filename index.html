@@ -82,7 +82,7 @@ footer a{color:#dbe3f5}
 
 <div class="hero">
   <span class="pill"><span class="dot"></span><span id="upd">Uppdateras varje morgon från EU:s upphandlingsdatabas</span></span>
-  <h1><span class="num" id="cnt">1 500</span> öppna offentliga upphandlingar just nu. Vilka är dina?</h1>
+  <h1><span class="num" id="cnt">Över 1 000</span> öppna offentliga upphandlingar just nu. Vilka är dina?</h1>
   <p class="lead">Kommunen, regionen och staten köper för miljarder varje månad. Kommunradar hittar de affärer som passar <b>din bransch i ditt län</b> — och mejlar dem till dig varje morgon.</p>
   <form class="search" id="f" onsubmit="return false">
     <input id="q" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
@@ -163,7 +163,7 @@ let L=[];
 function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
 function search(){
   const words=$('q').value.toLowerCase().split(/[,;]+/).map(s=>s.trim()).filter(s=>s.length>1),lan=$('lan').value;
-  const hits=L.filter(l=>(!lan||!l.region||l.region===lan)&&(!words.length||words.some(w=>(l.title+' '+l.buyer+' '+l.city+' '+(l.categories||[]).join(' ')).toLowerCase().includes(w))));
+  const hits=L.filter(l=>(!lan||!(l.regions||[l.region]).filter(Boolean).length||(l.regions||[l.region]).includes(lan))&&(!words.length||words.some(w=>(l.title+' '+l.buyer+' '+l.city+' '+(l.categories||[]).join(' ')).toLowerCase().includes(w))));
   const value=hits.reduce((s,l)=>s+(l.value_sek||0),0);
   if(!words.length&&!lan){$('res').innerHTML='';return}
   $('res').innerHTML=`<div class="rhead"><div><div class="big">${fmt(hits.length)} öppna affärer</div><div class="meta">${value?'värda ca '+mkr(value)+' · ':''}${E(words.join(', ')||'alla branscher')} · ${E(lan||'hela Sverige')}</div></div></div>`+
@@ -178,7 +178,7 @@ fetch('leads.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
   const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,10);$('s3').textContent=fmt(L.filter(l=>l.published>=wk).length);
   $('s4').textContent=fmt(new Set(L.map(l=>l.buyer)).size);
   $('upd').textContent='Uppdaterad '+new Date(d.updated).toLocaleDateString('sv-SE',{day:'numeric',month:'long'})+' · data från EU:s upphandlingsdatabas';
-  [...new Set(L.map(l=>l.region).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'sv')).forEach(r=>$('lan').add(new Option(r,r)));
+  [...new Set(L.flatMap(l=>l.regions||[l.region]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'sv')).forEach(r=>$('lan').add(new Option(r,r)));
   const cats={};L.forEach(l=>(l.categories||[]).forEach(c=>cats[c]=(cats[c]||0)+1));
   $('chips').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([c,k])=>`<button class="chip" data-c="${E(c)}">${E(c)} · ${k}</button>`).join('');
   document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('q').value=b.dataset.c;search();$('res').scrollIntoView({behavior:'smooth',block:'start'})});

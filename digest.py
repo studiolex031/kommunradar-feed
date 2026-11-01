@@ -7,7 +7,7 @@ Operatören kan skriva över per kund med metadata på prenumerationen: keywords
   python digest.py --prev prev.json --dry-run  # visar vad som skulle skickas
 Miljö: STRIPE_SECRET_KEY, SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_FROM, SITE_URL, PORTAL_URL
 """
-import os, re, sys, json, html, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
+import os, re, sys, ssl, json, html, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
 from email.message import EmailMessage
 
 LAN_KEYS = {"alla": "", "stockholm": "Stockholm", "uppsala": "Uppsala", "sodermanland": "Södermanland",
@@ -26,8 +26,21 @@ def stripe_get(path, params=None):
         return json.load(r)
 
 
+def kommunradar_products():
+    """Product ids that are Kommunradar (created by stripe_setup.py or named so in the Dashboard)."""
+    ids, after = set(), None
+    while True:
+        page = stripe_get("products", {"limit": 100, **({"starting_after": after} if after else {})})
+        ids |= {p["id"] for p in page["data"]
+                if (p.get("metadata") or {}).get("app") == "kommunradar" or "kommunradar" in (p.get("name") or "").lower()}
+        if not page.get("has_more"): return ids
+        after = page["data"][-1]["id"]
+
+
 def subscribers():
-    """Yield {email, keywords, lan} for every active or trialing subscription."""
+    """Yield {email, keywords, lan} for every active or trialing Kommunradar subscription
+    (other products in the same Stripe account are skipped)."""
+    products = kommunradar_products()
     for status in ("active", "trialing"):
         after = None
         while True:
@@ -35,6 +48,7 @@ def subscribers():
             if after: params["starting_after"] = after
             page = stripe_get("subscriptions", params)
             for sub in page["data"]:
+                if not any((it.get("price") or {}).get("product") in products for it in sub["items"]["data"]): continue
                 sessions = stripe_get("checkout/sessions", {"subscription": sub["id"], "limit": 1})["data"]
                 answers = read_answers(sessions[0].get("custom_fields") or []) if sessions else {}
                 meta = sub.get("metadata") or {}
@@ -58,7 +72,9 @@ def read_answers(fields):
     for f in fields:
         value = (f.get("text") or {}).get("value") or (f.get("dropdown") or {}).get("value") or ""
         label = fold((f.get("label") or {}).get("custom") or f.get("key"))
-        if f.get("key") == "lan" or label.startswith("lan") or fold(value) in {fold(v) for v in LAN_KEYS.values() if v}:
+        is_keyword = f.get("key") == "bevakning" or label.startswith("bevakning")
+        if not is_keyword and (f.get("key") == "lan" or label.startswith("lan")
+                               or fold(value) in {fold(v) for v in LAN_KEYS.values() if v}):
             county = next((k for k, v in LAN_KEYS.items() if fold(value) in (k, fold(v))), "alla")
             out.setdefault("lan", county)
         elif value:
@@ -72,7 +88,8 @@ def keywords(raw):
 
 def matches(lead, words, lan):
     region = LAN_KEYS.get(lan, "")
-    if region and lead.get("region") and lead["region"] != region: return False  # unknown region is kept
+    regions = lead.get("regions") or ([lead["region"]] if lead.get("region") else [])
+    if region and regions and region not in regions: return False  # unknown region is kept
     if not words: return True
     hay = " ".join([lead.get("title", ""), lead.get("buyer", ""), lead.get("city", ""), " ".join(lead.get("categories", []))]).lower()
     return any(w in hay for w in words)
@@ -121,7 +138,8 @@ def main():
     smtp = None
     if not dry:
         smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
-        smtp.starttls(); smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
+        smtp.starttls(context=ssl.create_default_context())
+        smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
     sent = 0
     for sub in subscribers():
         hits = [l for l in leads if matches(l, keywords(sub["keywords"]), sub["lan"])]
