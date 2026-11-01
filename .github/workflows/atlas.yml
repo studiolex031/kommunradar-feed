@@ -1,0 +1,47 @@
+name: anbudsatlas
+# Eget flöde efter kommunradar-daily, så att ett fel här aldrig kan stoppa morgonmejlen.
+on:
+  workflow_run:
+    workflows: [kommunradar-daily]
+    types: [completed]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: anbudsatlas, cancel-in-progress: false}
+jobs:
+  build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}  # tomt = bygg men publicera inte
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - id: week
+        run: echo "w=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+      - id: awards
+        uses: actions/cache@v4
+        with:
+          path: atlas/data/awards.json
+          key: atlas-awards-${{ steps.week.outputs.w }}
+      - name: Hämta tilldelningsbeslut (en gång per vecka)
+        if: ${{ steps.awards.outputs.cache-hit != 'true' }}
+        run: python atlas/scripts/fetch_ted.py 1095
+      - run: python atlas/scripts/build.py
+      - name: Stoppa om bygget ser fel ut
+        run: |
+          n=$(find atlas/dist/upphandlingar -name index.html | wc -l)
+          echo "$n sidor"
+          [ "$n" -ge 500 ] || { echo "::error::Bara $n sidor, publicerar inte"; exit 1; }
+      - name: Publicera på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          sudo apt-get install -y -qq lftp
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            mirror -R --delete --parallel=6 atlas/dist/upphandlingar ${FTP_DIR}upphandlingar; \
+            mput -O ${FTP_DIR} atlas/dist/sitemap-atlas-*.xml"
