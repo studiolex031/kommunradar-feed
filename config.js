@@ -2,14 +2,14 @@
 // paymentLink: länken som scripts/stripe_setup.py skriver ut (https://buy.stripe.com/...)
 // company: era riktiga uppgifter — visas i sidfoten, villkoren och integritetspolicyn (krävs av Stripe).
 window.KOMMUNRADAR = {
-  paymentLink: '',
+  paymentLink: 'https://buy.stripe.com/test_6oUdR80Ry8UP9j7dGMg7e00',
   trialDays: 7,
-  portalUrl: '',            // Stripe kundportal (Settings → Billing → Customer portal → länk)
+  portalUrl: 'https://billing.stripe.com/p/login/6oUdR80Ry8UP9j7dGMg7e00',
   company: {
-    name: '',               // t.ex. "Freeline AB" eller "Förnamn Efternamn (enskild firma)"
-    orgnr: '',              // organisationsnummer
-    email: '',              // t.ex. "hej@kommunradar.online"
-    phone: '',              // valfritt
-    address: ''             // postadress, t.ex. "Gatan 1, 123 45 Staden"
+    name: 'Kommunradar / Alexander Pålsson (enskild firma)',
+    orgnr: '19870929-3552',
+    email: 'freeline031@gmail.com',
+    phone: '+46 72 012 78 76',
+    address: 'Rävebergsvägen 130P, 424 67 Angered'
   }
 };
