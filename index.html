@@ -2,9 +2,9 @@
 <html lang="sv"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kommunradar — offentliga upphandlingar i din inkorg varje morgon</title>
-<meta name="description" content="Alla svenska offentliga upphandlingar över EU:s tröskelvärden, filtrerade på din bransch och ditt län, i mejlen varje morgon. 990 kr/mån.">
+<meta name="description" content="Alla svenska offentliga upphandlingar över EU:s tröskelvärden, filtrerade på din bransch och ditt län, i mejlen varje morgon. Prova 7 dagar gratis, sedan 990 kr/mån.">
 <meta property="og:title" content="Över 1 000 öppna offentliga upphandlingar just nu. Vilka passar dig?">
-<meta property="og:description" content="Kommunradar mejlar dig nya upphandlingar som matchar din bransch — varje morgon.">
+<meta property="og:description" content="Kommunradar mejlar dig nya upphandlingar som matchar din bransch — varje morgon. Prova 7 dagar gratis.">
 <meta name="theme-color" content="#070b18">
 <link rel="canonical" href="https://kommunradar.online/">
 <meta property="og:url" content="https://kommunradar.online/">
@@ -67,6 +67,8 @@ h2{font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.04em;margin:0;f
 .amt{font-size:76px;font-weight:900;letter-spacing:-.05em;line-height:1}.amt small{font-size:20px;color:var(--mut);font-weight:700;letter-spacing:0;margin-left:6px}
 .price ul{list-style:none;padding:0;margin:24px 0;text-align:left}.price li{padding:8px 0;border-bottom:1px solid var(--line)}.price li:before{content:"✓";color:var(--y);font-weight:900;margin-right:10px}
 .roi{margin-top:16px;color:#a5f3fc;font-weight:700}
+.free{display:inline-block;background:var(--y);color:#0b1020;font-weight:900;border-radius:99px;padding:6px 14px;font-size:14px;letter-spacing:.02em}
+.freenote{margin-top:14px;color:var(--mut);font-size:15px}.freenote b{color:#fff}
 details{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:10px;background:#ffffff06}summary{cursor:pointer;font-weight:800;font-size:18px}details p{color:var(--mut);margin:10px 0 0}
 .final{border-radius:32px;background:var(--y);color:#111;text-align:center;padding:70px 20px;position:relative;overflow:hidden}
 .final h2{color:#111}.final .btn{background:#111;color:var(--y)}
@@ -78,12 +80,13 @@ footer a{color:#dbe3f5}
 @media(prefers-reduced-motion:reduce){.radar,.dot{animation:none}}
 </style></head><body><div class="glow"></div>
 <div class="w">
-<header><a class="logo" href="#"><span class="radar"></span>KOMMUNRADAR</a><a class="btn y sm hide-m" data-buy href="#pris">Starta bevakning</a></header>
+<header><a class="logo" href="#"><span class="radar"></span>KOMMUNRADAR</a><a class="btn y sm hide-m" data-buy href="#pris" data-t0="Starta bevakning">Prova 7 dagar gratis</a></header>
 
 <div class="hero">
   <span class="pill"><span class="dot"></span><span id="upd">Uppdateras varje morgon från EU:s upphandlingsdatabas</span></span>
   <h1><span class="num" id="cnt">Över 1 000</span> öppna offentliga upphandlingar just nu. Vilka är dina?</h1>
   <p class="lead">Kommunen, regionen och staten köper för miljarder varje månad. Kommunradar hittar de affärer som passar <b>din bransch i ditt län</b> — och mejlar dem till dig varje morgon.</p>
+  <p class="freenote trial-only" style="margin:16px 0 22px;line-height:1.9"><span class="free"><span class="td">7</span> DAGAR GRATIS</span> &nbsp;Inget dras förrän dag <b><span class="td1">8</span></b>. Säg upp när du vill.</p>
   <form class="search" id="f" onsubmit="return false">
     <input id="q" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
     <select id="lan" aria-label="Län"><option value="">Hela Sverige</option></select>
@@ -112,7 +115,7 @@ footer a{color:#dbe3f5}
     <div class="step"><i>3</i><div class="ico">✉</div><h3>Affärer i inkorgen</h3><p>Varje morgon: nya träffar med köpare, värde, sista anbudsdag och direktlänk.</p></div>
   </div>
   <div class="mail">
-    <div><h2>Ditt morgonmejl.</h2><p class="sub">Inga konton att logga in på. Inga portaler. Bara de upphandlingar som är värda din tid — innan konkurrenterna hunnit läsa dem.</p><a class="btn y" data-buy href="#pris">Starta bevakning →</a></div>
+    <div><h2>Ditt morgonmejl.</h2><p class="sub">Inga konton att logga in på. Inga portaler. Bara de upphandlingar som är värda din tid — innan konkurrenterna hunnit läsa dem.</p><a class="btn y" data-buy href="#pris" data-t0="Starta bevakning →">Prova gratis i 7 dagar →</a></div>
     <div class="inbox"><div class="top">KOMMUNRADAR<b id="mailn">7 nya upphandlingar för dig</b><span style="color:#94a3b8;font-size:13px" id="mailq">Bevakning: städ · Stockholm</span></div><div id="mailrows"></div></div>
   </div>
 </section>
@@ -122,9 +125,10 @@ footer a{color:#dbe3f5}
   <p class="sub" style="text-align:center;margin:12px auto 0">Ingen bindningstid. Säg upp när du vill.</p>
   <div class="price"><div>
     <div style="font-weight:800;color:var(--y)">KOMMUNRADAR PRO</div>
+    <div class="trial-only" style="margin-top:10px"><span class="free">FÖRSTA <span class="td">7</span> DAGARNA GRATIS</span></div>
     <div class="amt">990 kr<small> /mån · ingen moms</small></div>
     <ul><li>Dagligt mejl med nya matchande upphandlingar</li><li>Alla branscher, hela Sverige eller ditt län</li><li>Köpare, uppskattat värde och sista anbudsdag</li><li>Direktlänk till underlaget</li><li id="trialli">Prova gratis i 7 dagar</li></ul>
-    <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
+    <a class="btn y" data-buy href="#" data-t0="Starta min bevakning →" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta 7 dagar gratis →</a>
     <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
     <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
   </div></div>
@@ -135,12 +139,13 @@ footer a{color:#dbe3f5}
   <div style="margin-top:30px;max-width:820px">
     <details><summary>Vilka upphandlingar ingår?</summary><p>Alla svenska anbudsförfrågningar som publiceras i TED, EU:s officiella databas — det vill säga upphandlingar över EU:s tröskelvärden från kommuner, regioner, myndigheter och kommunala bolag. Mindre direktupphandlingar under tröskelvärdena publiceras inte där.</p></details>
     <details><summary>Hur ändrar jag min bevakning?</summary><p>Svara på valfritt morgonmejl med dina nya ord eller län, så uppdaterar vi den.</p></details>
+    <details class="trial-only"><summary>Hur fungerar de <span class="td">7</span> gratisdagarna?</summary><p>Du anger kort i kassan, men inget dras under de första <span class="td">7</span> dagarna. Du får morgonmejlen precis som en betalande kund. Säg upp innan provperioden är slut via kundportalen, så kostar det ingenting. Annars blir det 990 kr/mån, utan bindningstid.</p></details>
     <details><summary>Kan jag säga upp?</summary><p>Ja, när som helst. Ingen bindningstid — prenumerationen löper månad för månad.</p></details>
     <details><summary>Tillkommer moms?</summary><p>Nej. Priset är 990 kr per månad, och det är det du betalar. Kommunradar är inte momsregistrerat, så ingen moms läggs på. Du får kvitto per mejl från Stripe.</p></details>
   </div>
 </section>
 
-<section><div class="final"><h2>Nästa affär publiceras i morgon bitti.</h2><p style="font-size:20px;font-weight:700;opacity:.75">Var först att se den.</p><a class="btn" data-buy href="#" style="margin-top:14px">Starta min bevakning →</a></div></section>
+<section><div class="final"><h2>Nästa affär publiceras i morgon bitti.</h2><p style="font-size:20px;font-weight:700;opacity:.75">Var först att se den.</p><a class="btn" data-buy href="#" data-t0="Starta min bevakning →" style="margin-top:14px">Prova 7 dagar gratis →</a></div></section>
 
 <footer><div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap">
   <div><b style="color:#fff">Kommunradar</b> drivs av <span data-co="name"></span> · org.nr <span data-co="orgnr"></span><br><span data-co="address"></span><br>Kontakt: <a data-co="email"></a><span data-row> · <span data-co="phone" data-optional></span></span></div>
@@ -148,7 +153,7 @@ footer a{color:#dbe3f5}
 </div>
 <div style="margin-top:14px">Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
 </div>
-<div class="sticky"><a class="btn y" data-buy href="#">Starta bevakning — 990 kr/mån →</a></div>
+<div class="sticky"><a class="btn y" data-buy href="#" data-t0="Starta bevakning — 990 kr/mån →">7 dagar gratis — sedan 990 kr/mån →</a></div>
 
 <script>
 const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -158,7 +163,10 @@ const mkr=v=>!v?'':v>=1e9?(v/1e9).toFixed(1).replace('.',',')+' mdr kr':v>=1e6?M
 const days=d=>{if(!d)return null;const x=Math.ceil((new Date(d)-new Date())/864e5);return x};
 // Buttons go straight to Stripe once the Payment Link is configured; otherwise to the pricing section.
 document.querySelectorAll('[data-buy]').forEach(a=>{if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
-if(CFG.trialDays===0)$('trialli').remove();else if(CFG.trialDays>0)$('trialli').textContent=`Prova gratis i ${CFG.trialDays} dagar`;
+// Trial wording follows config.js: removed when trialDays is 0, day count updated otherwise.
+const TD=Number.isInteger(CFG.trialDays)?CFG.trialDays:7;
+if(TD===0){$('trialli').remove();document.querySelectorAll('.trial-only').forEach(e=>e.remove());document.querySelectorAll('[data-t0]').forEach(e=>e.textContent=e.dataset.t0)}
+else{$('trialli').textContent=`Prova gratis i ${TD} dagar`;document.querySelectorAll('.td').forEach(e=>e.textContent=TD);document.querySelectorAll('.td1').forEach(e=>e.textContent=TD+1);document.querySelectorAll('[data-t0]').forEach(e=>e.textContent=e.textContent.replace(/\b7 dagar/,TD+' dagar'))}
 let L=[];
 function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
 function search(){
@@ -168,7 +176,7 @@ function search(){
   if(!words.length&&!lan){$('res').innerHTML='';return}
   $('res').innerHTML=`<div class="rhead"><div><div class="big">${fmt(hits.length)} öppna affärer</div><div class="meta">${value?'värda ca '+mkr(value)+' · ':''}${E(words.join(', ')||'alla branscher')} · ${E(lan||'hela Sverige')}</div></div></div>`+
    (hits.length?hits.slice(0,FREE).map(card).join(''):'<p class="meta">Inga öppna just nu — men nya publiceras varje dag. Starta bevakning så får du dem direkt.</p>')+
-   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><a class="btn y" href="${E(CFG.paymentLink||'#pris')}">Starta bevakning →</a></div></div></div>`:'');
+   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon. ${TD?`Prova ${TD} dagar gratis.`:''}</p><a class="btn y" href="${E(CFG.paymentLink||'#pris')}">Starta bevakning →</a></div></div></div>`:'');
   const top=hits.slice(0,4);$('mailn').textContent=`${hits.length} nya upphandlingar för dig`;$('mailq').textContent='Bevakning: '+(words.join(', ')||'alla')+' · '+(lan||'hela Sverige');$('mailrows').innerHTML=top.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');
 }
 $('go').onclick=search;$('q').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(search,250)});$('lan').onchange=search;
