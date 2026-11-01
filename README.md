@@ -20,7 +20,7 @@ Hela tjänsten körs utan egen server:
    STRIPE_SECRET_KEY=sk_test_... python scripts/stripe_setup.py --site https://<din-sajt> --trial-days 7
    ```
    Klistra in den utskrivna länken i `config.js`. Kör om med `sk_live_...` när du testat.
-   Aktivera kundportalen (Dashboard → Settings → Billing → Customer portal) och Stripe Tax/moms.
+   Aktivera kundportalen (Dashboard → Settings → Billing → Customer portal) Är du momsregistrerad: lägg in registreringen under Stripe → Tax och kör uppsättningen med moms ikryssat.
 3. **GitHub → Settings → Secrets and variables → Actions**
    - Secrets: `STRIPE_SECRET_KEY` (gärna en restricted key med läsrätt på Subscriptions, Customers, Checkout Sessions), `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`
    - Variables: `SITE_URL`, `PORTAL_URL`

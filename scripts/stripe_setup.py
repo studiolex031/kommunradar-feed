@@ -2,7 +2,7 @@
 
     STRIPE_SECRET_KEY=sk_test_... python scripts/stripe_setup.py --site https://kommunradar.se --trial-days 7
 
-Skapar (eller återanvänder): produkt, månadspris 990 kr exkl. moms, och en Payment Link där kunden
+Skapar (eller återanvänder): produkt, månadspris 990 kr (moms läggs bara på med --moms), och en Payment Link där kunden
 anger bevakningsord och län. Skriver ut länken — klistra in den i config.js.
 """
 import argparse, json, os, sys, urllib.error, urllib.parse, urllib.request
@@ -57,7 +57,7 @@ def main():
         price = call(key, 'prices', {'product': product, 'currency': 'sek', 'unit_amount': a.price_sek * 100,
                                      'recurring[interval]': 'month', 'tax_behavior': 'exclusive',
                                      'lookup_key': 'kommunradar_pro_monthly', 'transfer_lookup_key': 'true'})
-    print('Pris:', price['id'], f'{a.price_sek} kr/mån exkl. moms')
+    print('Pris:', price['id'], f'{a.price_sek} kr/mån' + (' + moms' if a.moms else ' (ingen moms)'))
 
     links = [l for l in call(key, 'payment_links', {'active': 'true', 'limit': 100}, 'GET')['data']
              if (l.get('metadata') or {}).get('app') == 'kommunradar' and (l.get('metadata') or {}).get('price') == price['id']
