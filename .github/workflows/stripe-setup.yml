@@ -1,0 +1,33 @@
+name: Stripe-uppsättning (kör manuellt)
+# Skapar produkt, pris och betallänk i Stripe med nyckeln i secret STRIPE_SECRET_KEY.
+# Säkert att köra flera gånger — befintliga saker återanvänds. Länken visas i körningens sammanfattning.
+on:
+  workflow_dispatch:
+    inputs:
+      price_sek:
+        description: 'Pris per månad i kronor'
+        default: '990'
+      trial_days:
+        description: 'Gratis provdagar (0 = ingen provperiod)'
+        default: '7'
+      require_terms:
+        description: 'Kunden måste godkänna villkoren i kassan (kräver villkors-URL i Stripe → Public details)'
+        type: boolean
+        default: true
+permissions: {contents: read}
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Skapa i Stripe
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          if [ -z "$STRIPE_SECRET_KEY" ]; then echo "::error::Lägg först in secret STRIPE_SECRET_KEY"; exit 1; fi
+          args="--site https://kommunradar.online --price-sek ${{ inputs.price_sek }} --trial-days ${{ inputs.trial_days }}"
+          if [ "${{ inputs.require_terms }}" = "true" ]; then args="$args --require-terms"; fi
+          python scripts/stripe_setup.py $args | tee out.txt
+          { echo '## Klart'; echo; echo 'Kopiera **Payment Link** nedan till `paymentLink` i config.js:'; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
