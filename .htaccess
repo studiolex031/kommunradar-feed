@@ -1,8 +1,8 @@
 # Kommunradar på Simply.com
-# Upphandlingsdatan uppdateras varje morgon — låt webbläsare alltid hämta senaste versionen.
-<Files "leads.json">
+# Upphandlingsdatan uppdateras varje morgon och config.js ändras ibland — låt webbläsare alltid hämta senaste versionen.
+<FilesMatch "^(leads\.json|config\.js)$">
   Header set Cache-Control "no-cache"
-</Files>
+</FilesMatch>
 # Den interna vyn ska inte publiceras.
 <Files "radar.html">
   Require all denied
