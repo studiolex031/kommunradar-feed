@@ -301,12 +301,20 @@ def winners_table(rows):
     return f'<h2>Leverantörer som vinner oftast</h2><div class="scroll"><table><thead><tr><th>Leverantör</th><th class="n">Tilldelningar</th></tr></thead><tbody>{trs}</tbody></table></div><p class="mut small">Bara bolag med tydlig bolagsform visas. Ramavtal kan ha flera vinnare.</p>'
 
 
+def winner_label(winners):
+    """Högst två bolagsnamn och antalet övriga vinnare, inklusive dem vi inte visar med namn."""
+    named = [w for w in winners if COMPANY.search(w)][:2]
+    hidden = len(winners) - len(named)
+    if not named:
+        return f"{hidden} vinnare" if hidden else "–"
+    return ", ".join(named) + (f" +{hidden}" if hidden else "")
+
+
 def recent_table(rows, n=8):
     rows = sorted((a for a in rows if a["pub"] and a["title"]), key=lambda a: a["pub"], reverse=True)[:n]
     trs = ""
     for a in rows:
-        named = [w for w in a["winners"] if COMPANY.search(w)]
-        who = ", ".join(named[:2]) + (f" +{len(a['winners']) - 2}" if len(a["winners"]) > 2 else "") if named else "–"
+        who = winner_label(a["winners"])
         trs += (f'<tr><td><a href="{TED_NOTICE}{esc(a["ref"])}" rel="nofollow noopener" target="_blank">{esc(a["title"])}</a><div class="mut small">{esc(a["buyer"])}</div></td>'
                 f'<td>{esc(who)}</td><td class="n">{"–" if a["bids"] is None else num(a["bids"])}</td><td class="n">{fdate(a["pub"])}</td></tr>')
     return f'<div class="scroll"><table><thead><tr><th>Upphandling</th><th>Vinnare</th><th class="n">Anbud</th><th class="n">Publicerad</th></tr></thead><tbody>{trs}</tbody></table></div>'
