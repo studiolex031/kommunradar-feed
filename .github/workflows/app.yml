@@ -1,0 +1,52 @@
+name: blueberry-app
+# Publicerar nedladdningssidan för appen Blueberry Station på kommunradar.online/app/ (Simply.com)
+# och lägger en länk till den på startsidan.
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", "scripts/link_app.py", ".github/workflows/app.yml"]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: blueberry-app, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Kontrollera appfilen
+        run: |
+          test -s app/blueberry-station.apk
+          python - <<'PY'
+          import json, zipfile
+          v = json.load(open("app/version.json"))
+          assert zipfile.is_zipfile("app/blueberry-station.apk"), "APK:n är trasig"
+          print("Version", v["version"], v["bytes"], "byte")
+          PY
+      - name: Startsidan – lägg till länk till appen
+        run: |
+          curl -fsSL "https://kommunradar.online/index.html?nocache=$GITHUB_RUN_ID" -o live.html
+          python scripts/link_app.py live.html index.out.html
+      - name: Publicera på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          sudo apt-get install -y -qq lftp
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            mkdir -p -f ${FTP_DIR}app; \
+            mirror -R --parallel=4 app ${FTP_DIR}app; \
+            put index.out.html -o ${FTP_DIR}index.html"
+      - name: Kontrollera att allt är ute
+        if: ${{ env.FTP_SERVER != '' }}
+        run: |
+          sleep 5
+          curl -fsS -o /dev/null -w "app/ %{http_code}\n" "https://kommunradar.online/app/?n=$GITHUB_RUN_ID"
+          curl -fsS -o /dev/null -w "apk %{http_code} %{size_download} byte %{content_type}\n" "https://kommunradar.online/app/blueberry-station.apk?n=$GITHUB_RUN_ID"
+          curl -fsS "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID" | grep -q "bb-app" && echo "länk på startsidan: ok"
