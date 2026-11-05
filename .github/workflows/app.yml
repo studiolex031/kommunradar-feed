@@ -49,4 +49,4 @@ jobs:
           sleep 5
           curl -fsS -o /dev/null -w "app/ %{http_code}\n" "https://kommunradar.online/app/?n=$GITHUB_RUN_ID"
           curl -fsS -o /dev/null -w "apk %{http_code} %{size_download} byte %{content_type}\n" "https://kommunradar.online/app/blueberry-station.apk?n=$GITHUB_RUN_ID"
-          curl -fsS "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID" | grep -q "bb-app" && echo "länk på startsidan: ok"
+          curl -fsS "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID" | grep -q "id=\"blueberry\"" && echo "presentationen på startsidan: ok"
