@@ -3,3 +3,4 @@ __pycache__/
 prev.json
 dist/
 atlas/data/
+vinnar-leads*.csv

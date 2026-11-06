@@ -115,5 +115,48 @@ class DigestTest(unittest.TestCase):
         self.assertEqual(digest.read_answers([{"key": "x", "label": {"custom": "Län"}, "text": {"value": "hela sverige"}}]), {"lan": "alla"})
 
 
+class OnboardingTest(unittest.TestCase):
+    import datetime as _dt
+    start = int(_dt.datetime(2026, 11, 6, 14, 0, tzinfo=_dt.timezone.utc).timestamp())
+
+    def sub(self, **kw):
+        return {"email": "a@b.se", "keywords": "", "lan": "alla", "status": "trialing", "trial_start": self.start, **kw}
+
+    def test_right_mail_on_day_1_3_6_and_none_otherwise(self):
+        import datetime as dt
+        day = lambda n: digest.onboarding_mail(self.sub(), dt.date(2026, 11, 6) + dt.timedelta(days=n))
+        self.assertIn("Välkommen", day(1)[0])
+        self.assertIn("rätt upphandlingar", day(3)[0])
+        self.assertIn("slutar i morgon", day(6)[0])
+        for n in (0, 2, 4, 5, 7, 8): self.assertIsNone(day(n))
+
+    def test_paying_or_cancelled_customers_get_no_trial_mail(self):
+        import datetime as dt
+        for status in ("active", "canceled", "past_due"):
+            self.assertIsNone(digest.onboarding_mail(self.sub(status=status), dt.date(2026, 11, 12)))
+        self.assertIsNone(digest.onboarding_mail(self.sub(trial_start=None), dt.date(2026, 11, 7)))
+
+    def test_portal_link_only_when_set(self):
+        import datetime as dt
+        self.assertIn("här: https://portal", digest.onboarding_mail(self.sub(), dt.date(2026, 11, 12), "https://portal")[1])
+        self.assertNotIn("{portal}", digest.onboarding_mail(self.sub(), dt.date(2026, 11, 12))[1])
+
+    def test_trial_mail_sent_even_without_new_leads(self):
+        from unittest import mock
+        import datetime as dt
+        smtp = mock.MagicMock()
+        fixed = dt.datetime(2026, 11, 7, 6, 0, tzinfo=dt.timezone.utc)
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": "sk_test_x"}), mock.patch.object(sys, "argv", ["digest.py"]), \
+                mock.patch("digest.new_leads", return_value=[]), mock.patch("builtins.open", mock.mock_open(read_data='{"leads": []}')), \
+                mock.patch("digest.smtp_connect", return_value=smtp), mock.patch("sys.stdout"), \
+                mock.patch("digest.subscribers", return_value=iter([self.sub()])), \
+                mock.patch("digest.dt.datetime", wraps=dt.datetime) as clock:
+            clock.now.return_value = fixed
+            digest.main()
+        self.assertEqual(smtp.send_message.call_count, 1)
+        msg = smtp.send_message.call_args[0][0]
+        self.assertIn("Välkommen", msg["Subject"]); self.assertEqual(msg["Reply-To"], "hej@kommunradar.online")
+
+
 if __name__ == "__main__":
     unittest.main()

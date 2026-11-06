@@ -1,0 +1,31 @@
+name: vinnar-leads
+# Mejlar varje vardagsmorgon en lista med bolag som nyss vunnit en svensk upphandling och deras kontaktadress i TED.
+# Listan innehåller kontaktuppgifter och publiceras därför aldrig här (repot är publikt), den går bara till REPORT_TO.
+on:
+  schedule: [{cron: "30 5 * * 1-5"}]
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Antal dagar bakåt'
+        default: '3'
+permissions: {contents: read}
+jobs:
+  leads:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Hämta och mejla
+        env:
+          DAYS: ${{ inputs.days || '3' }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          [[ "$DAYS" =~ ^[0-9]+$ ]] || { echo "::error::days måste vara ett heltal"; exit 1; }
+          if [ -z "$REPORT_TO" ]; then echo "::error::Lägg in secret REPORT_TO (din e-post)"; exit 1; fi
+          python scripts/winner_leads.py --days "$DAYS" --mail

@@ -5,7 +5,8 @@ Operatören kan skriva över per kund med metadata på prenumerationen: keywords
 
   python digest.py --prev prev.json            # skickar mejl
   python digest.py --prev prev.json --dry-run  # visar vad som skulle skickas
-Miljö: STRIPE_SECRET_KEY, SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_FROM, SITE_URL, PORTAL_URL
+Miljö: STRIPE_SECRET_KEY, SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_FROM, SITE_URL, PORTAL_URL,
+REPLY_TO (standard hej@kommunradar.online)
 """
 import os, re, sys, ssl, json, html, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
 from email.message import EmailMessage
@@ -56,7 +57,8 @@ def subscribers():
                 email = customer.get("email") or (sessions[0].get("customer_details") or {}).get("email") if sessions else customer.get("email")
                 if email:
                     yield {"email": email, "keywords": meta.get("keywords") or answers.get("bevakning", ""),
-                           "lan": meta.get("lan") or answers.get("lan", "alla")}
+                           "lan": meta.get("lan") or answers.get("lan", "alla"),
+                           "status": sub.get("status") or status, "trial_start": sub.get("trial_start")}
             if not page.get("has_more"): break
             after = page["data"][-1]["id"]
 
@@ -127,6 +129,43 @@ def render(leads, sub, site, portal):
 {f'<a href="{portal}" style="color:#94a3b8">Hantera prenumeration</a>' if portal else ''}</p></div>"""
 
 
+# Provperioden: tre korta mejl till den som testar. Dagen räknas från provperiodens start; morgonkörningen dagen
+# efter registreringen är dag 1. Bara prenumerationer som fortfarande provar får mejlen, så den som redan har
+# betalat får aldrig "testet slutar i morgon". Ingen egen databas behövs: dagen avgör vilket mejl som går ut.
+SIGNATURE = "\n\nAlexander Pålsson\nKommunradar.online"
+ONBOARDING = {
+    1: ("Välkommen till Kommunradar – så får du träffar som passar",
+        "Hej,\n\nTack för att du testar Kommunradar. Varje morgon får du ett mejl med nya offentliga upphandlingar "
+        "från TED som matchar dina bevakningsord och ditt län.\n\nTre saker som ger bättre träffar:\n"
+        "1. Använd ord som köpare skriver, till exempel \"lokalvård\" i stället för \"städfirma\".\n"
+        "2. Lägg till 3–5 varianter av samma tjänst.\n"
+        "3. Välj gärna fler län än ditt eget. Många små bolag vinner affärer i grannlänen.\n\n"
+        "Svara på det här mejlet så justerar jag dina bevakningar personligen." + SIGNATURE),
+    3: ("Får du rätt upphandlingar?",
+        "Hej,\n\nDu har nu fått Kommunradar i några dagar. Är träffarna relevanta för er?\n\n"
+        "Svara med ett ord så justerar jag:\n\"Bra\" om allt fungerar.\n"
+        "\"För många\" om det kommer upphandlingar ni aldrig skulle lämna anbud på.\n"
+        "\"För få\" om det är tyst och ni vill bredda ord eller län.\n\nJag läser varje svar själv." + SIGNATURE),
+    6: ("Ditt test av Kommunradar slutar i morgon",
+        "Hej,\n\nDitt gratistest av Kommunradar slutar i morgon. Därefter kostar det 990 kr/mån. Det finns ingen "
+        "bindningstid och ingen moms tillkommer, så du kan avsluta när du vill{portal}.\n\n"
+        "Om det inte har gett något ännu vill jag gärna veta varför. Svara med en rad, så ser jag om det går att "
+        "lösa innan testet tar slut." + SIGNATURE),
+}
+
+
+def onboarding_mail(sub, today, portal=""):
+    """(subject, text) for this morning's trial mail, or None. today is a datetime.date."""
+    start = sub.get("trial_start")
+    if sub.get("status") != "trialing" or not start:
+        return None
+    day = (today - dt.datetime.fromtimestamp(int(start), dt.timezone.utc).date()).days
+    if day not in ONBOARDING:
+        return None
+    subject, text = ONBOARDING[day]
+    return subject, text.replace("{portal}", f" här: {portal}" if portal else "")
+
+
 def smtp_connect():
     smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
     smtp.starttls(context=ssl.create_default_context())
@@ -164,13 +203,29 @@ def main():
     if not dry and not os.environ.get("STRIPE_SECRET_KEY"):
         # Fail so the workflow stops before committing leads.json — otherwise these leads would never be sent.
         sys.exit("STRIPE_SECRET_KEY saknas; avbryter utan att markera upphandlingarna som skickade.")
-    if not leads or not os.environ.get("STRIPE_SECRET_KEY"):
-        print("Inget att skicka (inga nya upphandlingar eller ingen STRIPE_SECRET_KEY)."); return
+    if not os.environ.get("STRIPE_SECRET_KEY"):
+        print("Inget att skicka (ingen STRIPE_SECRET_KEY)."); return
+    subs = list(subscribers())
+    today = dt.datetime.now(dt.timezone.utc).date()
+    welcome = [(s, m) for s in subs if (m := onboarding_mail(s, today, portal))]
+    if not leads and not welcome:
+        print("Inget att skicka (inga nya upphandlingar och inga mejl till provkunder)."); return
     smtp = None
     if not dry:
         smtp = smtp_connect()
+    reply_to = os.environ.get("REPLY_TO", "hej@kommunradar.online")
     sent = 0
-    for sub in subscribers():
+    for sub, (subject, text) in welcome:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
+        if reply_to: msg["Reply-To"] = reply_to
+        msg.set_content(text)
+        if dry: print(f"[dry-run] provmejl till {sub['email']}: {subject}")
+        else: smtp.send_message(msg)
+        sent += 1
+    for sub in subs:
+        if not leads: break
         hits = [l for l in leads if matches(l, keywords(sub["keywords"]), sub["lan"])]
         if not hits: continue
         for start in range(0, len(hits), MAX_PER_MAIL):  # every match is delivered, MAX_PER_MAIL per message
@@ -178,6 +233,7 @@ def main():
             msg = EmailMessage()
             msg["Subject"] = f"{len(batch)} nya upphandlingar: {batch[0]['title'][:60]}"
             msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
+            if reply_to: msg["Reply-To"] = reply_to
             msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch))
             msg.add_alternative(render(batch, sub, site, portal), subtype="html")
             if dry: print(f"[dry-run] {sub['email']}: {len(batch)} träffar")
