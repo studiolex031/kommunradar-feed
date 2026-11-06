@@ -9,7 +9,7 @@ att committas eller laddas upp som artefakt. Storbolag och koncerner filtreras b
 adressen är generisk (info@, kontakt@ …) eller personlig, så att den som skickar kan välja rättslig grund.
 Endast standardbiblioteket.
 """
-import csv, io, json, os, re, smtplib, ssl, sys, time, urllib.error, urllib.request
+import csv, html, io, json, os, re, smtplib, ssl, sys, time, urllib.error, urllib.request
 from datetime import date, timedelta
 from email.message import EmailMessage
 
@@ -26,7 +26,7 @@ GENERIC = re.compile(r"^(info|kontakt|contact|hej|hello|post|mail|order|offert|a
 # Bolag som redan har egna anbudsavdelningar och inte är målgruppen (5–150 anställda).
 BIG = re.compile(r"\b(peab|ncc|skanska|veidekke|jm|svevia|ramboll|sweco|wsp|afry|tyréns|iss|sodexo|compass|coor|"
                  r"samhall|forenede|stena|ragn-sells|prezero|ab volvo|scania|siemens|atea|tietoevry|cgi|telia|"
-                 r"tele2|vattenfall|eon|e\.on|fortum|securitas|g4s|avarn|bravida|caverion|instalco|assemblin)\b", re.I)
+                 r"tele2|vattenfall|eon|e\.on|fortum|attendo|azets|omexom|ge healthcare|securitas|g4s|avarn|bravida|caverion|instalco|assemblin)\b", re.I)
 
 
 def fetch(query, page=1, limit=100):
@@ -47,7 +47,13 @@ def values(v):
         v = v.get("swe") or v.get("eng") or next(iter(v.values()), [])
     if not isinstance(v, list):
         v = [v] if v else []
-    return [str(x).strip() for x in v if str(x or "").strip()]
+    return [html.unescape(str(x)).strip() for x in v if str(x or "").strip()]
+
+
+def clean_title(t):
+    """TED titles read "Sverige – <CPV-rubrik> – <titel>"; keep the procurement's own title."""
+    parts = t.split(" – ", 2)
+    return parts[-1].strip() if t.startswith("Sverige – ") and len(parts) == 3 else t.strip()
 
 
 def norm(name):
@@ -75,7 +81,7 @@ def rows_from_notice(n):
         if not c or "@" not in c["email"] or BIG.search(w): continue
         local = c["email"].split("@")[0]
         out.append({"bolag": w, "epost": c["email"], "adresstyp": "generisk" if GENERIC.match(local) else "personlig",
-                    "ort": c["city"], "webb": c["web"], "upphandling": (values(n.get("notice-title")) or [""])[0][:140],
+                    "ort": c["city"], "webb": c["web"], "upphandling": clean_title((values(n.get("notice-title")) or [""])[0])[:140],
                     "kopare": (values(n.get("buyer-name")) or [""])[0], "lan": LAN.get((values(n.get("buyer-country-sub")) or [""])[0], ""),
                     "bransch": CPV.get(cpv[:2], ""), "anbud": max(bids) if bids else "",
                     "vinnare": len(winners), "ted": n.get("publication-number", ""),

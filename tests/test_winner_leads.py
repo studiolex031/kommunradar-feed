@@ -29,6 +29,15 @@ class WinnerLeadsTest(unittest.TestCase):
         n = {**NOTICE, "organisation-email-tenderer": ["marika.jernberg@ncleanfacility.se", "x@samhall.se", "-"]}
         self.assertEqual(wl.rows_from_notice(n)[0]["adresstyp"], "personlig")
 
+    def test_unescapes_names_and_strips_ted_title_prefix(self):
+        n = {**NOTICE, "notice-title": {"swe": ["Sverige – Grus, sand – Grus &amp; massor Falköping"]},
+             "winner-name": {"swe": ["Ramseruds Grus &amp; Åkeri AB"]},
+             "organisation-name-tenderer": {"swe": ["Ramseruds Grus &amp; Åkeri AB"]},
+             "organisation-email-tenderer": ["info@ramserudsgrus.se"], "organisation-city-tenderer": ["Säffle"]}
+        r = wl.rows_from_notice(n)[0]
+        self.assertEqual((r["bolag"], r["upphandling"]), ("Ramseruds Grus & Åkeri AB", "Grus & massor Falköping"))
+        self.assertEqual(wl.clean_title("Lokalvård skolor"), "Lokalvård skolor")
+
     def test_csv_has_header_even_when_empty(self):
         self.assertTrue(wl.to_csv([]).startswith("bolag"))
         self.assertIn("ncleanfacility", wl.to_csv(wl.rows_from_notice(NOTICE)))
