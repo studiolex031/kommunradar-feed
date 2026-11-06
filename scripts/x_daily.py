@@ -20,6 +20,7 @@ CTA = "Få nya upphandlingar i inkorgen varje morgon. 7 dagar gratis, ingen bind
 
 
 def kort_datum(iso):
+    """ISO-datum till kort svensk form, t.ex. '5 nov'."""
     try:
         d = date.fromisoformat(iso[:10])
     except ValueError:
@@ -49,11 +50,13 @@ def pick(leads, today):
 
 
 def tweet_length(text):
+    """Längd som X räknar den: varje länk räknas som 23 tecken."""
     words = text.split()
     return len(text) - sum(len(w) - URL_LEN for w in words if w.startswith("http"))
 
 
 def compose(p, url):
+    """Inläggstext inom 280 tecken; kortar titlar och antal punkter tills den får plats."""
     plats = f"i {p['focus']}" if p["kind"] == "lan" else f"inom {p['focus'].lower()}"
     head = f"{p['n']} nya offentliga upphandlingar {plats} publicerades {kort_datum(p['day'])}. Bland dem:"
     for n_items, cut in ((3, 60), (3, 42), (2, 42), (2, 30), (1, 40)):
@@ -69,6 +72,7 @@ def compose(p, url):
 
 
 def ad_copy(p):
+    """Tre annonstexter för att marknadsföra dagens inlägg."""
     plats = p["focus"] if p["kind"] == "lan" else p["focus"].lower()
     return [f"{p['total']} nya offentliga upphandlingar på en dag. Missar du dem i {plats}? Kommunradar mejlar dig varje morgon. 7 dagar gratis.",
             f"Sluta leta i upphandlingsportaler. Välj bevakningsord och län, få nya upphandlingar i inkorgen. 990 kr/mån, ingen bindningstid.",
@@ -76,6 +80,7 @@ def ad_copy(p):
 
 
 def card_html(p, w, h):
+    """HTML för bilden i sajtens stil, w x h pixlar."""
     rows = "".join(f"<li><b>{html.escape(l['title'][:70])}</b><span>{html.escape(l.get('buyer', '')[:48])}"
                    f"{' · sista dag ' + kort_datum(l['deadline']) if l.get('deadline') else ''}</span></li>"
                    for l in p["items"][:3 if h < w else 5])
@@ -111,6 +116,7 @@ li span{{color:var(--mut);font-size:{21 if sq else 19}px}}
 
 
 def render(p, out):
+    """Renderar bilderna med Playwright; returnerar [post.png, annons-kvadrat.png]."""
     from playwright.sync_api import sync_playwright
     paths = []
     with sync_playwright() as pw:
@@ -128,6 +134,7 @@ def render(p, out):
 
 # --- X API (OAuth 1.0a) ---------------------------------------------------------------------------
 def q(s):
+    """Procentkodning enligt OAuth 1.0a (RFC 3986)."""
     return urllib.parse.quote(str(s), safe="~-._")
 
 
@@ -145,11 +152,13 @@ def oauth_header(method, url, params, keys, nonce=None, ts=None):
 
 
 def x_keys():
+    """Kontots fyra X-nycklar från miljön, eller None om någon saknas."""
     k = [os.environ.get(n, "") for n in ("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_SECRET")]
     return tuple(k) if all(k) else None
 
 
 def x_request(method, url, keys, body=None, content_type=None, params=None):
+    """Signerat anrop mot X API; returnerar JSON-svaret."""
     full = url + ("?" + urllib.parse.urlencode(params) if params else "")
     req = urllib.request.Request(full, data=body, method=method,
                                  headers={"Authorization": oauth_header(method, url, params or {}, keys)})
@@ -160,6 +169,7 @@ def x_request(method, url, keys, body=None, content_type=None, params=None):
 
 
 def upload_image(path, keys):
+    """Laddar upp en PNG via X API v2 och returnerar media-id."""
     boundary = secrets.token_hex(12)
     data = open(path, "rb").read()
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"media_category\"\r\n\r\ntweet_image\r\n"
@@ -170,6 +180,7 @@ def upload_image(path, keys):
 
 
 def post(text, image, keys):
+    """Postar inlägget med bild (utan bild om uppladdningen misslyckas); returnerar inläggets id."""
     payload = {"text": text}
     try:
         payload["media"] = {"media_ids": [upload_image(image, keys)]}
@@ -180,6 +191,7 @@ def post(text, image, keys):
 
 
 def mail(subject, text, attachments):
+    """Mejlar till REPORT_TO via SMTP-hemligheterna, med PNG-bilagor."""
     msg = EmailMessage()
     msg["Subject"], msg["To"] = subject, os.environ["REPORT_TO"]
     msg["From"] = os.environ.get("MAIL_FROM", os.environ["SMTP_USER"])
@@ -192,6 +204,7 @@ def mail(subject, text, attachments):
 
 
 def main():
+    """Bygger dagens inlägg, postar det och mejlar annonsmaterialet."""
     dry = "--dry-run" in sys.argv
     leads = json.load(open(os.path.join(ROOT, "leads.json"), encoding="utf-8"))["leads"]
     p = pick(leads, date.today())
@@ -217,6 +230,8 @@ def main():
                  "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).", images)
         except Exception as e:
             print(f"::warning::Mejlet misslyckades ({e})")
+            if not keys:  # utan X är mejlet enda leveransen: låt jobbet fallera så dagen inte markeras som klar
+                raise
 
 
 if __name__ == "__main__":

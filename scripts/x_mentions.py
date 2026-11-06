@@ -13,6 +13,7 @@ STATE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def format_mentions(resp):
+    """Ett textblock per omnämnande: användare, tid, text och länk."""
     users = {u["id"]: u["username"] for u in resp.get("includes", {}).get("users", [])}
     lines = []
     for t in resp.get("data", []):
@@ -23,6 +24,7 @@ def format_mentions(resp):
 
 
 def main():
+    """Hämtar nya omnämnanden sedan förra körningen och mejlar dem till REPORT_TO."""
     keys = x_keys()
     if not keys:
         print("X-nycklar saknas, hoppar över"); return
