@@ -1,0 +1,31 @@
+name: x-omnamnanden
+# Varannan timme på vardagar: nya omnämnanden av kontot mejlas till REPORT_TO. Inget besvaras automatiskt.
+on:
+  schedule: [{cron: "17 6-16/2 * * 1-5"}]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: x-omnamnanden, cancel-in-progress: false}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/cache/restore@v4
+        with: {path: x-state.json, key: "x-state-${{ github.run_id }}", restore-keys: "x-state-"}
+      - env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+        run: python scripts/x_mentions.py
+      - if: ${{ hashFiles('x-state.json') != '' }}
+        uses: actions/cache/save@v4
+        with: {path: x-state.json, key: "x-state-${{ github.run_id }}"}

@@ -4,3 +4,6 @@ prev.json
 dist/
 atlas/data/
 vinnar-leads*.csv
+x-out/
+x-posted/
+x-state.json

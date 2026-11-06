@@ -1,0 +1,47 @@
+name: x-dagligt
+# Ett eget inlägg på X varje vardag (07:41 vintertid) från färsk leads.json, plus annonsmaterial till REPORT_TO.
+# Saknas X-nycklarna byggs och mejlas inlägget men postas inte.
+on:
+  schedule: [{cron: "41 6 * * 1-5"}]
+  workflow_dispatch:
+    inputs:
+      dry_run: {description: "Bara bygg, posta och mejla inget", type: boolean, default: false}
+permissions: {contents: read}
+concurrency: {group: x-dagligt, cancel-in-progress: false}
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - id: today
+        run: echo "d=$(date +%F)" >> "$GITHUB_OUTPUT"
+      - name: Redan postat i dag?
+        id: done
+        uses: actions/cache/restore@v4
+        with: {path: x-posted, key: "x-posted-${{ steps.today.outputs.d }}"}
+      - name: Installera bildrendering
+        if: ${{ steps.done.outputs.cache-hit != 'true' }}
+        run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Bygg och posta
+        if: ${{ steps.done.outputs.cache-hit != 'true' }}
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: python scripts/x_daily.py ${{ inputs.dry_run && '--dry-run' || '' }}
+      - name: Markera dagen som postad
+        if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
+        run: mkdir -p x-posted && date > x-posted/at
+      - if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
+        uses: actions/cache/save@v4
+        with: {path: x-posted, key: "x-posted-${{ steps.today.outputs.d }}"}

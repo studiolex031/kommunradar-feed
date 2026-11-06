@@ -13,6 +13,8 @@ Hela tjänsten körs utan egen server:
 | `radar.html` | Den tidigare interna vyn (Peppol-poäng), oförändrad |
 | Provmejl | `digest.py` mejlar den som provar dag 1 (välkommen och tips), dag 3 (får du rätt träffar?) och dag 6 (testet slutar i morgon). Bara prenumerationer som fortfarande provar får mejlen. Svar går till `REPLY_TO` (standard hej@kommunradar.online) |
 | `scripts/winner_leads.py` | Säljleads: bolag som nyss vann en svensk upphandling, med kontaktadressen de angav i TED. Workflowen *vinnar-leads* mejlar listan till secret `REPORT_TO` varje vardag 06:30. Listan checkas aldrig in, eftersom repot är publikt |
+| `scripts/x_daily.py` | Ett eget X-inlägg varje vardag 07:41 (workflow *x-dagligt*): gårdagens nya upphandlingar i ett län eller en bransch, med bild i sajtens stil (1200×675 och 1080×1080 för annons). Postar om secrets `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_SECRET` finns, och mejlar inlägg, bilder och annonstexter till `REPORT_TO` |
+| `scripts/x_mentions.py` | Varannan timme på vardagar (workflow *x-omnamnanden*): nya omnämnanden av kontot mejlas till `REPORT_TO`. Svarar aldrig själv, eftersom X sedan feb 2026 stoppar automatiska svar och varje svar ska godkännas |
 
 ## Lansera (ca 20 min)
 
