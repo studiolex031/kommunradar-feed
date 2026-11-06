@@ -11,6 +11,8 @@ Hela tjänsten körs utan egen server:
 | Stripe Payment Link | Prenumerationen. Kunden anger bevakningsord och län i kassan. **Stripe är kundregistret.** |
 | `digest.py` | Körs varje morgon av GitHub Actions: hittar nya upphandlingar och mejlar varje aktiv prenumerant och provprenumerant sina träffar |
 | `radar.html` | Den tidigare interna vyn (Peppol-poäng), oförändrad |
+| Provmejl | `digest.py` mejlar den som provar dag 1 (välkommen och tips), dag 3 (får du rätt träffar?) och dag 6 (testet slutar i morgon). Bara prenumerationer som fortfarande provar får mejlen. Svar går till `REPLY_TO` (standard hej@kommunradar.online) |
+| `scripts/winner_leads.py` | Säljleads: bolag som nyss vann en svensk upphandling, med kontaktadressen de angav i TED. Workflowen *vinnar-leads* mejlar listan till secret `REPORT_TO` varje vardag 06:30. Listan checkas aldrig in, eftersom repot är publikt |
 
 ## Lansera (ca 20 min)
 
