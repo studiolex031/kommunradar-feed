@@ -211,9 +211,12 @@ def main():
     print(status)
     if os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST"):
         ads = "\n".join(f"{i}. {a}" for i, a in enumerate(ad_copy(p), 1))
-        mail(f"Kommunradar på X: {p['n']} nya {'i ' + p['focus'] if p['kind'] == 'lan' else 'inom ' + p['focus'].lower()}",
-             f"Dagens inlägg, {status}\n\n{text}\n\n--- Annonstexter (för att marknadsföra inlägget eller köra som annons) ---\n{ads}\n\n"
-             "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).", images)
+        try:  # ett mejlfel får inte fälla jobbet efter postning, annars postas samma dag igen vid omkörning
+            mail(f"Kommunradar på X: {p['n']} nya {'i ' + p['focus'] if p['kind'] == 'lan' else 'inom ' + p['focus'].lower()}",
+                 f"Dagens inlägg, {status}\n\n{text}\n\n--- Annonstexter (för att marknadsföra inlägget eller köra som annons) ---\n{ads}\n\n"
+                 "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).", images)
+        except Exception as e:
+            print(f"::warning::Mejlet misslyckades ({e})")
 
 
 if __name__ == "__main__":

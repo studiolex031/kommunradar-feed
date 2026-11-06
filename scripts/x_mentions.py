@@ -28,18 +28,32 @@ def main():
         print("X-nycklar saknas, hoppar över"); return
     state = json.load(open(STATE)) if os.path.exists(STATE) else {}
     uid = state.get("user_id") or x_request("GET", "https://api.x.com/2/users/me", keys)["data"]["id"]
-    params = {"max_results": "50", "tweet.fields": "author_id,created_at", "expansions": "author_id",
-              "user.fields": "username"}
-    if state.get("since_id"):
-        params["since_id"] = state["since_id"]
-    resp = x_request("GET", f"https://api.x.com/2/users/{uid}/mentions", keys, params=params)
-    lines = format_mentions(resp)
-    newest = resp.get("meta", {}).get("newest_id") or state.get("since_id")
-    if lines and state.get("since_id"):  # första körningen sätter bara startpunkten
+    lines, newest = fetch_all(uid, keys, state.get("since_id"))
+    newest = newest or state.get("since_id")
+    if lines and state.get("started"):  # allra första körningen sätter bara startpunkten
         mail(f"X-omnämnande: {len(lines)} nya att svara på",
              "Nya omnämnanden av Kommunradar på X. Svara från appen; inget besvaras automatiskt.\n\n" + "\n".join(lines), [])
-    json.dump({"user_id": uid, "since_id": newest}, open(STATE, "w"))
+    json.dump({"user_id": uid, "since_id": newest, "started": True}, open(STATE, "w"))
     print(f"{len(lines)} nya omnämnanden")
+
+
+def fetch_all(uid, keys, since_id, max_pages=10, request=None):
+    """Alla sidor sedan since_id; newest_id från första sidan (den nyaste). Högst max_pages sidor per körning."""
+    request = request or x_request
+    params = {"max_results": "50", "tweet.fields": "author_id,created_at", "expansions": "author_id",
+              "user.fields": "username"}
+    if since_id:
+        params["since_id"] = since_id
+    lines, newest = [], None
+    for _ in range(max_pages):
+        resp = request("GET", f"https://api.x.com/2/users/{uid}/mentions", keys, params=params)
+        lines += format_mentions(resp)
+        meta = resp.get("meta", {})
+        newest = newest or meta.get("newest_id")
+        if not meta.get("next_token"):
+            break
+        params = {**params, "pagination_token": meta["next_token"]}
+    return lines, newest
 
 
 if __name__ == "__main__":

@@ -56,5 +56,17 @@ class XMentionsTest(unittest.TestCase):
         self.assertEqual(lines, ["@byggare (2026-11-06 09:12):\nFunkar det för Gotland?\nhttps://x.com/byggare/status/9\n"])
 
 
+    def test_fetch_all_follows_pages_and_keeps_newest_from_first_page(self):
+        pages = [{"data": [{"id": "30", "author_id": "1", "text": "a"}], "includes": {"users": [{"id": "1", "username": "u"}]},
+                  "meta": {"newest_id": "30", "next_token": "p2"}},
+                 {"data": [{"id": "20", "author_id": "1", "text": "b"}], "includes": {"users": [{"id": "1", "username": "u"}]},
+                  "meta": {"newest_id": "20"}}]
+        seen = []
+        def fake(method, url, keys, params=None):
+            seen.append(params.get("pagination_token")); return pages[len(seen) - 1]
+        lines, newest = xm.fetch_all("9", None, "10", request=fake)
+        self.assertEqual((len(lines), newest, seen), (2, "30", [None, "p2"]))
+
+
 if __name__ == "__main__":
     unittest.main()
