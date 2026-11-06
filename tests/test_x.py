@@ -34,6 +34,10 @@ class XDailyTest(unittest.TestCase):
         self.assertIn("7 dagar gratis", text)
         self.assertIn("6 nya offentliga upphandlingar i Skåne publicerades 5 nov", text)
 
+    def test_tweet_length_weights_like_x(self):
+        self.assertEqual(xd.tweet_length("• a… https://kommunradar.online/?utm=x"), 30)
+        self.assertEqual(xd.tweet_length("Västra Götaland"), 15)
+
     def test_card_escapes_titles(self):
         p = xd.pick([lead(1, "Skåne", "Bygg & anläggning", title="<script>x</script>")] * 2, date.fromordinal(738000))
         self.assertNotIn("<script>x", xd.card_html(p, 1200, 675))

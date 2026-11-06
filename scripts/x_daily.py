@@ -8,7 +8,7 @@ Postning: X API v2 med OAuth 1.0a (kontots egna nycklar). Endast egna inlägg, a
 eftersom X sedan feb 2026 bara tillåter automatiska svar till den som själv nämnt kontot.
 Bildrendering kräver Playwright (installeras i workflowen); resten är standardbiblioteket.
 """
-import base64, hashlib, hmac, html, json, os, secrets, smtplib, ssl, sys, time, urllib.parse, urllib.request
+import base64, hashlib, hmac, html, json, os, re, secrets, smtplib, ssl, sys, time, urllib.parse, urllib.request
 from collections import Counter
 from datetime import date
 from email.message import EmailMessage
@@ -50,9 +50,16 @@ def pick(leads, today):
 
 
 def tweet_length(text):
-    """Längd som X räknar den: varje länk räknas som 23 tecken."""
-    words = text.split()
-    return len(text) - sum(len(w) - URL_LEN for w in words if w.startswith("http"))
+    """Längd som X räknar den: länkar 23 tecken, tecken utanför X:s "smala" intervall (t.ex. • och …) räknas dubbelt."""
+    n = 0
+    for w in re.split(r"(\s+)", text):
+        if w.startswith("http"):
+            n += URL_LEN
+            continue
+        for ch in w:
+            c = ord(ch)
+            n += 1 if c <= 4351 or 8192 <= c <= 8205 or 8208 <= c <= 8223 or 8242 <= c <= 8247 else 2
+    return n
 
 
 def compose(p, url):
@@ -222,6 +229,8 @@ def main():
         tid = post(text, images[0], keys)
         status = f"postat: https://x.com/i/web/status/{tid}"
     print(status)
+    if not keys and not (os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST")):
+        raise SystemExit("Varken X-nycklar eller REPORT_TO/SMTP_HOST finns: inget att leverera till")
     if os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST"):
         ads = "\n".join(f"{i}. {a}" for i, a in enumerate(ad_copy(p), 1))
         try:  # ett mejlfel får inte fälla jobbet efter postning, annars postas samma dag igen vid omkörning
