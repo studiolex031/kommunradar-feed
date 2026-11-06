@@ -48,6 +48,25 @@ class WinnerLeadsTest(unittest.TestCase):
              "organisation-email-tenderer": ["info@ab-ett.se", "info@ab-tva.se"], "organisation-city-tenderer": ["X", "Y"]}
         self.assertEqual(wl.rows_from_notice(n), [])
 
+    def test_colliding_tenderers_with_same_email_get_no_contact(self):
+        n = {**NOTICE, "winner-name": {"swe": ["A &amp; B AB"]},
+             "organisation-name-tenderer": {"swe": ["A &amp; B AB", "A B AB"]},
+             "organisation-email-tenderer": ["info@ab.se", "info@ab.se"], "organisation-city-tenderer": ["X", "Y"]}
+        self.assertEqual(wl.rows_from_notice(n), [])
+
+    def test_colliding_winners_with_one_tenderer_contact_get_no_contact(self):
+        n = {**NOTICE, "winner-name": {"swe": ["A &amp; B AB", "A B AB"]},
+             "organisation-name-tenderer": {"swe": ["A &amp; B AB"]},
+             "organisation-email-tenderer": ["info@ab-ett.se"], "organisation-city-tenderer": ["X"]}
+        self.assertEqual(wl.rows_from_notice(n), [])
+
+    def test_same_company_listed_twice_identically_keeps_contact(self):
+        n = {**NOTICE, "winner-name": {"swe": ["Nytorget Clean & Facility AB"]},
+             "organisation-name-tenderer": {"swe": ["Nytorget Clean & Facility AB", "NYTORGET CLEAN & FACILITY AB"]},
+             "organisation-email-tenderer": ["info@ncleanfacility.se", "info@ncleanfacility.se"],
+             "organisation-city-tenderer": ["Skarpnäck", "Skarpnäck"]}
+        self.assertEqual(wl.rows_from_notice(n)[0]["epost"], "info@ncleanfacility.se")
+
     def test_csv_has_header_even_when_empty(self):
         self.assertTrue(wl.to_csv([]).startswith("bolag"))
         self.assertIn("ncleanfacility", wl.to_csv(wl.rows_from_notice(NOTICE)))

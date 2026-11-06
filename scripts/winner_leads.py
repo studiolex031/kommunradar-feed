@@ -67,18 +67,22 @@ def rows_from_notice(n):
     names, emails = values(n.get("organisation-name-tenderer"), True), values(n.get("organisation-email-tenderer"))
     cities, webs = values(n.get("organisation-city-tenderer")), values(n.get("organisation-internet-address-tenderer"))
     # Tenderer fields are parallel lists; pair by position only when they line up, otherwise trust nothing.
-    contact, ambiguous = {}, set()
+    contact, spelled = {}, {}
     if names and len(names) == len(emails):
         for i, name in enumerate(names):
             key, entry = norm(name), {"email": emails[i].lower(),
                                       "city": cities[i] if len(cities) == len(names) else "",
                                       "web": webs[i] if len(webs) == len(names) else ""}
-            # Two different companies with the same key ("A & B AB" / "A B AB"): trust neither address.
-            if key in contact and contact[key]["email"] != entry["email"]:
-                ambiguous.add(key)
+            if key in contact and contact[key] != entry:
+                spelled.setdefault(key, set()).add(None)  # same name, conflicting details
             contact.setdefault(key, entry)
-    for key in ambiguous:
-        contact.pop(key, None)
+    # Distinct spellings that normalise to one key ("A & B AB" / "A B AB"), in either list, are different
+    # companies we cannot tell apart: trust no contact for that key rather than risk the wrong one.
+    for name in winners + names:
+        spelled.setdefault(norm(name), set()).add(name.casefold())
+    for key, forms in spelled.items():
+        if len(forms) > 1:
+            contact.pop(key, None)
     bids = [int(v) for v, c in zip(values(n.get("received-submissions-type-val")),
                                    values(n.get("received-submissions-type-code"))) if c == "tenders" and v.isdigit()]
     cpv = (values(n.get("classification-cpv")) or ["00"])[0]
