@@ -38,6 +38,10 @@ class WinnerLeadsTest(unittest.TestCase):
         self.assertEqual((r["bolag"], r["upphandling"]), ("Ramseruds Grus & Åkeri AB", "Grus & massor Falköping"))
         self.assertEqual(wl.clean_title("Lokalvård skolor"), "Lokalvård skolor")
 
+    def test_email_is_not_entity_decoded(self):
+        n = {**NOTICE, "organisation-email-tenderer": ["sales&copy@ncleanfacility.se", "x@samhall.se", "-"]}
+        self.assertEqual(wl.rows_from_notice(n)[0]["epost"], "sales&copy@ncleanfacility.se")
+
     def test_csv_has_header_even_when_empty(self):
         self.assertTrue(wl.to_csv([]).startswith("bolag"))
         self.assertIn("ncleanfacility", wl.to_csv(wl.rows_from_notice(NOTICE)))
