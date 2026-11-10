@@ -1,0 +1,49 @@
+name: pricing-plans
+# Lägger in årspris och grundarpris på startsidan kommunradar.online (Simply.com).
+# Utgår från index.html som den ligger live, så inget annat på sidan ändras.
+on:
+  push:
+    branches: [main]
+    paths: ["scripts/pricing_plans.py", ".github/workflows/pricing.yml"]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: site-index, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Startsidan – lägg in årspris och grundarpris
+        run: |
+          curl -fsSL "https://kommunradar.online/index.html?nocache=$GITHUB_RUN_ID" -o live.html
+          python scripts/pricing_plans.py live.html index.out.html
+          cp live.html index.before.html
+      - name: Spara före/efter
+        uses: actions/upload-artifact@v4
+        with:
+          name: startsida-fore-efter
+          path: |
+            index.before.html
+            index.out.html
+      - name: Publicera på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          sudo apt-get install -y -qq lftp
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            put index.out.html -o ${FTP_DIR}index.html"
+      - name: Kontrollera att allt är ute
+        if: ${{ env.FTP_SERVER != '' }}
+        run: |
+          sleep 5
+          page=$(curl -fsS "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID")
+          echo "$page" | grep -q "<!--pp:s-->" && echo "prisplaner på startsidan: ok"
+          echo "$page" | grep -q 'id="blueberry"' && echo "Blueberry-avsnittet finns kvar: ok"
