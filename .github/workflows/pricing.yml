@@ -40,10 +40,23 @@ jobs:
           lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
             open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
             put index.out.html -o ${FTP_DIR}index.html"
+      - name: Visa startfilerna på servern
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            cls -l --sort=date ${FTP_DIR}" | grep -Ei "index|default|home|\.php|\.htaccess" || true
       - name: Kontrollera att allt är ute
         if: ${{ env.FTP_SERVER != '' }}
         run: |
           sleep 5
-          page=$(curl -fsS "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID")
-          echo "$page" | grep -q "<!--pp:s-->" && echo "prisplaner på startsidan: ok"
-          echo "$page" | grep -q 'id="blueberry"' && echo "Blueberry-avsnittet finns kvar: ok"
+          for u in "https://kommunradar.online/index.html?n=$GITHUB_RUN_ID" "https://kommunradar.online/" "https://kommunradar.online/?n=$GITHUB_RUN_ID"; do
+            echo "== $u"
+            curl -sS -D - -o page.html "$u" | grep -Ei "^(HTTP|server|cache|age|x-|cf-|last-modified|content-location)" || true
+            grep -q "<!--pp:s-->" page.html && echo "prisplaner: ok" || echo "prisplaner: SAKNAS"
+            grep -q 'id="blueberry"' page.html && echo "Blueberry-avsnittet: ok" || echo "Blueberry-avsnittet: SAKNAS"
+          done
