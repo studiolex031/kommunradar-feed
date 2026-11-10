@@ -4,6 +4,8 @@ Läser index.html som den ligger på servern (den kan ha ändrats direkt där). 
 lämnas orört. Allt som läggs in omges av markörerna <!--pp:s--> och <!--pp:e-->, så skriptet först tar bort en
 tidigare version och sedan lägger in den aktuella. Det kan alltså köras hur många gånger som helst.
 
+Rubriken "Ett pris. Alla affärer." byts till "Välj ditt pris. Samma affärer.".
+
 Det som läggs in, direkt efter 990 kr-kortet inne i <section id="pris">:
   1. Årspris: 7 900 kr/år (motsvarar 658 kr/mån).
   2. Grundarpris: 490 kr/mån, låst så länge man är kund, för de 20 första kunderna.
@@ -59,12 +61,17 @@ OLD = re.compile(re.escape(S) + r".*?" + re.escape(E), re.S)
 PRIS = re.compile(r'(<section id="pris">.*?)(</section>)', re.S)
 
 
+OLD_TITLE = ">Ett pris. Alla affärer.<"
+NEW_TITLE = ">Välj ditt pris. Samma affärer.<"
+
+
 def patch(html: str) -> str:
     html = OLD.sub("", html)
     m = PRIS.search(html)
     if not m:
         sys.exit('Hittade ingen <section id="pris"> på sidan – inget ändrat.')
-    return html[: m.start(2)] + BLOCK + html[m.start(2):]
+    section = m.group(1).replace(OLD_TITLE, NEW_TITLE, 1)
+    return html[: m.start()] + section + BLOCK + html[m.start(2):]
 
 
 def main() -> None:
