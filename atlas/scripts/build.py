@@ -7,6 +7,7 @@
 import collections
 import html
 import json
+import os
 import re
 import shutil
 import statistics
@@ -214,7 +215,15 @@ footer{border-top:1px solid var(--line);margin-top:50px;padding:24px 0 40px;colo
 """
 HIDE_EXPIRED = ("<script>document.querySelectorAll('[data-deadline]').forEach(function(r){"
                 "if(new Date(r.dataset.deadline+'T23:59:59')<new Date())r.remove()})</script>")
+# Länk till MailerLites anmälningssida. Tom = varken sida eller länkar byggs.
+NEWSLETTER_URL = os.environ.get("ATLAS_NEWSLETTER_URL", "").strip()
 OFFER = "7 dagar gratis (kort krävs, inget dras förrän dag 8). Sedan 990 kr/mån, ingen moms, ingen bindningstid."
+
+
+def newsletter_cta(path):
+    if not NEWSLETTER_URL or path.rstrip("/") == f"{BASE}/veckobrev":
+        return ""
+    return f'<p class="small" style="margin:16px 0 0">Inte redo? <a href="{BASE}/veckobrev/">Få veckans största upphandlingar gratis</a>.</p>'
 
 
 def page(path, title, desc, crumbs, body, dataset=None):
@@ -242,7 +251,7 @@ def page(path, title, desc, crumbs, body, dataset=None):
 <body><div class="w"><header><a class="logo" href="/"><span class="radar"></span>KOMMUNRADAR</a><a class="btn" href="/#pris">Prova 7 dagar gratis</a></header>
 <nav class="crumbs" aria-label="Brödsmulor">{crumb_html}</nav>
 <main>{body}
-<aside class="cta"><h2>Få nya upphandlingar i mejlen varje morgon</h2><p>Kommunradar matchar nya upphandlingar över EU:s tröskelvärden mot dina bevakningsord och ditt län. {OFFER}</p><a class="btn" href="/">Se hur det fungerar</a></aside>
+<aside class="cta"><h2>Få nya upphandlingar i mejlen varje morgon</h2><p>Kommunradar matchar nya upphandlingar över EU:s tröskelvärden mot dina bevakningsord och ditt län. {OFFER}</p><a class="btn" href="/">Se hur det fungerar</a>{newsletter_cta(path)}</aside>
 </main>
 <footer>Data från <a href="https://ted.europa.eu/" rel="nofollow">TED</a>, Europeiska unionens databas för upphandlingar, bearbetad av Kommunradar. Bara upphandlingar som publiceras i TED ingår, alltså i regel över EU:s tröskelvärden. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten. Uppdaterad {fdate(TODAY)}. <a href="{BASE}/metod/">Så räknar vi</a> · <a href="/villkor.html">Villkor</a> · <a href="/integritet.html">Integritet</a></footer></div>{HIDE_EXPIRED}</body></html>
 """
@@ -467,6 +476,15 @@ def main():
 <p><b>Län och bransch:</b> länet är köparens län, inte alltid där uppdraget utförs. Branschen kommer från upphandlingens första CPV-kod. Köpare med olika stavning kan räknas separat.</p>
 <h2>Vad siffrorna inte säger</h2><p>Få anbud betyder inte att en upphandling är lätt att vinna. Det kan bero på snäva krav, en smal nisch eller en stark befintlig leverantör. Direktupphandlingar och annat som inte publiceras i TED ingår inte. Sidor skapas bara när underlaget är minst {MIN_COMBO} upphandlingar för län och bransch och {MIN_BUYER} för en köpare.</p>
 <p>Vi visar leverantörer bara när namnet har en tydlig bolagsform, eftersom enskilda firmor kan bära en privatpersons namn. Ser du ett fel? Mejla oss via kontaktuppgifterna på <a href="/">startsidan</a>.</p>""")
+
+    if NEWSLETTER_URL:
+        page(f"{BASE}/veckobrev", "Gratis veckobrev om offentliga upphandlingar",
+             "Veckans största nya upphandlingar över EU:s tröskelvärden, antal nya per län och en siffra om konkurrensen. Gratis, en gång i veckan.",
+             [("Veckobrev", f"{BASE}/veckobrev/")],
+             f"""<h1>Veckans upphandlingar, gratis i mejlen</h1><p class="lead">En gång i veckan får du de största nya upphandlingarna i Sverige, antal nya per län och en siffra om konkurrensen från Anbudsatlasen.</p>
+<p><a class="btn" href="{esc(NEWSLETTER_URL)}" rel="nofollow noopener">Anmäl dig till veckobrevet</a></p>
+<p class="mut small">Anmälan sker hos vår e-postleverantör MailerLite, och du bekräftar den via ett mejl. Du kan avregistrera dig när du vill via länken i varje utskick. <a href="/integritet.html">Så behandlar vi dina uppgifter</a>.</p>
+<h2>Vad veckobrevet inte är</h2><p>Veckobrevet är ett urval och inte anpassat efter din bransch. Bara upphandlingar som publiceras i TED ingår, alltså i regel över EU:s tröskelvärden. Vill du ha träffar på dina egna sökord varje morgon finns <a href="/">Kommunradar</a>.</p>""")
 
     # Nav
     lan_rank = ranked(by_lan, lan_url, MIN_RANK)
