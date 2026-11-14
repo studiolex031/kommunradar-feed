@@ -158,5 +158,83 @@ class OnboardingTest(unittest.TestCase):
         self.assertIn("Välkommen", msg["Subject"]); self.assertEqual(msg["Reply-To"], "hej@kommunradar.online")
 
 
+class VeckobrevTest(unittest.TestCase):
+    import datetime as _dt
+    today = _dt.date(2026, 11, 16)  # en måndag
+    lead = {"id": "1", "title": "Lokalvård skolor", "buyer": "Malmö stad", "city": "MALMÖ", "region": "Skåne",
+            "categories": ["Avfall, städ & miljö"], "url": "https://ted", "deadline": "2026-12-20", "published": "2026-11-12",
+            "value_sek": 2500000}
+
+    def ts(self, y, m, d):
+        import datetime as dt
+        return int(dt.datetime(y, m, d, 14, tzinfo=dt.timezone.utc).timestamp())
+
+    def free(self, **kw):
+        return {"email": "f@b.se", "keywords": "städ", "lan": "skane", "status": "active", "trial_start": None,
+                "tier": "veckobrev", "created": self.ts(2026, 11, 1), **kw}
+
+    def test_product_tier_from_metadata_or_name(self):
+        self.assertEqual(digest.product_tier({"metadata": {"tier": "veckobrev"}, "name": "X"}), "veckobrev")
+        self.assertEqual(digest.product_tier({"metadata": {}, "name": "Kommunradar Veckobrev"}), "veckobrev")
+        self.assertEqual(digest.product_tier({"metadata": {"app": "kommunradar"}, "name": "Kommunradar Pro"}), "pro")
+        self.assertEqual(digest.product_tier({"metadata": {"tier": "pro"}, "name": "Kommunradar veckobrev"}), "pro")
+
+    def test_weekly_hits_last_7_days_biggest_first(self):
+        old = {**self.lead, "id": "old", "published": "2026-11-01"}
+        small = {**self.lead, "id": "small", "value_sek": 100000}
+        other_lan = {**self.lead, "id": "sthlm", "region": "Stockholm"}
+        hits, fallback = digest.weekly_hits([small, old, self.lead, other_lan], self.free(), self.today)
+        self.assertEqual([l["id"] for l in hits], ["1", "small"]); self.assertFalse(fallback)
+
+    def test_weekly_falls_back_to_county_when_no_keyword_hit(self):
+        hits, fallback = digest.weekly_hits([self.lead], self.free(keywords="catering"), self.today)
+        self.assertEqual(len(hits), 1); self.assertTrue(fallback)
+        self.assertEqual(digest.weekly_hits([], self.free(keywords="catering"), self.today), ([], True))
+        unknown = {**self.lead, "id": "u", "region": "", "regions": []}
+        self.assertEqual(digest.weekly_hits([unknown], self.free(keywords="catering"), self.today), ([], True))
+
+    def test_pro_customers_and_pro_mails_never_mix_with_free(self):
+        pro = {"email": "F@b.se", "keywords": "", "lan": "alla", "status": "active", "tier": "pro"}
+        self.assertEqual(digest.weekly_recipients([self.free(), pro]), [])
+        self.assertEqual(digest.weekly_recipients([self.free()]), [self.free()])
+        self.assertIsNone(digest.onboarding_mail(self.free(status="trialing", trial_start=self.ts(2026, 11, 15)), self.today))
+
+    def test_weekly_mail_escapes_shows_max_and_upsell(self):
+        many = [{**self.lead, "id": str(i), "title": "<b>x</b>"} for i in range(digest.WEEKLY_MAX + 3)]
+        out = digest.render_weekly(many, self.free(), False, False, "https://k", "https://k/#pris", "https://portal")
+        self.assertNotIn("<b>x</b>", out); self.assertIn("13 nya upphandlingar", out)
+        self.assertIn("3 till", out); self.assertIn("https://k/#pris", out); self.assertIn("avsluta", out)
+        self.assertEqual(out.count("https://ted"), digest.WEEKLY_MAX)
+        msg = digest.weekly_message(self.free(), many, False, False, "https://k", "https://k/#pris", "https://portal", "hej@k.se")
+        self.assertIn("mailto:hej@k.se?subject=avsluta", msg["List-Unsubscribe"])
+
+    def run_main(self, argv, subs, now):
+        from unittest import mock
+        import datetime as dt
+        smtp = mock.MagicMock()
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": "sk_test_x"}), mock.patch.object(sys, "argv", argv), \
+                mock.patch("digest.new_leads", return_value=[]), \
+                mock.patch("builtins.open", mock.mock_open(read_data=json.dumps({"leads": [self.lead]}))), \
+                mock.patch("digest.smtp_connect", return_value=smtp), mock.patch("sys.stdout"), \
+                mock.patch("digest.subscribers", return_value=iter(subs)), \
+                mock.patch("digest.dt.datetime", wraps=dt.datetime) as clock:
+            clock.now.return_value = dt.datetime.combine(now, dt.time(6), dt.timezone.utc)
+            digest.main()
+        return [c[0][0] for c in smtp.send_message.call_args_list]
+
+    def test_daily_run_welcomes_free_signup_the_morning_after_only(self):
+        import datetime as dt
+        yesterday = self.free(created=self.ts(2026, 11, 15))
+        sent = self.run_main(["digest.py"], [yesterday, self.free(email="old@b.se")], self.today)
+        self.assertEqual([m["To"] for m in sent], ["f@b.se"]); self.assertIn("Välkommen", sent[0]["Subject"])
+        self.assertEqual(self.run_main(["digest.py"], [yesterday], self.today + dt.timedelta(days=1)), [])
+
+    def test_weekly_run_skips_signups_from_yesterday_and_today(self):
+        subs = [self.free(), self.free(email="y@b.se", created=self.ts(2026, 11, 15)),
+                self.free(email="t@b.se", created=self.ts(2026, 11, 16))]
+        sent = self.run_main(["digest.py", "--weekly"], subs, self.today)
+        self.assertEqual([m["To"] for m in sent], ["f@b.se"]); self.assertIn("i veckan", sent[0]["Subject"])
+
+
 if __name__ == "__main__":
     unittest.main()

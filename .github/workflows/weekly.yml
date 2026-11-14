@@ -1,0 +1,33 @@
+name: kommunradar-veckobrev
+# Gratis veckobrev: varje måndag (efter morgonens dagliga körning) får gratisprenumeranterna senaste veckans
+# träffar. Läser leads.json som kommunradar-daily nyss uppdaterade. Checkar inte in något.
+on:
+  schedule: [{cron: "0 6 * * 1"}]  # måndag 07:00 svensk vintertid, 08:00 sommartid
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Bara visa vem som skulle få mejl (skickar inget)'
+        type: boolean
+        default: true
+permissions: {contents: read}
+concurrency: {group: veckobrev, cancel-in-progress: false}
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Skicka veckobrev
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          PORTAL_URL: ${{ vars.PORTAL_URL }}
+          PRO_URL: ${{ vars.PRO_URL }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: python digest.py --weekly $([ "$DRY_RUN" = "true" ] && echo --dry-run)

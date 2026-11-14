@@ -229,6 +229,7 @@ def page(path, title, desc, crumbs, body, dataset=None):
                    "creator": {"@type": "Organization", "name": "Kommunradar", "url": SITE}})
     crumb_html = " › ".join(f'<a href="{esc(u)}">{esc(n)}</a>' for n, u in trail[:-1]) + f" › {esc(trail[-1][0])}" \
         if crumbs else '<a href="/">Kommunradar</a> › Anbudsatlasen'
+    ld_json = json.dumps(ld, ensure_ascii=False).replace('</', '<\\/')
     doc = f"""<!doctype html>
 <html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)}</title><meta name="description" content="{esc(desc)}"><link rel="canonical" href="{esc(url)}">
@@ -237,7 +238,7 @@ def page(path, title, desc, crumbs, body, dataset=None):
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{BASE}/atlas.css">
-<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False).replace('</', '<\\/')}</script></head>
+<script type="application/ld+json">{ld_json}</script></head>
 <body><div class="w"><header><a class="logo" href="/"><span class="radar"></span>KOMMUNRADAR</a><a class="btn" href="/#pris">Prova 7 dagar gratis</a></header>
 <nav class="crumbs" aria-label="Brödsmulor">{crumb_html}</nav>
 <main>{body}

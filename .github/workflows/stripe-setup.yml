@@ -18,6 +18,10 @@ on:
         description: 'Lägg på 25 % moms i kassan (kräver att du är momsregistrerad och lagt in registreringen i Stripe → Tax)'
         type: boolean
         default: false
+      veckobrev:
+        description: 'Skapa det GRATIS veckobrevet (0 kr, inget kort) i stället för Pro — pris, provdagar och moms ignoreras'
+        type: boolean
+        default: false
 permissions: {contents: read}
 jobs:
   setup:
@@ -34,6 +38,7 @@ jobs:
           TRIAL_DAYS: ${{ inputs.trial_days }}
           REQUIRE_TERMS: ${{ inputs.require_terms }}
           MOMS: ${{ inputs.moms }}
+          VECKOBREV: ${{ inputs.veckobrev }}
         run: |
           set -euo pipefail
           if [ -z "$STRIPE_SECRET_KEY" ]; then echo "::error::Lägg först in secret STRIPE_SECRET_KEY"; exit 1; fi
@@ -41,5 +46,12 @@ jobs:
           args=(--site https://kommunradar.online --price-sek "$PRICE_SEK" --trial-days "$TRIAL_DAYS")
           if [ "$REQUIRE_TERMS" = "true" ]; then args+=(--require-terms); fi
           if [ "$MOMS" = "true" ]; then args+=(--moms); fi
+          if [ "$VECKOBREV" = "true" ]; then
+            args=(--site https://kommunradar.online --veckobrev)
+            if [ "$REQUIRE_TERMS" = "true" ]; then args+=(--require-terms); fi
+            python scripts/stripe_setup.py "${args[@]}" | tee out.txt
+            { echo '## Klart'; echo; echo 'Kopiera **Payment Link (veckobrev)** nedan till `freeLink` i config.js:'; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           python scripts/stripe_setup.py "${args[@]}" | tee out.txt
           { echo '## Klart'; echo; echo "Kopiera **Payment Link** nedan till \`paymentLink\` i config.js och sätt \`trialDays: $TRIAL_DAYS\`:"; echo; echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

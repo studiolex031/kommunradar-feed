@@ -4,6 +4,11 @@
 
 Skapar (eller återanvänder): produkt, månadspris 990 kr (moms läggs bara på med --moms), och en Payment Link där kunden
 anger bevakningsord och län. Skriver ut länken — klistra in den i config.js.
+
+    STRIPE_SECRET_KEY=sk_test_... python scripts/stripe_setup.py --site https://kommunradar.online --veckobrev
+
+Skapar i stället det gratis veckobrevet: produkt (metadata tier=veckobrev), pris 0 kr/mån och en Payment Link som
+inte frågar efter kort. Klistra in länken som freeLink i config.js.
 """
 import argparse, json, os, sys, urllib.error, urllib.parse, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,6 +37,50 @@ def same_settings(link, a):
             and redirect == a.site.rstrip('/') + '/tack.html')
 
 
+def lan_dropdown(params, index):
+    for i, (value, label) in enumerate(LAN_KEYS.items()):
+        params[f'custom_fields[{index}][dropdown][options][{i}][value]'] = value
+        params[f'custom_fields[{index}][dropdown][options][{i}][label]'] = label or 'Hela Sverige'
+
+
+def setup_veckobrev(key, site, require_terms):
+    """Free weekly digest: 0 kr/month subscription that never asks for a card. Idempotent like the Pro setup."""
+    prices = call(key, 'prices', {'lookup_keys[]': 'kommunradar_veckobrev', 'active': 'true'}, 'GET')['data']
+    if prices and prices[0]['unit_amount'] == 0 and prices[0]['currency'] == 'sek':
+        price = prices[0]
+    else:
+        product = prices[0]['product'] if prices else call(key, 'products', {
+            'name': 'Kommunradar Veckobrev',
+            'description': 'Gratis: veckans nya offentliga upphandlingar för din bransch och ditt län, varje måndag.',
+            'metadata[app]': 'kommunradar', 'metadata[tier]': 'veckobrev'})['id']
+        price = call(key, 'prices', {'product': product, 'currency': 'sek', 'unit_amount': 0,
+                                     'recurring[interval]': 'month', 'lookup_key': 'kommunradar_veckobrev',
+                                     'transfer_lookup_key': 'true'})
+    print('Pris:', price['id'], '0 kr/mån (gratis veckobrev)')
+    redirect = site.rstrip('/') + '/tack-veckobrev.html'
+    links = [l for l in call(key, 'payment_links', {'active': 'true', 'limit': 100}, 'GET')['data']
+             if (l.get('metadata') or {}).get('tier') == 'veckobrev' and (l.get('metadata') or {}).get('price') == price['id']
+             and ((l.get('after_completion') or {}).get('redirect') or {}).get('url') == redirect
+             and l.get('payment_method_collection') == 'if_required'
+             and ((l.get('consent_collection') or {}).get('terms_of_service') == 'required') == require_terms]
+    if links:
+        link = links[0]
+    else:
+        params = {'line_items[0][price]': price['id'], 'line_items[0][quantity]': 1,
+                  'metadata[app]': 'kommunradar', 'metadata[tier]': 'veckobrev', 'metadata[price]': price['id'],
+                  'payment_method_collection': 'if_required',  # 0 kr att betala → inget kort
+                  'after_completion[type]': 'redirect', 'after_completion[redirect][url]': redirect,
+                  'custom_fields[0][key]': 'bevakning', 'custom_fields[0][type]': 'text', 'custom_fields[0][optional]': 'true',
+                  'custom_fields[0][label][type]': 'custom', 'custom_fields[0][label][custom]': 'Bevakningsord (t.ex. städ, IT-konsult)',
+                  'custom_fields[1][key]': 'lan', 'custom_fields[1][type]': 'dropdown',
+                  'custom_fields[1][label][type]': 'custom', 'custom_fields[1][label][custom]': 'Län'}
+        lan_dropdown(params, 1)
+        if require_terms: params['consent_collection[terms_of_service]'] = 'required'
+        link = call(key, 'payment_links', params)
+    print('\nPayment Link (veckobrev):', link['url'])
+    print("Klistra in den i config.js: freeLink: '" + link['url'] + "'")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--site', required=True, help='publik adress till sajten, t.ex. https://kommunradar.se')
@@ -39,10 +88,13 @@ def main():
     ap.add_argument('--trial-days', type=int, default=7)
     ap.add_argument('--require-terms', action='store_true', help='kräver att kunden godkänner villkoren i kassan (sätt villkors-URL i Stripe först)')
     ap.add_argument('--moms', action='store_true', help='Stripe Tax lägger på moms (25 %%) i kassan — kräver momsregistrering i Stripe → Tax')
+    ap.add_argument('--veckobrev', action='store_true', help='skapa det gratis veckobrevet (0 kr, inget kort) i stället för Pro')
     a = ap.parse_args()
     key = os.environ.get('STRIPE_SECRET_KEY', '')
     if not key.startswith(('sk_', 'rk_')): sys.exit('Sätt STRIPE_SECRET_KEY.')
     print('Stripe-läge:', 'LIVE' if '_live_' in key else 'TEST')
+    if a.veckobrev:
+        return setup_veckobrev(key, a.site, a.require_terms)
 
     prices = call(key, 'prices', {'lookup_keys[]': 'kommunradar_pro_monthly', 'active': 'true'}, 'GET')['data']
     p0 = prices[0] if prices else {}
@@ -75,9 +127,7 @@ def main():
                   'custom_fields[0][label][type]': 'custom', 'custom_fields[0][label][custom]': 'Bevakningsord (t.ex. städ, IT-konsult)',
                   'custom_fields[1][key]': 'lan', 'custom_fields[1][type]': 'dropdown',
                   'custom_fields[1][label][type]': 'custom', 'custom_fields[1][label][custom]': 'Län'}
-        for i, (value, label) in enumerate(LAN_KEYS.items()):
-            params[f'custom_fields[1][dropdown][options][{i}][value]'] = value
-            params[f'custom_fields[1][dropdown][options][{i}][label]'] = label or 'Hela Sverige'
+        lan_dropdown(params, 1)
         if a.trial_days: params['subscription_data[trial_period_days]'] = a.trial_days
         if a.require_terms: params['consent_collection[terms_of_service]'] = 'required'
         if a.moms: params['automatic_tax[enabled]'] = 'true'

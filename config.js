@@ -4,7 +4,8 @@
 window.KOMMUNRADAR = {
   paymentLink: 'https://buy.stripe.com/dRm6oGbwc7QL1QF5agg7e01',
   trialDays: 0,  // den här betallänken har ingen provperiod — sätt samma antal dagar som länken har
-  portalUrl: 'https://billing.stripe.com/p/login/6oUdR80Ry8UP9j7dGMg7e00',
+  freeLink: '',  // gratis veckobrev: länken från Stripe-uppsättningen med "veckobrev" ikryssat (tom = knappen leder till #pris)
+  portalUrl:'https://billing.stripe.com/p/login/6oUdR80Ry8UP9j7dGMg7e00',
   company: {
     name: 'Kommunradar / Alexander Pålsson (enskild firma)',
     orgnr: '19870929-3552',
