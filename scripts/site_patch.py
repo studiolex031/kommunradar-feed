@@ -10,6 +10,8 @@ Användning: python scripts/site_patch.py <in.html> <ut.html>
 """
 import sys
 
+LEAD_OLD = '<p class="lead">Kommunen, regionen och staten köper för miljarder varje månad. Kommunradar hittar de affärer som passar <b>din bransch i ditt län</b> — och mejlar dem till dig varje morgon.</p>'
+LEAD_NEW = '<p class="lead">Kommunradar hittar affären. <b>Blueberry Station</b> hjälper dig vinna den — AI:n läser 50–200 sidor förfrågningsunderlag åt dig och ger go/no-go med ska-kraven på sidhänvisning, innan du lagt en hel dag på anbudet. Resten mejlas till dig varje morgon.</p>'
 S, E = "<!--sp:s-->", "<!--sp:e-->"
 GA_S, GA_E = "<!--ga:s-->", "<!--ga:e-->"
 
@@ -102,6 +104,9 @@ def patch(html: str) -> str:
         html = html.replace(GATE_OLD, GATE_NEW, 1)
     elif '<div class="gfree">' not in html:
         sys.exit("Hittade varken gatens gamla eller nya formulär – sidan ser annorlunda ut. Inget ändrat.")
+
+    if LEAD_OLD in html:
+        html = html.replace(LEAD_OLD, LEAD_NEW, 1)
 
     j = html.rfind("</head>")
     if j >= 0:
