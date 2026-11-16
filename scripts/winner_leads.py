@@ -132,9 +132,21 @@ def mail(rows, days):
     lines = [f"{r['bolag']} | {r['epost']} ({r['adresstyp']}) | {r['upphandling']} | {r['kopare']} | "
              f"{r['anbud']} anbud | TED {r['ted']}\n"
              f"   → ämne: \"Grattis till er vinst — {r['upphandling'][:60]}\"" for r in rows]
+    drafts = []
+    for r in rows:
+        drafts.append(
+            "--- " + r['bolag'] + " (" + r['epost'] + ") ---\n"
+            "Ämne: Grattis till er vinst — " + r['upphandling'][:80] + "\n\n"
+            "Hej,\n\n"
+            "Grattis till er vinst i " + r['upphandling'] + " — vi såg beslutet i TED och tänkte att ni redan kan vara ute efter nästa.\n\n"
+            "Vi driver Kommunradar. Vi bevakar alla svenska offentliga upphandlingar över EU:s tröskelvärden och mejlar de som matchar en viss bransch och ett visst län. Kunder får nyckeln varje morgon, med köpare, uppskattat värde och sista anbudsdag.\n\n"
+            "Vill ni ha nästa liknande affär i mejlen istället?\n\n"
+            "Vänligen,\nAlexander Pålsson, grundare\nKommunradar · org.nr 19870929-3552\nSvara \"sluta\" så skickar vi inga fler mejl.\n"
+        )
     msg.set_content("Nya vinnare med kontaktadress i TED. CSV bifogad.\n"
                     "Sekvens och mallar: kommunradar/outbound/vinnar-leads.md\n\n"
-                    + "\n".join(lines or ["Inga nya i dag."]))
+                    "SAMMANFATTNING\n" + "\n".join(lines or ["Inga nya i dag."]) + "\n\n"
+                    "KOPIERA OCH SKICKA (en per bolag)\n\n" + "\n".join(drafts or ["Inga nya i dag."]))
     msg.add_attachment(to_csv(rows).encode("utf-8-sig"), maintype="text", subtype="csv",
                        filename=f"vinnar-leads-{date.today().isoformat()}.csv")
     smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
