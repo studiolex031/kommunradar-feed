@@ -37,7 +37,7 @@ jobs:
           FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
         run: |
           sudo apt-get install -y -qq lftp
-          files="robots.txt config.js site.js veckobrev.html tack-veckobrev.html tack.html villkor.html integritet.html legal.css favicon.svg sitemap.xml"
+          files=".htaccess robots.txt config.js site.js veckobrev.html tack-veckobrev.html tack.html villkor.html integritet.html legal.css favicon.svg sitemap.xml"
           for f in $files; do [ -f "$f" ] || { echo "::error::Saknar $f"; exit 1; }; done
           lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
             open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
