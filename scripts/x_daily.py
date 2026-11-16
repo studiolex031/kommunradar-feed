@@ -241,6 +241,8 @@ def main():
             print(f"::warning::Mejlet misslyckades ({e})")
             if not keys:  # utan X är mejlet enda leveransen: låt jobbet fallera så dagen inte markeras som klar
                 raise
+    if not keys:
+        raise SystemExit("X-publicering hoppades över: X-nycklar saknas; jobbet markeras som misslyckat i stället för publicerat")
 
 
 if __name__ == "__main__":
