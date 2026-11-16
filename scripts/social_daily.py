@@ -96,7 +96,7 @@ def linkedin_post(pick_, today):
     lines.append("")
     lines.append("Kommunradar mejlar de som matchar din bransch och ditt län varje morgon, med köpare, värde och sista anbudsdag. 7 dagar gratis, ingen bindningstid.")
     lines.append("")
-    lines.append("Länk i kommentarerna (se nedan):")
+    lines.append("Länk i kommentarerna ")
     lines.append("")
     lines.append("#upphandling #offentligsektor #småföretag #entreprenör #affärer")
     return "\n".join(lines)
@@ -112,12 +112,36 @@ def facebook_post(pick_, today):
     lines.append(f"{total} nya upphandlingar igår — {pick_['n']} i {focus}.")
     lines.append("")
     for l in items:
-        lines.append(f"   {l['title'][:80]}")
+        lines.append(f" {l['title'][:80]}")
         lines.append(f"   {l['buyer']}{(' · ' + mkr(l.get('value_sek'))) if l.get('value_sek') else ''}")
     lines.append("")
     lines.append("Få dem i mejlen varje morgon: kommunradar.online — 7 dagar gratis.")
     return "\n".join(lines)
 
+
+def try_linkedin_post(text):
+    """Postar på LinkedIn om credentials finns. Returnerar True vid lyckat post."""
+    token = os.environ.get("LINKEDIN_ACCESS_TOKEN")
+    author = os.environ.get("LINKEDIN_PERSON_URN") or os.environ.get("LINKEDIN_ORG_URN")
+    if not (token and author):
+        return False
+    import subprocess, sys
+    # Anropa linkedin_post.py som subprocess för att återanvända logiken.
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "linkedin_post.py")
+    tmp = os.path.join(ROOT, "social-out", "linkedin_today.txt")
+    os.makedirs(os.path.dirname(tmp), exist_ok=True)
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+    try:
+        r = subprocess.run([sys.executable, script, "--file", tmp], capture_output=True, text=True, timeout=60)
+        if r.returncode == 0:
+            print("LinkedIn: postat automatiskt.")
+            return True
+        print("LinkedIn auto-post misslyckades:", r.stderr.strip()[:300])
+        return False
+    except Exception as e:
+        print("LinkedIn auto-post exception:", e)
+        return False
 
 def main():
     dry = "--dry-run" in sys.argv
@@ -134,6 +158,8 @@ def main():
     (open(os.path.join(OUT, "facebook.txt"), "w", encoding="utf-8")).write(fb)
 
     print("LinkedIn:\n" + li + "\n\n" + "="*60 + "\nFacebook/Instagram:\n" + fb)
+
+    posted = try_linkedin_post(li)
 
     if dry:
         print("\n(dry-run: mejlar inget)")
