@@ -1,0 +1,24 @@
+name: social-dagligt
+# Mejlar varje vardag färdiga utkast för LinkedIn och Facebook/Instagram till REPORT_TO.
+# Postar INGET automatiskt — LinkedIn kräver manuell publicering (eller API-nycklar).
+# X hanteras av x-dagligt.
+on:
+  schedule: [{cron: "0 7 * * 1-5"}]   # 08:00 svensk vintertid
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: social-dagligt, cancel-in-progress: false}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python scripts/social_daily.py
+        env:
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}

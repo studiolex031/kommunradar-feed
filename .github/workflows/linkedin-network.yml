@@ -1,0 +1,23 @@
+name: linkedin-nätverk
+# Mejlar varje måndag en lista med bolag som nyss vunnit svenska upphandlingar,
+# med LinkedIn-sökning och färdig kontaktbegäran (max 300 tecken).
+on:
+  schedule: [{cron: "0 6 * * 1"}]   # måndag 07:00 svensk vintertid
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: linkedin-network, cancel-in-progress: false}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python scripts/linkedin_network.py --days 7 --mail
+        env:
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
