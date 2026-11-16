@@ -130,8 +130,11 @@ def mail(rows, days):
     msg["Subject"] = f"Kommunradar: {len(rows)} nya vinnar-leads (senaste {days} dagarna)"
     msg["From"] = os.environ.get("MAIL_FROM", os.environ["SMTP_USER"]); msg["To"] = to
     lines = [f"{r['bolag']} | {r['epost']} ({r['adresstyp']}) | {r['upphandling']} | {r['kopare']} | "
-             f"{r['anbud']} anbud | TED {r['ted']}" for r in rows]
-    msg.set_content("Nya vinnare med kontaktadress i TED. CSV bifogad.\n\n" + "\n".join(lines or ["Inga nya i dag."]))
+             f"{r['anbud']} anbud | TED {r['ted']}\n"
+             f"   → ämne: \"Grattis till er vinst — {r['upphandling'][:60]}\"" for r in rows]
+    msg.set_content("Nya vinnare med kontaktadress i TED. CSV bifogad.\n"
+                    "Sekvens och mallar: kommunradar/outbound/vinnar-leads.md\n\n"
+                    + "\n".join(lines or ["Inga nya i dag."]))
     msg.add_attachment(to_csv(rows).encode("utf-8-sig"), maintype="text", subtype="csv",
                        filename=f"vinnar-leads-{date.today().isoformat()}.csv")
     smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
