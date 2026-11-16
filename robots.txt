@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /tack.html
 Sitemap: https://kommunradar.online/sitemap.xml
+Sitemap: https://kommunradar.online/sitemap-atlas-1.xml
+Sitemap: https://kommunradar.online/sitemap-atlas-2.xml
+Sitemap: https://kommunradar.online/sitemap-atlas-3.xml

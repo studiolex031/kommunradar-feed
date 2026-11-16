@@ -2,9 +2,9 @@
 // paymentLink: länken som scripts/stripe_setup.py skriver ut (https://buy.stripe.com/...)
 // company: era riktiga uppgifter — visas i sidfoten, villkoren och integritetspolicyn (krävs av Stripe).
 window.KOMMUNRADAR = {
-  paymentLink: 'https://buy.stripe.com/dRm6oGbwc7QL1QF5agg7e01',
-  trialDays: 0,  // den här betallänken har ingen provperiod — sätt samma antal dagar som länken har
-  freeLink: '',  // gratis veckobrev: länken från Stripe-uppsättningen med "veckobrev" ikryssat (tom = knappen leder till #pris)
+  paymentLink: 'https://buy.stripe.com/00weVc9o4gnh0MB8msg7e02',
+  trialDays: 7,  // samma antal provdagar som betallänken har (Stripe-uppsättningen skriver ut båda)
+  freeLink: '',  // FYLL I: länken från Stripe-uppsättningen med "veckobrev" ikryssat (tom = knappen leder till #pris)
   portalUrl:'https://billing.stripe.com/p/login/6oUdR80Ry8UP9j7dGMg7e00',
   company: {
     name: 'Kommunradar / Alexander Pålsson (enskild firma)',
