@@ -311,7 +311,8 @@ def main():
     if not p:
         print("Inga nya upphandlingar att posta om"); return
     site = os.environ.get("SITE_URL") or "https://kommunradar.online"
-    text = compose(p, f"{site.rstrip('/')}/?utm_source=x&utm_medium=social&utm_campaign=dagligt")
+    link = f"{site.rstrip('/')}/?utm_source=x&utm_medium=social&utm_campaign=dagligt"
+    text = compose(p, link)
     out = os.path.join(ROOT, "x-out"); os.makedirs(out, exist_ok=True)
     images = render(p, out)
     print(text, f"\n({tweet_length(text)} tecken)")
@@ -346,10 +347,17 @@ def main():
         raise SystemExit("Varken X-nycklar eller REPORT_TO/SMTP_HOST finns: inget att leverera till")
     if os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST"):
         ads = "\n".join(f"{i}. {a}" for i, a in enumerate(ad_copy(p), 1))
+        manuellt = "" if status.startswith("postat") else (
+            "Publicera manuellt: kopiera texten nedan, bifoga post.png, publicera, "
+            "och klistra in länken som första kommentar.\n\n")
+        body = (f"Dagens inlägg: {status}\n\n{manuellt}"
+                f"--- Text att publicera ---\n{text}\n\n"
+                f"--- Första kommentar (efter publicering) ---\n{link}\n\n"
+                f"--- Annonstexter (för att marknadsföra inlägget eller köra som annons) ---\n{ads}\n\n"
+                "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).")
         try:  # ett mejlfel får inte fälla jobbet efter postning, annars postas samma dag igen vid omkörning
             mail(f"Kommunradar på X: {p['n']} nya {'i ' + p['focus'] if p['kind'] == 'lan' else 'inom ' + p['focus'].lower()}",
-                 f"Dagens inlägg, {status}\n\n{text}\n\n--- Annonstexter (för att marknadsföra inlägget eller köra som annons) ---\n{ads}\n\n"
-                 "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).", images)
+                 body, images)
         except Exception as e:
             print(f"::warning::Mejlet misslyckades ({e})")
             if not auth:  # utan X är mejlet enda leveransen: låt jobbet fallera så dagen inte markeras som klar
