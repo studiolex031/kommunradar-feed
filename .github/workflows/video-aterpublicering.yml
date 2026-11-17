@@ -1,0 +1,24 @@
+name: video-aterpublicering
+# Mejlar en färdig återpublicering av teaser-videon den 1:a och 15:e varje månad,
+# med en vinkel som roterar så att samma 15 sekunder inte beskrivs likadant i rad.
+# Publicerar inget själv: YouTube och LinkedIn kräver kontots inloggning.
+on:
+  schedule: [{cron: "0 6 1,15 * *"}]   # 07:00 svensk tid (08:00 sommartid)
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: video-aterpublicering, cancel-in-progress: false}
+jobs:
+  kit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python scripts/video_repromotion.py
+        env:
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
