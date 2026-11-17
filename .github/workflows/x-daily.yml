@@ -51,14 +51,16 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
         run: python scripts/x_daily.py ${{ inputs.dry_run && '--dry-run' || '' }}
       - name: Spara X-token
-        if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
+        if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run && always() }}
         uses: actions/cache/save@v4
         with:
           path: x-token
           key: "x-token-${{ github.run_id }}"
       - name: Markera dagen som postad
         if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
-        run: mkdir -p x-posted && date > x-posted/at
-      - if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
+        run: |
+          if [ -f x-out/posted.txt ]; then mkdir -p x-posted && date > x-posted/at
+          else echo "Inte postat i dag — dagen markeras inte, nästa körning försöker igen"; fi
+      - if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run && hashFiles('x-posted/at') != '' }}
         uses: actions/cache/save@v4
         with: {path: x-posted, key: "x-posted-${{ steps.today.outputs.d }}"}

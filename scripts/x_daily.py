@@ -323,6 +323,8 @@ def main():
         try:
             tid = post(text, images[0], auth)
             status = f"postat: https://x.com/i/web/status/{tid}"
+            with open(os.path.join(out, "posted.txt"), "w", encoding="utf-8") as f:
+                f.write(status)  # markör: workflowet markerar dagen som postad först när den finns
         except urllib.error.HTTPError as e:
             status = f"postning misslyckades ({e.code}): {e.read().decode('utf-8', 'replace')[:400]}"
             print(f"::error::{status}")
