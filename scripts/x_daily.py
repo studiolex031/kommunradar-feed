@@ -326,9 +326,15 @@ def main():
             with open(os.path.join(out, "posted.txt"), "w", encoding="utf-8") as f:
                 f.write(status)  # markör: workflowet markerar dagen som postad först när den finns
         except urllib.error.HTTPError as e:
-            status = f"postning misslyckades ({e.code}): {e.read().decode('utf-8', 'replace')[:400]}"
-            print(f"::error::{status}")
-            failed = True
+            code = e.code
+            body = e.read().decode("utf-8", "replace")[:400]
+            if code == 402:  # X API är pay-per-use: inga krediter kvar i Developer Console
+                status = "inte postat (X-krediter slut – köp krediter på console.x.com)"
+                print(f"::warning::{status}")
+            else:
+                status = f"postning misslyckades ({code}): {body}"
+                print(f"::error::{status}")
+                failed = True
         except Exception as e:
             status = f"postning misslyckades: {e}"
             print(f"::error::{status}")
