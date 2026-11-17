@@ -52,6 +52,10 @@ h2{font-size:clamp(30px,4.5vw,50px);line-height:1.02;letter-spacing:-.04em;margi
 .inbox{background:#fff;color:#0b1020;border-radius:20px;overflow:hidden;box-shadow:0 40px 100px #0009;margin-top:34px;max-width:620px}
 .inbox .top{background:#0b1020;color:#fff;padding:18px 20px}.inbox .top b{color:var(--y);font-size:22px;display:block}
 .inbox .row{padding:12px 20px;border-bottom:1px solid #e5e7eb}.inbox .row b{display:block}.inbox .row span{color:#64748b;font-size:13px}
+.vid{position:relative;display:block;margin-top:24px;border:1px solid #ffffff26;border-radius:22px;overflow:hidden;background:#000;max-width:960px;text-decoration:none;box-shadow:0 24px 60px #0009}
+.vid img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.vid .play{position:absolute;inset:auto 0 0 0;display:flex;gap:10px;align-items:center;padding:14px 18px;background:linear-gradient(180deg,#0000,#000c);font-weight:800;font-size:15px}
+.vid .play i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--y);color:#111;font-size:13px;font-style:normal}
 details{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:10px;background:#ffffff06}summary{cursor:pointer;font-weight:800;font-size:18px}details p{color:var(--mut);margin:10px 0 0}
 footer{color:var(--mut);font-size:13px;padding:30px 0 60px;border-top:1px solid var(--line)}footer a{color:#dbe3f5}
 @media(max-width:760px){.form{flex-wrap:wrap}.form select{max-width:none;flex:1;padding:12px}.form .btn{width:100%}.cols{grid-template-columns:1fr}.hide-m{display:none}}
@@ -77,6 +81,15 @@ footer{color:var(--mut);font-size:13px;padding:30px 0 60px;border-top:1px solid 
   <h2>Så ser måndagsmejlet ut</h2>
   <p class="sub">De största nya affärerna först, med köpare, uppskattat värde, sista anbudsdag och direktlänk till underlaget.</p>
   <div class="inbox"><div class="top">KOMMUNRADAR · VECKOBREV<b id="mailn">Nya upphandlingar för dig senaste veckan</b><span style="color:#94a3b8;font-size:13px" id="mailq">Bevakning: alla branscher · hela Sverige</span></div><div id="mailrows"></div></div>
+</section>
+
+<section>
+  <h2>Se appen i 15 sekunder</h2>
+  <p class="sub">Kommunradar hittar upphandlingen. Blueberry Station läser underlaget och pekar ut kraven, bilagorna och sista anbudsdagen — så att du vet om affären är din innan du börjar skriva.</p>
+  <a class="vid" href="video.html" aria-label="Spela videon: Blueberry Station i 15 sekunder">
+    <img src="media/blueberry-teaser-poster.jpg" alt="Skärmbild från Blueberry Station" width="1280" height="720" loading="lazy" decoding="async">
+    <span class="play"><i>▶</i> 15 sekunder · appdemo</span>
+  </a>
 </section>
 
 <section>
