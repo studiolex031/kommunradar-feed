@@ -24,6 +24,13 @@ jobs:
       - name: Installera bildrendering
         if: ${{ steps.done.outputs.cache-hit != 'true' }}
         run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Återställ X-token
+        if: ${{ steps.done.outputs.cache-hit != 'true' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: x-token
+          key: "x-token-${{ github.run_id }}"
+          restore-keys: "x-token-"
       - name: Bygg och posta
         if: ${{ steps.done.outputs.cache-hit != 'true' }}
         env:
@@ -31,6 +38,10 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
+          X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
+          X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+          X_TOKEN_STATE: x-token/state.json
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
@@ -39,6 +50,12 @@ jobs:
           REPORT_TO: ${{ secrets.REPORT_TO }}
           SITE_URL: ${{ vars.SITE_URL }}
         run: python scripts/x_daily.py ${{ inputs.dry_run && '--dry-run' || '' }}
+      - name: Spara X-token
+        if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
+        uses: actions/cache/save@v4
+        with:
+          path: x-token
+          key: "x-token-${{ github.run_id }}"
       - name: Markera dagen som postad
         if: ${{ steps.done.outputs.cache-hit != 'true' && !inputs.dry_run }}
         run: mkdir -p x-posted && date > x-posted/at

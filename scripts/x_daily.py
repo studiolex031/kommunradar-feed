@@ -4,11 +4,14 @@
     python scripts/x_daily.py               # postar på X (om X_*-nycklarna finns) och mejlar annonsmaterial till REPORT_TO
 
 Allt innehåll kommer ur leads.json (TED-data), inget hittas på. Text och bild renderas från mallar.
-Postning: X API v2 med OAuth 1.0a (kontots egna nycklar). Endast egna inlägg, aldrig svar till andra,
-eftersom X sedan feb 2026 bara tillåter automatiska svar till den som själv nämnt kontot.
+Postning: X API v2. Auth väljs automatiskt: OAuth 1.0a om X_API_KEY/X_API_SECRET/X_ACCESS_TOKEN/
+X_ACCESS_SECRET finns, annars OAuth 2.0 med användarkontext (X_CLIENT_ID, X_CLIENT_SECRET,
+X_REFRESH_TOKEN) — refresh-tokenet roteras vid varje körning och sparas i X_TOKEN_STATE.
+Endast egna inlägg, aldrig svar till andra, eftersom X sedan feb 2026 bara tillåter automatiska
+svar till den som själv nämnt kontot.
 Bildrendering kräver Playwright (installeras i workflowen); resten är standardbiblioteket.
 """
-import base64, hashlib, hmac, html, json, os, re, secrets, smtplib, ssl, sys, time, urllib.parse, urllib.request
+import base64, hashlib, hmac, html, json, os, re, secrets, smtplib, ssl, sys, time, urllib.error, urllib.parse, urllib.request
 from collections import Counter
 from datetime import date
 from email.message import EmailMessage
@@ -159,41 +162,131 @@ def oauth_header(method, url, params, keys, nonce=None, ts=None):
 
 
 def x_keys():
-    """Kontots fyra X-nycklar från miljön, eller None om någon saknas."""
+    """Kontots fyra OAuth 1.0a-nycklar från miljön, eller None om någon saknas."""
     k = [os.environ.get(n, "") for n in ("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_SECRET")]
     return tuple(k) if all(k) else None
 
 
-def x_request(method, url, keys, body=None, content_type=None, params=None):
-    """Signerat anrop mot X API; returnerar JSON-svaret."""
+# --- X API, OAuth 2.0 med användarkontext ---------------------------------------------------------
+def token_state_path():
+    """Fil där det roterade refresh-tokenet sparas mellan körningar."""
+    return os.environ.get("X_TOKEN_STATE") or os.path.join(ROOT, "x-token.json")
+
+
+def token_state():
+    """Sparat tillstånd (refresh_token m.m.), eller tom dict."""
+    try:
+        with open(token_state_path(), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def save_token_state(state):
+    path = token_state_path()
+    if os.path.dirname(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(state, f)
+
+
+def oauth2_token():
+    """Access-token för X API v2 med användarkontext (OAuth 2.0).
+
+    X:s access-token lever i 2 timmar och varje förnyelse ger ett nytt refresh-token,
+    så det senaste sparade värdet används före miljövariabeln X_REFRESH_TOKEN.
+    Returnerar (token, orsak); token är None när inget gick att få.
+    """
+    st = token_state()
+    refresh = st.get("refresh_token") or os.environ.get("X_REFRESH_TOKEN", "")
+    cid = os.environ.get("X_CLIENT_ID", "")
+    csec = os.environ.get("X_CLIENT_SECRET", "")
+    if refresh and cid:
+        form = urllib.parse.urlencode({"grant_type": "refresh_token", "refresh_token": refresh,
+                                       "client_id": cid}).encode()
+        req = urllib.request.Request("https://api.x.com/2/oauth2/token", data=form, method="POST")
+        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        if csec:  # konfidentiell klient: Basic-auth med client id + secret
+            req.add_header("Authorization", "Basic " + base64.b64encode(f"{cid}:{csec}".encode()).decode())
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                tok = json.load(r)
+        except urllib.error.HTTPError as e:
+            print(f"::error::X-tokenförnyelse misslyckades ({e.code}): "
+                  f"{e.read().decode('utf-8', 'replace')[:300]}")
+            return None, "tokenförnyelse misslyckades"
+        except Exception as e:
+            print(f"::error::X-tokenförnyelse misslyckades: {e}")
+            return None, "tokenförnyelse misslyckades"
+        access = tok.get("access_token")
+        if not access:
+            print(f"::error::Inget access_token i X-svaret: {str(tok)[:200]}")
+            return None, "inget access_token i svaret"
+        new_refresh = tok.get("refresh_token") or refresh
+        print(f"::add-mask::{access}")
+        print(f"::add-mask::{new_refresh}")
+        save_token_state({"access_token": access, "refresh_token": new_refresh,
+                          "expires_in": tok.get("expires_in"), "scope": tok.get("scope")})
+        print(f"X-token förnyat (giltigt {tok.get('expires_in')} s, scope {tok.get('scope')})")
+        return access, None
+    access = os.environ.get("X_ACCESS_TOKEN", "")
+    return (access, None) if access else (None, "X-nycklar saknas")
+
+
+def oauth1_auth(keys):
+    """Auth-funktion för OAuth 1.0a: signerar varje anrop."""
+    return lambda method, url, params: {"Authorization": oauth_header(method, url, params or {}, keys)}
+
+
+def oauth2_auth(token):
+    """Auth-funktion för OAuth 2.0: bearer med användarkontext."""
+    return lambda method, url, params: {"Authorization": "Bearer " + token}
+
+
+def x_auth():
+    """Auth för X-anropen: OAuth 1.0a om de fyra nycklarna finns, annars OAuth 2.0. Ger (auth, orsak)."""
+    keys = x_keys()
+    if keys:
+        return oauth1_auth(keys), None
+    token, reason = oauth2_token()
+    return (oauth2_auth(token), None) if token else (None, reason)
+
+
+def x_request(method, url, auth, body=None, content_type=None, params=None):
+    """Anrop mot X API med given auth; returnerar JSON-svaret.
+
+    auth är en funktion från oauth1_auth()/oauth2_auth(), eller (för bakåtkompatibilitet)
+    en tuple med de fyra OAuth 1.0a-nycklarna.
+    """
+    if isinstance(auth, (tuple, list)):
+        auth = oauth1_auth(tuple(auth))
     full = url + ("?" + urllib.parse.urlencode(params) if params else "")
-    req = urllib.request.Request(full, data=body, method=method,
-                                 headers={"Authorization": oauth_header(method, url, params or {}, keys)})
+    req = urllib.request.Request(full, data=body, method=method, headers=auth(method, url, params))
     if content_type:
         req.add_header("Content-Type", content_type)
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.load(r)
 
 
-def upload_image(path, keys):
+def upload_image(path, auth):
     """Laddar upp en PNG via X API v2 och returnerar media-id."""
     boundary = secrets.token_hex(12)
     data = open(path, "rb").read()
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"media_category\"\r\n\r\ntweet_image\r\n"
             f"--{boundary}\r\nContent-Disposition: form-data; name=\"media\"; filename=\"post.png\"\r\n"
             f"Content-Type: image/png\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
-    r = x_request("POST", "https://api.x.com/2/media/upload", keys, body, f"multipart/form-data; boundary={boundary}")
+    r = x_request("POST", "https://api.x.com/2/media/upload", auth, body, f"multipart/form-data; boundary={boundary}")
     return r["data"]["id"]
 
 
-def post(text, image, keys):
+def post(text, image, auth):
     """Postar inlägget med bild (utan bild om uppladdningen misslyckas); returnerar inläggets id."""
     payload = {"text": text}
     try:
-        payload["media"] = {"media_ids": [upload_image(image, keys)]}
+        payload["media"] = {"media_ids": [upload_image(image, auth)]}
     except Exception as e:  # hellre ett inlägg utan bild än inget inlägg
         print(f"::warning::Bilduppladdning misslyckades ({e}); postar utan bild")
-    r = x_request("POST", "https://api.x.com/2/tweets", keys, json.dumps(payload).encode(), "application/json")
+    r = x_request("POST", "https://api.x.com/2/tweets", auth, json.dumps(payload).encode(), "application/json")
     return r["data"]["id"]
 
 
@@ -224,12 +317,24 @@ def main():
     print(text, f"\n({tweet_length(text)} tecken)")
     if dry:
         print("Torrkörning: bilder i", out); return
-    keys, status = x_keys(), "inte postat (X-nycklar saknas)"
-    if keys:
-        tid = post(text, images[0], keys)
-        status = f"postat: https://x.com/i/web/status/{tid}"
+    auth, reason = x_auth()
+    failed = False
+    if auth:
+        try:
+            tid = post(text, images[0], auth)
+            status = f"postat: https://x.com/i/web/status/{tid}"
+        except urllib.error.HTTPError as e:
+            status = f"postning misslyckades ({e.code}): {e.read().decode('utf-8', 'replace')[:400]}"
+            print(f"::error::{status}")
+            failed = True
+        except Exception as e:
+            status = f"postning misslyckades: {e}"
+            print(f"::error::{status}")
+            failed = True
+    else:
+        status = f"inte postat ({reason})"
     print(status)
-    if not keys and not (os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST")):
+    if not auth and not (os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST")):
         raise SystemExit("Varken X-nycklar eller REPORT_TO/SMTP_HOST finns: inget att leverera till")
     if os.environ.get("REPORT_TO") and os.environ.get("SMTP_HOST"):
         ads = "\n".join(f"{i}. {a}" for i, a in enumerate(ad_copy(p), 1))
@@ -239,8 +344,10 @@ def main():
                  "Bilder bifogade: post.png (1200x675) och annons-kvadrat.png (1080x1080).", images)
         except Exception as e:
             print(f"::warning::Mejlet misslyckades ({e})")
-            if not keys:  # utan X är mejlet enda leveransen: låt jobbet fallera så dagen inte markeras som klar
+            if not auth:  # utan X är mejlet enda leveransen: låt jobbet fallera så dagen inte markeras som klar
                 raise
+    if failed:  # dagens inlägg gick inte ut: låt jobbet fallera så nästa körning försöker igen
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

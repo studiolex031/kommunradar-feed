@@ -7,3 +7,7 @@ vinnar-leads*.csv
 x-out/
 x-posted/
 x-state.json
+x-token.json
+linkedin-token.json
+social-out/
+linkedin-network.csv
