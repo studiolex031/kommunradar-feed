@@ -3,9 +3,11 @@ name: outbound-vinnare
 # offentlig upphandling (scripts/outbound_send.py).
 #
 # En batch per vardag, inte hela listan på en gång: en brevlåda som skickar
-# hundratals kalla mejl i en burst blir blockerad av Gmail och hamnar i
-# skräppost. State ligger i .github/outbound/sent.json, så ingen får mejlet
-# två gånger och listan tar slut av sig själv.
+# hundratals kalla mejl i en burst blir blockerad. Det hände 2026-11-18 —
+# Simply.com spärrade kontot efter 149 mejl på två timmar, och deras policy
+# förbjuder uttryckligen cold mailing på smtp.simply.com. Workflowen är därför
+# AVSTÄNGD tills SMTP flyttats till en transaktionell leverantör (Brevo, 0 kr).
+# Se kommunradar/outbound/vinnar-leads.md.
 on:
   schedule: [{cron: "0 6 * * 1-5"}]   # vardagar 07:00 svensk tid
   workflow_dispatch:
