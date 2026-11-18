@@ -54,4 +54,4 @@ Efter att API:t är driftsatt:
 
 Kör:
 
-    python -m unittest tests/test_checkout_session.py
+    python -m unittest discover -s tests -p 'test_checkout_session.py' -v
