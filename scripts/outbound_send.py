@@ -18,14 +18,25 @@ och committas av workflowen, så ingen får samma mejl två gånger.
 Endast standardbiblioteket.
 """
 import csv, hashlib, json, os, random, smtplib, ssl, sys, time
-from datetime import date
+from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formataddr
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = os.path.join(ROOT, ".github", "outbound", "sent.json")
+SPÄRR_FIL = os.path.join(ROOT, ".github", "outbound", "SPARRAD")
 LEADS = os.path.join(ROOT, "leads.json")
 CSV = os.path.join(ROOT, "vinnar-leads.csv")
+
+# Hårda tak. Simply.com spärrade kontot 2026-11-18 efter 149 mejl på två timmar
+# och tillåter inte cold mailing alls — men taken gäller även hos en bättre
+# leverantör: volymen är det som bränner avsändaren.
+MAX_PER_DAG = int(os.environ.get("OUTBOUND_MAX_DAG", "20"))
+MAX_PER_TIMME = int(os.environ.get("OUTBOUND_MAX_TIMME", "30"))
+
+# Svar som betyder "kontot är spärrat", inte "den adressen var dålig".
+SPÄRR_ORD = ("account has been blocked", "send limit reached", "authentication failed",
+             "5.7.8", "4.7.0", "too many messages", "rate limit")
 
 AVSANDARE = "Alexander Pålsson, grundare"
 ORG = "Kommunradar · org.nr 19870929-3552 · Rävebergsvägen 130P, 424 67 Angered"
@@ -51,6 +62,47 @@ def skriv_state(s):
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     with open(STATE, "w", encoding="utf8") as f:
         json.dump(s, f, ensure_ascii=False, indent=1, sort_keys=True)
+
+
+def är_spärr(fel):
+    text = str(fel).lower()
+    return any(ordet in text for ordet in SPÄRR_ORD)
+
+
+def spärra(orsak):
+    """Skriver en spärrflagga som stoppar alla senare körningar tills den tas bort."""
+    os.makedirs(os.path.dirname(SPÄRR_FIL), exist_ok=True)
+    with open(SPÄRR_FIL, "w", encoding="utf8") as f:
+        f.write(f"{datetime.now().isoformat(timespec='seconds')}\n{orsak}\n")
+    print(f"SPÄRRAD: {orsak}")
+
+
+def spärrad():
+    try:
+        with open(SPÄRR_FIL, encoding="utf8") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return ""
+
+
+def idag_antal(state):
+    d = date.today().isoformat()
+    return sum(1 for v in state.values() if v.get("datum") == d)
+
+
+def senaste_timmen(state):
+    gräns = datetime.now() - timedelta(hours=1)
+    träffar = []
+    for v in state.values():
+        t = v.get("tid")
+        if not t:
+            continue
+        try:
+            if datetime.fromisoformat(t) > gräns:
+                träffar.append(t)
+        except ValueError:
+            continue
+    return träffar
 
 
 def las_oppna():
@@ -140,12 +192,20 @@ def skicka(rader, limit, oppna, state):
         print("Inget kvar att skicka — alla i listan har redan fått mejlet.")
         return []
 
-    smtp = smtplib.SMTP(host, port, timeout=90)
-    smtp.starttls(context=ssl.create_default_context())
-    smtp.login(anv, lösen)
+    try:
+        smtp = smtplib.SMTP(host, port, timeout=90)
+        smtp.starttls(context=ssl.create_default_context())
+        smtp.login(anv, lösen)
+    except smtplib.SMTPAuthenticationError as e:
+        spärra(f"inloggning nekad: {e}")
+        raise
+
     skickade = []
     try:
         for i, rad in enumerate(att_skicka, 1):
+            if len(senaste_timmen(state)) >= MAX_PER_TIMME:
+                print(f"  Timtaket {MAX_PER_TIMME}/h nått — resten sparas till nästa körning.")
+                break
             ämne, text = bygg(rad, oppna)
             msg = EmailMessage()
             msg["Subject"] = ämne
@@ -156,17 +216,28 @@ def skicka(rader, limit, oppna, state):
             msg.set_content(text, charset="utf-8")
             try:
                 smtp.send_message(msg)
-            except Exception as e:  # en dålig adress ska inte stoppa batchen
+            except Exception as e:
+                # En död adress ska inte stoppa batchen — men en spärr ska stoppa allt.
+                if är_spärr(e):
+                    spärra(str(e)[:400])
+                    raise
                 print(f"  HOPPADE ÖVER {rad['epost']}: {e}")
                 continue
-            state[nyckel(rad["epost"])] = {"datum": date.today().isoformat(), "bolag": rad["bolag"]}
+            state[nyckel(rad["epost"])] = {
+                "datum": date.today().isoformat(),
+                "tid": datetime.now().isoformat(timespec="seconds"),
+                "bolag": rad["bolag"],
+            }
             skriv_state(state)
             skickade.append(rad)
             print(f"  {i}/{len(att_skicka)}  {rad['bolag']} <{rad['epost']}>")
             if i < len(att_skicka):
                 time.sleep(random.uniform(4, 9))
     finally:
-        smtp.quit()
+        try:
+            smtp.quit()
+        except Exception:
+            pass
     return skickade
 
 
@@ -193,8 +264,9 @@ def rapport(skickade, kvar):
 
 
 def main():
-    limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 45
+    limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else MAX_PER_DAG
     days = int(sys.argv[sys.argv.index("--days") + 1]) if "--days" in sys.argv else 3
+    torr = "--dry-run" in sys.argv
 
     if "--csv" in sys.argv:
         path = sys.argv[sys.argv.index("--csv") + 1]
@@ -210,10 +282,27 @@ def main():
 
     oppna = las_oppna()
     state = las_state()
+
+    if not torr and "--force" not in sys.argv:
+        flagga = spärrad()
+        if flagga:
+            print("Körningen stoppad — kontot spärrades vid ett tidigare försök:\n" + flagga)
+            print(f"Ta bort {SPÄRR_FIL} när spärren är hävd, eller kör med --force.")
+            return
+
+    redan_idag = idag_antal(state)
+    kvar_idag = max(0, MAX_PER_DAG - redan_idag)
+    if not torr:
+        if kvar_idag == 0:
+            print(f"Dagens tak nått: {redan_idag}/{MAX_PER_DAG} mejl i dag. Inget skickas.")
+            return
+        limit = min(limit, kvar_idag)
+
     kvar = [r for r in rader if nyckel(r["epost"]) not in state and r["epost"].strip().lower() not in SPÄRR]
 
-    if "--dry-run" in sys.argv:
-        print(f"{len(rader)} i listan, {len(kvar)} osända. Visar {min(limit, len(kvar))}:\n")
+    if torr:
+        print(f"{len(rader)} i listan, {len(kvar)} osända. "
+              f"I dag: {redan_idag}/{MAX_PER_DAG}. Visar {min(limit, len(kvar))}:\n")
         for rad in kvar[:limit]:
             ämne, text = bygg(rad, oppna)
             print("=" * 70)

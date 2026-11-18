@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Mejl i den här körningen"
-        default: "65"
+        description: "Mejl i den här körningen (tak: OUTBOUND_MAX_DAG)"
+        default: "20"
       days:
         description: "Lookback i dagar (fler = större lista)"
         default: "7"
@@ -30,21 +30,22 @@ jobs:
       - name: Skicka nästa batch
         run: python scripts/outbound_send.py --fresh --limit "$LIMIT" --days "$DAYS" --report
         env:
-          LIMIT: ${{ inputs.limit || '65' }}
+          LIMIT: ${{ inputs.limit || '20' }}
           DAYS: ${{ inputs.days || '7' }}
+          OUTBOUND_MAX_DAG: "20"
+          OUTBOUND_MAX_TIMME: "30"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           REPORT_TO: ${{ secrets.REPORT_TO }}
-      - name: Spara vilka som redan fått mejl
+      - name: Spara state och eventuell spärr
         if: always()
         run: |
-          [ -f .github/outbound/sent.json ] || exit 0
           git config user.name "outbound-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add .github/outbound/sent.json
+          git add .github/outbound/
           git diff --staged --quiet && echo "Ingen ny state" && exit 0
           git commit -m "Outbound: batch $(date -u +%F)"
           git pull --rebase origin main
