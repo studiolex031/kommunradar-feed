@@ -1,0 +1,49 @@
+name: outbound-vinnare
+# Skickar det personliga första-mejlet till bolag som nyss vunnit en svensk
+# offentlig upphandling (scripts/outbound_send.py).
+#
+# En batch per vardag, inte hela listan på en gång: en brevlåda som skickar
+# hundratals kalla mejl i en burst blir blockerad av Gmail och hamnar i
+# skräppost. State ligger i .github/outbound/sent.json, så ingen får mejlet
+# två gånger och listan tar slut av sig själv.
+on:
+  schedule: [{cron: "0 6 * * 1-5"}]   # vardagar 07:00 svensk tid
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Mejl i den här körningen"
+        default: "65"
+      days:
+        description: "Lookback i dagar (fler = större lista)"
+        default: "7"
+permissions: {contents: write}
+concurrency: {group: outbound-vinnare, cancel-in-progress: false}
+jobs:
+  skicka:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Skicka nästa batch
+        run: python scripts/outbound_send.py --fresh --limit "$LIMIT" --days "$DAYS" --report
+        env:
+          LIMIT: ${{ inputs.limit || '65' }}
+          DAYS: ${{ inputs.days || '7' }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+      - name: Spara vilka som redan fått mejl
+        if: always()
+        run: |
+          [ -f .github/outbound/sent.json ] || exit 0
+          git config user.name "outbound-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add .github/outbound/sent.json
+          git diff --staged --quiet && echo "Ingen ny state" && exit 0
+          git commit -m "Outbound: batch $(date -u +%F)"
+          git pull --rebase origin main
+          git push
