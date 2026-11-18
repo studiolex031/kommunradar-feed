@@ -39,6 +39,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          REPLY_TO: ${{ secrets.REPLY_TO }}
           REPORT_TO: ${{ secrets.REPORT_TO }}
       - name: Spara state och eventuell spärr
         if: always()

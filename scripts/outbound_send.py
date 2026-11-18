@@ -185,6 +185,7 @@ def skicka(rader, limit, oppna, state):
     host, port = os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587"))
     anv, lösen = os.environ["SMTP_USER"], os.environ["SMTP_PASS"]
     från = os.environ.get("MAIL_FROM", anv)
+    svar_till = os.environ.get("REPLY_TO") or från
 
     att_skicka = [r for r in rader
                   if r["epost"].strip().lower() not in SPÄRR and nyckel(r["epost"]) not in state][:limit]
@@ -211,8 +212,8 @@ def skicka(rader, limit, oppna, state):
             msg["Subject"] = ämne
             msg["From"] = formataddr(("Alexander på Kommunradar", från))
             msg["To"] = rad["epost"]
-            msg["Reply-To"] = från
-            msg["List-Unsubscribe"] = f"<mailto:{från}?subject=sluta>"
+            msg["Reply-To"] = svar_till
+            msg["List-Unsubscribe"] = f"<mailto:{svar_till}?subject=sluta>"
             msg.set_content(text, charset="utf-8")
             try:
                 smtp.send_message(msg)
@@ -263,6 +264,27 @@ def rapport(skickade, kvar):
     smtp.quit()
 
 
+def spara_lista(path, nya):
+    """Skriver listan utan att tappa bolag som redan finns i den.
+
+    --fresh hämtar nya vinnare ur TED, men filen måste vara kumulativ:
+    uppföljningen (followup_send.py) läser bolag som skickades för dagar sedan,
+    och de finns inte i ett fönster på sju dagar.
+    """
+    gamla = []
+    if os.path.exists(path):
+        with open(path, encoding="utf-8-sig") as f:
+            gamla = list(csv.DictReader(f))
+    sedda = {r["epost"].strip().lower() for r in gamla}
+    alla = gamla + [r for r in nya if r["epost"].strip().lower() not in sedda]
+    fält = list(nya[0].keys()) if nya else (list(gamla[0].keys()) if gamla else ["bolag"])
+    with open(path, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fält)
+        w.writeheader()
+        w.writerows(alla)
+    return len(alla) - len(gamla)
+
+
 def main():
     limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else MAX_PER_DAG
     days = int(sys.argv[sys.argv.index("--days") + 1]) if "--days" in sys.argv else 3
@@ -276,7 +298,8 @@ def main():
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             import winner_leads
             rader = winner_leads.collect(days)
-            open(path, "w", encoding="utf-8-sig").write(winner_leads.to_csv(rader))
+            nya = spara_lista(path, rader)
+            print(f"{nya} nya leads tillagda i {os.path.basename(path)}.")
     with open(path, encoding="utf-8-sig") as f:
         rader = list(csv.DictReader(f))
 
