@@ -194,7 +194,7 @@ def bygg(rad, oppna):
 
     stycken += [
         f"Vill ni ha nästa liknande affär i mejlen i stället? Det tar en minut att svara ja, "
-        f"och ni får sju dagar gratis utan kort: {SIDA}",
+        f"och ni får sju dagar gratis utan kort. Sedan 490 kr i månaden i grundarpris: {SIDA}",
         f"Vänligen,\n{AVSANDARE}\n{ORG}\nSvara \"sluta\" så skickar vi inga fler mejl.",
     ]
     return ämne, "\n\n".join(stycken)

@@ -28,6 +28,7 @@ jobs:
           LIMIT: ${{ inputs.limit || '50' }}
           FOLLOWUP_MAX_DAG: "50"
           FOLLOWUP_MAX_TIMME: "60"
+          FOLLOWUP_DAYS: "21"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}

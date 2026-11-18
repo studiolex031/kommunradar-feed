@@ -5,8 +5,9 @@
     python scripts/winner_leads.py --probe             # rått TED-svar för felsökning
 
 Filen innehåller kontaktuppgifter och ska aldrig checkas in: repot är publikt. Därför mejlas listan i stället för
-att committas eller laddas upp som artefakt. Storbolag och koncerner filtreras bort, och varje rad märks med om
-adressen är generisk (info@, kontakt@ …) eller personlig, så att den som skickar kan välja rättslig grund.
+att committas eller laddas upp som artefakt. Stora koncerner och anbudsavdelningar filtreras bort (se
+`for_stor` — en lista, inte en mätning), och varje rad märks med om adressen är generisk (info@, kontakt@ …)
+eller personlig, så att den som skickar kan välja rättslig grund.
 Endast standardbiblioteket.
 """
 import csv, html, io, json, os, re, smtplib, ssl, sys, time, urllib.error, urllib.request
@@ -14,7 +15,9 @@ from datetime import date, timedelta
 from email.message import EmailMessage
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from feed import CPV, LAN, retry_after  # noqa: E402
+from leadfilter import for_stor  # noqa: E402
 
 URL = "https://api.ted.europa.eu/v3/notices/search"
 FIELDS = ["publication-number", "publication-date", "notice-title", "buyer-name", "buyer-country-sub",
@@ -23,12 +26,6 @@ FIELDS = ["publication-number", "publication-date", "notice-title", "buyer-name"
           "organisation-internet-address-tenderer"]
 GENERIC = re.compile(r"^(info|kontakt|contact|hej|hello|post|mail|order|offert|anbud|sales|salj|forsaljning|"
                      r"kundservice|kundtjanst|support|reception|admin|office|kontoret|ekonomi|faktura)\b", re.I)
-# Bolag som redan har egna anbudsavdelningar och inte är målgruppen (5–150 anställda).
-BIG = re.compile(r"\b(peab|ncc|skanska|veidekke|jm|svevia|ramboll|sweco|wsp|afry|tyréns|iss|sodexo|compass|coor|"
-                 r"samhall|forenede|stena|ragn-sells|prezero|ab volvo|scania|siemens|atea|tietoevry|cgi|telia|"
-                 r"tele2|vattenfall|eon|e\.on|fortum|attendo|azets|omexom|ge healthcare|securitas|g4s|avarn|bravida|caverion|instalco|assemblin)\b", re.I)
-
-
 def fetch(query, page=1, limit=100):
     body = json.dumps({"query": query, "fields": FIELDS, "page": page, "limit": limit}).encode()
     req = urllib.request.Request(URL, data=body, headers={"Content-Type": "application/json"})
@@ -89,7 +86,7 @@ def rows_from_notice(n):
     out = []
     for w in winners:
         c = contact.get(norm(w))
-        if not c or "@" not in c["email"] or BIG.search(w): continue
+        if not c or "@" not in c["email"] or for_stor(w, c["email"]): continue
         local = c["email"].split("@")[0]
         out.append({"bolag": w, "epost": c["email"], "adresstyp": "generisk" if GENERIC.match(local) else "personlig",
                     "ort": c["city"], "webb": c["web"], "upphandling": clean_title((values(n.get("notice-title"), True) or [""])[0])[:140],

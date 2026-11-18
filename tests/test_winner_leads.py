@@ -72,5 +72,33 @@ class WinnerLeadsTest(unittest.TestCase):
         self.assertIn("ncleanfacility", wl.to_csv(wl.rows_from_notice(NOTICE)))
 
 
+class StorleksfilterTest(unittest.TestCase):
+    """Filtret är en lista, inte en mätning. Testerna låser beteendet, inte sanningen."""
+
+    def test_kand_jatte_pa_doman_filtreras_bort(self):
+        self.assertTrue(wl.for_stor("Manpower Aktiebolag", "bidteam@manpowergroup.se"))
+        self.assertTrue(wl.for_stor("Academic Work Sweden AB", "elias.allenback@academicwork.se"))
+        self.assertTrue(wl.for_stor("Medtronic Aktiebolag", "upphandling@medtronic.com"))
+
+    def test_anbudsavdelning_filtreras_bort(self):
+        for epost in ("bid@b3.se", "bidteam@randstad.se", "avrop@tengbom.se",
+                      "avropa@jurek.se", "ramavtal@chas.se", "tenders@stromsholmadvokat.se"):
+            self.assertTrue(wl.for_stor("Okant Bolag AB", epost), epost)
+
+    def test_litet_bolag_med_upphandlingadress_behalles(self):
+        """upphandling@ och info@ används av små bolag också — de får inte filtreras."""
+        self.assertFalse(wl.for_stor("Care of Sweden AB", "upphandling@careofsweden.se"))
+        self.assertFalse(wl.for_stor("Cemi AB", "upphandling@cemi.se"))
+        self.assertFalse(wl.for_stor("WPcon AB", "anders.brisme@wpcon.se"))
+        self.assertFalse(wl.for_stor("Markkompaniet Syd AB", "johan.slagstedt@markkompaniet.se"))
+
+    def test_filtret_anvands_nar_listan_byggs(self):
+        n = {**NOTICE, "winner-name": {"swe": ["Manpower Aktiebolag"]},
+             "organisation-name-tenderer": {"swe": ["Manpower Aktiebolag"]},
+             "organisation-email-tenderer": ["bidteam@manpowergroup.se"],
+             "organisation-city-tenderer": ["Stockholm"]}
+        self.assertEqual(wl.rows_from_notice(n), [])
+
+
 if __name__ == "__main__":
     unittest.main()

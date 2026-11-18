@@ -52,15 +52,40 @@ class PlanTest(unittest.TestCase):
         jobb = F.plan([b, a], sent, {}, set(), date(2026, 11, 22))
         self.assertEqual([x[1]["epost"] for x in jobb], ["a@b.se", "c@d.se"])
 
+    def test_for_stora_bolag_far_ingen_uppfoljning(self):
+        """De fick mejl 1 innan filtret fanns — de ska inte ha två mejl till."""
+        liten = rad(epost="anders.brisme@wpcon.se", bolag="WPcon AB")
+        stor = rad(epost="bid@poolia.se", bolag="Poolia AB")
+        sent = {O.nyckel(r["epost"]): {"datum": "2026-11-18"} for r in (liten, stor)}
+        jobb = F.plan([liten, stor], sent, {}, set(), date(2026, 11, 22))
+        self.assertEqual([r["epost"] for _, r, _ in jobb], ["anders.brisme@wpcon.se"])
+
 
 class TextTest(unittest.TestCase):
     def test_steg_2_är_ett_svar_på_mejl_1(self):
         ämne, text = F.bygg(rad(), [], 2)
         self.assertTrue(ämne.startswith("Re: Grattis till er vinst"))
         self.assertIn("Testbolag", text + "Testbolag")  # bolaget står i ämnet/listan, inte alltid i texten
-        self.assertIn("förra veckan", text)
         self.assertIn("Städning hos Testkommun", text)
         self.assertIn("sluta", text)
+
+    def test_mejl_2_säger_vad_det_kostar(self):
+        _, text = F.bygg(rad(), [], 2)
+        self.assertIn("490 kr i månaden", text)
+
+    def test_mejl_3_säger_vad_det_kostar(self):
+        _, text = F.bygg(rad(), [], 3)
+        self.assertIn("490 kr i månaden", text)
+
+    def test_inga_konkurrentnamn_i_mejlen(self):
+        """Vi ska inte plantera ett konkurrentnamn hos den som inte känner till det."""
+        for steg in (2, 3):
+            _, text = F.bygg(rad(), [], steg)
+            self.assertNotIn("Tendium", text)
+
+    def test_mejl_2_lovar_inte_att_ersätta_ett_system(self):
+        _, text = F.bygg(rad(), [], 2)
+        self.assertIn("ingen ersättning", text)
 
     def test_steg_3_är_sista_mejlet(self):
         ämne, text = F.bygg(rad(), [], 3)

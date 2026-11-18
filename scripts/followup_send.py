@@ -23,6 +23,7 @@ from email.utils import formataddr
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import outbound_send as O
+from leadfilter import for_stor
 
 ROOT = O.ROOT
 FOLLOWUP_STATE = os.path.join(ROOT, ".github", "outbound", "followup.json")
@@ -31,6 +32,10 @@ SVARAT = os.path.join(ROOT, ".github", "outbound", "svarat.txt")
 # Dagar mellan mejlen. Dag 4 och dag 9 räknat från mejl 1.
 STEG2_DAGAR = 4
 STEG3_DAGAR = 5
+
+# Priset står i mejl 2 och 3. Första mejlet sålde bara "gratis" — det var ett fel:
+# priset är det enda vi vet att konkurrenterna inte matchar, och det ska stå tidigt.
+PRIS = "490 kr i månaden (grundarpris)"
 
 # Uppföljningen har ett eget tak, högre än första utskicket: hela listan på 190
 # blev mogna samma dag (de skickades samma dag), och med 20/dag hade de sista
@@ -96,6 +101,8 @@ def plan(rader, sent, fstate, svarat, idag=None):
         epost = rad["epost"].strip().lower()
         if epost in O.spärrade() or epost in svarat:
             continue
+        if for_stor(rad["bolag"], epost):
+            continue  # för stort bolag, se leadfilter.py
         h = O.nyckel(epost)
         if h not in sent:
             continue  # har aldrig fått mejl 1
@@ -129,11 +136,13 @@ def bygg(rad, oppna, steg):
     if steg == 2:
         stycken = [
             "Hej,",
-            f"Jag skrev till er förra veckan om vinsten i {vinst}. Kort version:",
+            f"Jag skrev till er om vinsten i {vinst}. Kort version:",
             "Kommunradar bevakar de svenska offentliga upphandlingarna och mejlar varje "
             "morgon de som matchar er bransch och ert län — köpare, uppskattat värde och "
             "sista anbudsdag.",
             _exempel(rad, oppna),
+            f"Har ni redan ett system för bevakning är vi ingen ersättning för det — vi är "
+            f"ett mejl på morgonen för {PRIS}, ingen inloggning och inget att implementera.",
             "Om det inte är relevant: svara \"nej\", så hör jag inte av mig igen.\n"
             f"Är det relevant: sju dagar gratis, inget kort — {O.SIDA}",
         ]
@@ -143,6 +152,8 @@ def bygg(rad, oppna, steg):
             "Sista mejlet från mig om det här.",
             f"Ni vann {vinst}.",
             _exempel(rad, oppna),
+            f"Vi kostar {PRIS}. Ett mejl på morgonen med de upphandlingar som matchar er "
+            "bransch och ert län — köpare, värde och sista anbudsdag.",
             "Vill ni ha nästa liknande affär i mejlen i stället för att leta själva? "
             f"Sju dagar gratis, inget kort — {O.SIDA}",
             "Svarar ni inte hör jag inte av mig igen.",
@@ -236,9 +247,24 @@ def rapport(skickade, kvar):
 
 
 def las_lista():
+    """Listan med bolag att följa upp.
+
+    Lokalt finns `vinnar-leads.csv`. I molnet gör den aldrig det — den innehåller
+    e-postadresser och checkas aldrig in i ett publikt repo. Då byggs listan om
+    från TED i stället, samma källa som byggde den från början: samma bolag, samma
+    adresser, ingen personuppgift i git. Fönstret måste vara bredare än dag 9,
+    eftersom kön på 50/dygn gör att sista steget 3 går ut först runt dag 14.
+    """
     path = os.environ.get("FOLLOWUP_CSV", O.CSV)
-    with open(path, encoding="utf-8-sig") as f:
-        return list(csv.DictReader(f))
+    if os.path.exists(path):
+        with open(path, encoding="utf-8-sig") as f:
+            return list(csv.DictReader(f))
+    import winner_leads
+    dagar = int(os.environ.get("FOLLOWUP_DAYS", "21"))
+    print(f"Ingen CSV — hämtar vinnare från TED, senaste {dagar} dagarna.")
+    rader = winner_leads.collect(dagar)
+    print(f"TED gav {len(rader)} rader.")
+    return rader
 
 
 def main():
@@ -259,6 +285,7 @@ def main():
             return
 
     jobb = plan(rader, sent, fstate, svarat)
+    stora = sum(1 for r in rader if for_stor(r["bolag"], r["epost"]))
 
     redan_idag = idag_antal(fstate)
     if not torr:
@@ -270,8 +297,9 @@ def main():
 
     if torr:
         print(f"{len(rader)} i listan, {len(sent)} har fått mejl 1, "
-              f"{len(jobb)} mogna för uppföljning, {len(svarat)} har svarat. "
-              f"I dag: {redan_idag}/{MAX_PER_DAG}. Visar {min(limit, len(jobb))}:\n")
+              f"{len(jobb)} mogna för uppföljning, {len(svarat)} har svarat, "
+              f"{stora} för stora. I dag: {redan_idag}/{MAX_PER_DAG}. "
+              f"Visar {min(limit, len(jobb))}:\n")
         for dagar, rad, steg in jobb[:limit]:
             ämne, text = bygg(rad, oppna, steg)
             print("=" * 70)
