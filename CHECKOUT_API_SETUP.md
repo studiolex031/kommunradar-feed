@@ -55,3 +55,22 @@ Efter att API:t är driftsatt:
 Kör:
 
     python -m unittest discover -s tests -p 'test_checkout_session.py' -v
+
+
+## Separat Vercel-projekt skapat (2026-11-18)
+
+Ett fristående Vercel-projekt har skapats för API:t:
+
+- Projektnamn: `kommunradar-checkout-api`
+- Project ID: `prj_54IQdfpZ0FwX98zhWHrSDMeUIgAG`
+- Region för serverless-funktioner: Frankfurt (`fra1`)
+- Automatisk Git-koppling: inte konfigurerad
+- Anpassad domän: ingen
+- Miljövariabler: inga
+- Deployments: 0
+
+Projektets standarddomän `kommunradar-checkout-api.vercel.app` finns reserverad av Vercel, men det finns ingen deployment bakom den ännu.
+
+Git-repot har avsiktligt inte kopplats in. Att koppla en repo med `main` som produktionsgren kan utlösa automatiska byggen/deployments när framtida commits kommer in. Innan Git-koppling bör produktionsgrenen och deployment-policy ställas in så att endast en uttryckligen vald preview-branch kan byggas.
+
+Projektet har skapats utan att koppla domän, lägga till hemligheter, ändra den befintliga sajten eller starta en deployment. Ingen användningsbaserad serverkörning har startats.
