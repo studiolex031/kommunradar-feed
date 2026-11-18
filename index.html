@@ -34,7 +34,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:20p
 .dot{width:8px;height:8px;border-radius:50%;background:#22d3ee;box-shadow:0 0 0 0 #22d3eeaa;animation:ping 1.6s infinite}@keyframes ping{70%{box-shadow:0 0 0 10px #22d3ee00}}
 h1{font-size:clamp(42px,7.5vw,92px);line-height:.95;letter-spacing:-.045em;margin:22px auto 0;max-width:1000px;font-weight:900}
 .num{background:linear-gradient(90deg,var(--y),var(--o),var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{font-size:clamp(17px,2vw,21px);color:#c7d0e6;max-width:720px;margin:20px auto 0}
+.lead{font-size:clamp(17px,2vw,21px);color:#c7d0e6;max-width:720px;margin:20px auto 0}.checkout-status{min-height:1.5em;margin:12px auto 0;color:#a5f3fc;font-size:14px;text-align:center}
 .search{max-width:760px;margin:34px auto 0;background:#ffffff0d;border:1px solid #ffffff26;border-radius:22px;padding:10px;display:flex;gap:8px;box-shadow:0 30px 80px #0008}
 .search input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font:600 19px "Inter Tight",system-ui,sans-serif;padding:12px 14px}
 .search select{background:#0e1530;color:#fff;border:1px solid var(--line);border-radius:12px;padding:0 10px;font:600 15px "Inter Tight",system-ui,sans-serif;max-width:38%}
@@ -88,10 +88,11 @@ footer a{color:#dbe3f5}
   <h1><span class="num" id="cnt">Över 1 000</span> öppna offentliga upphandlingar just nu. Vilka är dina?</h1>
   <p class="lead">Kommunen, regionen och staten köper för miljarder varje månad. Kommunradar hittar de affärer som passar <b>din bransch i ditt län</b> — och mejlar dem till dig varje morgon.</p>
   <form class="search" id="f" onsubmit="return false">
-    <input id="q" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
+    <input id="q" maxlength="120" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
     <select id="lan" aria-label="Län"><option value="">Hela Sverige</option></select>
     <button class="btn y" type="button" id="go">Visa mina affärer →</button>
   </form>
+  <p id="checkout-status" class="checkout-status" role="status" aria-live="polite"></p>
   <p class="preview-note">Förhandsvisning: sökningen ovan visar exempel på träffar. Dina bevakningsord och ditt län anges i nästa steg och förs inte automatiskt över till Stripe.</p>
   <div class="chips" id="chips"></div>
   <div class="res" id="res"></div>
@@ -130,7 +131,7 @@ footer a{color:#dbe3f5}
     <ul><li>Dagligt mejl med nya matchande upphandlingar</li><li>Alla branscher, hela Sverige eller ditt län</li><li>Köpare, uppskattat värde och sista anbudsdag</li><li>Direktlänk till underlaget</li><li id="trialli">Prova gratis i 7 dagar</li></ul>
     <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
     <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
-    <div class="checkout-note" role="note"><strong>Så fungerar provperioden:</strong> 0 kr idag. En betalningsmetod och faktureringsadress krävs när du startar. Efter 7 dagar debiteras 990 kr/mån tills du säger upp. I Stripe anger du även bevakningsord och län. Sökningen ovan är bara en förhandsvisning och följer inte med till betalningen.</div>
+    <div class="checkout-note" id="checkout-note" role="note"><strong>Så fungerar provperioden:</strong> 0 kr idag. En betalningsmetod och faktureringsadress krävs när du startar. Efter 7 dagar debiteras 990 kr/mån tills du säger upp. I Stripe anger du även bevakningsord och län. Sökningen ovan är bara en förhandsvisning och följer inte med till betalningen.</div>
     <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
   </div></div>
 </section>
@@ -153,7 +154,7 @@ footer a{color:#dbe3f5}
 </div>
 <div style="margin-top:14px">Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
 </div>
-<div class="sticky"><a class="btn y" href="#pris">7 dagar gratis · 990 kr/mån →</a></div>
+<div class="sticky"><a class="btn y" data-buy href="#pris">7 dagar gratis · 990 kr/mån →</a></div>
 
 <script>
 const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -161,8 +162,40 @@ const CFG=window.KOMMUNRADAR||{};const FREE=3;
 const fmt=n=>n.toLocaleString('sv-SE');
 const mkr=v=>!v?'':v>=1e9?(v/1e9).toFixed(1).replace('.',',')+' mdr kr':v>=1e6?Math.round(v/1e6)+' mkr':Math.round(v/1e3)+' tkr';
 const days=d=>{if(!d)return null;const x=Math.ceil((new Date(d)-new Date())/864e5);return x};
-// Buttons go straight to Stripe once the Payment Link is configured; otherwise to the pricing section.
-document.querySelectorAll('[data-buy]').forEach(a=>{if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
+// Prefer the server-created Checkout Session when configured. Keep the existing Payment Link as a safe fallback until the API is deployed and verified.
+const checkoutEndpoint=typeof CFG.checkoutApi==='string'?CFG.checkoutApi.trim():'';
+const checkoutEnabled=checkoutEndpoint.startsWith('https://');
+if(checkoutEnabled){const note=$('checkout-note');if(note)note.innerHTML='<strong>Så fungerar provperioden:</strong> 0 kr idag. En betalningsmetod och faktureringsadress krävs när du startar. Efter 7 dagar debiteras 990 kr/mån tills du säger upp. Dina bevakningsord och ditt valda län följer automatiskt med till Stripe.';}
+document.querySelectorAll('[data-buy]').forEach(a=>{if(checkoutEnabled)a.href='#pris';else if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
+const checkoutStatus=$('checkout-status');
+let checkoutFingerprint='',checkoutRequestId='';
+async function beginCheckout(event,link){
+  event.preventDefault();
+  if(link.dataset.busy==='1')return;
+  const bevakningsord=$('q').value.trim();
+  const lan=$('lan').value||'Hela Sverige';
+  if(!bevakningsord||bevakningsord.length>120){checkoutStatus.textContent='Skriv vad du vill bevaka (högst 120 tecken) i sökrutan ovan först.';$('q').focus();return}
+  if(!window.crypto?.randomUUID){checkoutStatus.textContent='Den här webbläsaren kan inte starta en säker checkout. Uppdatera webbläsaren och försök igen.';return}
+  const fingerprint=bevakningsord+'\\n'+lan;
+  if(fingerprint!==checkoutFingerprint){checkoutFingerprint=fingerprint;checkoutRequestId=crypto.randomUUID();}
+  const originalText=link.textContent;
+  link.dataset.busy='1';link.setAttribute('aria-disabled','true');link.textContent='Öppnar säker kassa…';
+  checkoutStatus.textContent='Vi förbereder din bevakning och skickar dig vidare till Stripe.';
+  try{
+    const response=await fetch(checkoutEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bevakningsord,lan,checkoutRequestId})});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'Kassan kunde inte startas.');
+    if(typeof result.checkoutUrl!=='string'||!result.checkoutUrl.startsWith('https://checkout.stripe.com/'))throw new Error('Stripe returnerade ingen giltig kassalänk.');
+    window.location.assign(result.checkoutUrl);
+  }catch(error){
+    checkoutStatus.textContent=error instanceof Error?error.message:'Ett fel uppstod. Försök igen.';
+    link.dataset.busy='0';link.removeAttribute('aria-disabled');link.textContent=originalText;
+  }
+}
+document.addEventListener('click',event=>{
+  const link=event.target instanceof Element?event.target.closest('[data-buy]'):null;
+  if(link&&checkoutEnabled)beginCheckout(event,link);
+});
 if(CFG.trialDays===0)$('trialli').remove();else if(CFG.trialDays>0)$('trialli').textContent=`Prova gratis i ${CFG.trialDays} dagar`;
 let L=[];
 function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
@@ -173,7 +206,7 @@ function search(){
   if(!words.length&&!lan){$('res').innerHTML='';return}
   $('res').innerHTML=`<div class="rhead"><div><div class="big">${fmt(hits.length)} öppna affärer</div><div class="meta">${value?'värda ca '+mkr(value)+' · ':''}${E(words.join(', ')||'alla branscher')} · ${E(lan||'hela Sverige')}</div></div></div>`+
    (hits.length?hits.slice(0,FREE).map(card).join(''):'<p class="meta">Inga öppna just nu — men nya publiceras varje dag. Starta bevakning så får du dem direkt.</p>')+
-   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><a class="btn y" href="${E(CFG.paymentLink||'#pris')}">Starta bevakning →</a></div></div></div>`:'');
+   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><a class="btn y" data-buy href="${E(checkoutEnabled?'#pris':(CFG.paymentLink||'#pris'))}">Starta bevakning →</a></div></div></div>`:'');
   const top=hits.slice(0,4);$('mailn').textContent=`${hits.length} nya upphandlingar för dig`;$('mailq').textContent='Bevakning: '+(words.join(', ')||'alla')+' · '+(lan||'hela Sverige');$('mailrows').innerHTML=top.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');
 }
 $('go').onclick=search;$('q').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(search,250)});$('lan').onchange=search;
