@@ -147,6 +147,8 @@ def build_session_params(price_id, values, origin):
 def _stripe_request(key, method, path, params=None):
     encoded = urllib.parse.urlencode(params or {}).encode("utf-8")
     url = "https://api.stripe.com/v1/" + path
+    if method == "GET" and encoded:
+        url += "?" + encoded.decode("utf-8")
     request = urllib.request.Request(
         url,
         data=encoded if method == "POST" else None,
@@ -203,10 +205,11 @@ class handler(BaseHTTPRequestHandler):
         return
 
     def _send(self, status, payload, origin=None):
-        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        body = b"" if status == 204 else json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
+        if status != 204:
+            self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store, max-age=0")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Vary", "Origin")
@@ -231,7 +234,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         if self.headers.get("Content-Type", "").split(";")[0].strip().lower() != "application/json":
-            self._send(415, {"error": "Förfrågan måste vara JSON.", "origin": origin}, origin)
+            self._send(415, {"error": "Förfrågan måste vara JSON."}, origin)
             return
 
         try:
@@ -244,6 +247,8 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("Ogiltig förfrågan.")
             if payload.get("website"):
                 self._send(400, {"error": "Förfrågan kunde inte verifieras."}, origin)
                 return
