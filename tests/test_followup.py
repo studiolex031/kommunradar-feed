@@ -95,6 +95,27 @@ class SvaratTest(unittest.TestCase):
             F.SVARAT = gamla
 
 
+class SpärrTest(unittest.TestCase):
+    def test_svarat_filen_spärrar_även_första_utskicket(self):
+        """En avanmälan ska bara behöva skrivas på ett ställe."""
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "svarat.txt")
+            with open(p, "w", encoding="utf8") as f:
+                f.write("# kommentar\nA@B.se\n")
+            gamla = O.SVARAT_FIL
+            O.SVARAT_FIL = p
+            try:
+                spärrade = O.spärrade()
+                self.assertIn("a@b.se", spärrade)
+                self.assertIn("hej@kommunradar.online", spärrade)
+            finally:
+                O.SVARAT_FIL = gamla
+
+    def test_riktig_svarat_fil_läses(self):
+        self.assertTrue(os.path.exists(O.SVARAT_FIL))
+        O.las_svarat()  # ska inte kasta
+
+
 class ListaTest(unittest.TestCase):
     def test_fresh_lägger_till_utan_att_tappa_gamla(self):
         with tempfile.TemporaryDirectory() as d:
