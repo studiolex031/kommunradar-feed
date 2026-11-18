@@ -45,6 +45,25 @@ SIDA = "https://kommunradar.online/?utm_source=outbound&utm_medium=email&utm_cam
 # Adresser som aldrig ska få utskicket (eget, test, rollkonton hos oss).
 SPÄRR = {"freeline031@gmail.com", "hej@kommunradar.online"}
 
+# Adresser som svarat "sluta"/"nej" står i svarat.txt, en per rad. Den filen
+# styr både första utskicket och uppföljningen, så en avanmälan behöver bara
+# skrivas på ett ställe.
+SVARAT_FIL = os.path.join(ROOT, ".github", "outbound", "svarat.txt")
+
+
+def las_svarat():
+    """Adresser som avanmält sig. Rader som börjar med # ignoreras."""
+    try:
+        with open(SVARAT_FIL, encoding="utf8") as f:
+            return {r.strip().lower() for r in f
+                    if r.strip() and not r.strip().startswith("#")}
+    except FileNotFoundError:
+        return set()
+
+
+def spärrade():
+    return SPÄRR | las_svarat()
+
 
 def nyckel(epost):
     return hashlib.sha256(epost.strip().lower().encode()).hexdigest()[:16]
@@ -188,7 +207,7 @@ def skicka(rader, limit, oppna, state):
     svar_till = os.environ.get("REPLY_TO") or från
 
     att_skicka = [r for r in rader
-                  if r["epost"].strip().lower() not in SPÄRR and nyckel(r["epost"]) not in state][:limit]
+                  if r["epost"].strip().lower() not in spärrade() and nyckel(r["epost"]) not in state][:limit]
     if not att_skicka:
         print("Inget kvar att skicka — alla i listan har redan fått mejlet.")
         return []
@@ -255,7 +274,7 @@ def rapport(skickade, kvar):
     msg.set_content(
         f"{len(skickade)} mejl skickade i dag. {kvar} kvar i listan.\n\n"
         f"{rader}\n\n"
-        "Svara \"sluta\" hanteras manuellt: lägg adressen i SPÄRR i scripts/outbound_send.py.\n"
+        "Svara \"sluta\" hanteras manuellt: lägg adressen i .github/outbound/svarat.txt.\n"
     )
     smtp = smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=60)
     smtp.starttls(context=ssl.create_default_context())
@@ -321,7 +340,7 @@ def main():
             return
         limit = min(limit, kvar_idag)
 
-    kvar = [r for r in rader if nyckel(r["epost"]) not in state and r["epost"].strip().lower() not in SPÄRR]
+    kvar = [r for r in rader if nyckel(r["epost"]) not in state and r["epost"].strip().lower() not in spärrade()]
 
     if torr:
         print(f"{len(rader)} i listan, {len(kvar)} osända. "

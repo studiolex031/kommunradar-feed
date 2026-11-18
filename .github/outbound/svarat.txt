@@ -1,10 +1,10 @@
 # Adresser som har svarat. En per rad, bara adressen.
 #
-# Den som står här får inga fler uppföljningar (mejl 2 och 3).
-# Mejl 1 styrs av sent.json och påverkas inte av den här filen.
-#
-# Exempel:
-#   anders.brisme@wpcon.se
+# Den som står här får varken första utskicket eller fler uppföljningar
+# (mejl 2 och 3). Filen läses av både outbound_send.py och followup_send.py.
 #
 # Rader som börjar med # ignoreras, så du kan kommentera bort en adress
 # i stället för att radera den.
+#
+# 2026-11-18  martin@letsgig.com — "sluta - vi använder Tendium"
+martin@letsgig.com

@@ -9,7 +9,7 @@ window.KOMMUNRADAR = {
   company: {
     name: 'Kommunradar / Alexander Pålsson (enskild firma)',
     orgnr: '19870929-3552',
-    email: 'freeline031@gmail.com',
+    email: 'hej@kommunradar.online',
     phone: '+46 72 012 78 76',
     address: 'Rävebergsvägen 130P, 424 67 Angered'
   }

@@ -94,7 +94,7 @@ def plan(rader, sent, fstate, svarat, idag=None):
     jobb = []
     for rad in rader:
         epost = rad["epost"].strip().lower()
-        if epost in O.SPÄRR or epost in svarat:
+        if epost in O.spärrade() or epost in svarat:
             continue
         h = O.nyckel(epost)
         if h not in sent:
