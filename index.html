@@ -168,6 +168,7 @@ const checkoutEnabled=checkoutEndpoint.startsWith('https://');
 if(checkoutEnabled){const note=$('checkout-note');if(note)note.innerHTML='<strong>Så fungerar provperioden:</strong> 0 kr idag. En betalningsmetod och faktureringsadress krävs när du startar. Efter 7 dagar debiteras 990 kr/mån tills du säger upp. Dina bevakningsord och ditt valda län följer automatiskt med till Stripe.';}
 document.querySelectorAll('[data-buy]').forEach(a=>{if(checkoutEnabled)a.href='#pris';else if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
 const checkoutStatus=$('checkout-status');
+let checkoutFingerprint='',checkoutRequestId='';
 async function beginCheckout(event,link){
   event.preventDefault();
   if(link.dataset.busy==='1')return;
@@ -175,11 +176,13 @@ async function beginCheckout(event,link){
   const lan=$('lan').value||'Hela Sverige';
   if(!bevakningsord||bevakningsord.length>120){checkoutStatus.textContent='Skriv vad du vill bevaka (högst 120 tecken) i sökrutan ovan först.';$('q').focus();return}
   if(!window.crypto?.randomUUID){checkoutStatus.textContent='Den här webbläsaren kan inte starta en säker checkout. Uppdatera webbläsaren och försök igen.';return}
+  const fingerprint=bevakningsord+'\\n'+lan;
+  if(fingerprint!==checkoutFingerprint){checkoutFingerprint=fingerprint;checkoutRequestId=crypto.randomUUID();}
   const originalText=link.textContent;
   link.dataset.busy='1';link.setAttribute('aria-disabled','true');link.textContent='Öppnar säker kassa…';
   checkoutStatus.textContent='Vi förbereder din bevakning och skickar dig vidare till Stripe.';
   try{
-    const response=await fetch(checkoutEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bevakningsord,lan,checkoutRequestId:crypto.randomUUID()})});
+    const response=await fetch(checkoutEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bevakningsord,lan,checkoutRequestId})});
     const result=await response.json();
     if(!response.ok)throw new Error(result.error||'Kassan kunde inte startas.');
     if(typeof result.checkoutUrl!=='string'||!result.checkoutUrl.startsWith('https://checkout.stripe.com/'))throw new Error('Stripe returnerade ingen giltig kassalänk.');
