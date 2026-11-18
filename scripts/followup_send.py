@@ -61,7 +61,7 @@ def skriv_followup(s):
 
 
 def las_svarat():
-    """Adresser som svarat, en per rad. Rader som börjar med # ignoreras."""
+    """Stopplistan: adresser som svarat, avanmält sig eller studsat. # = kommentar."""
     try:
         with open(SVARAT, encoding="utf8") as f:
             return {r.strip().lower() for r in f
@@ -297,7 +297,7 @@ def main():
 
     if torr:
         print(f"{len(rader)} i listan, {len(sent)} har fått mejl 1, "
-              f"{len(jobb)} mogna för uppföljning, {len(svarat)} har svarat, "
+              f"{len(jobb)} mogna för uppföljning, {len(svarat)} stoppade, "
               f"{stora} för stora. I dag: {redan_idag}/{MAX_PER_DAG}. "
               f"Visar {min(limit, len(jobb))}:\n")
         for dagar, rad, steg in jobb[:limit]:

@@ -45,9 +45,9 @@ SIDA = "https://kommunradar.online/?utm_source=outbound&utm_medium=email&utm_cam
 # Adresser som aldrig ska få utskicket (eget, test, rollkonton hos oss).
 SPÄRR = {"freeline031@gmail.com", "hej@kommunradar.online"}
 
-# Adresser som svarat "sluta"/"nej" står i svarat.txt, en per rad. Den filen
-# styr både första utskicket och uppföljningen, så en avanmälan behöver bara
-# skrivas på ett ställe.
+# Stopplistan står i svarat.txt, en adress per rad: de som svarat "sluta"/"nej",
+# avanmält sig på annat sätt, eller studsat. Den filen styr både första
+# utskicket och uppföljningen, så ett stopp behöver bara skrivas på ett ställe.
 SVARAT_FIL = os.path.join(ROOT, ".github", "outbound", "svarat.txt")
 
 

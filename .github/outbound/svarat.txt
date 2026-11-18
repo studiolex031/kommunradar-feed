@@ -1,10 +1,18 @@
-# Adresser som har svarat. En per rad, bara adressen.
+# Stopplista: adresser som inte ska ha fler mejl. En per rad, bara adressen.
 #
-# Den som står här får varken första utskicket eller fler uppföljningar
-# (mejl 2 och 3). Filen läses av både outbound_send.py och followup_send.py.
+# Hit hör den som svarat "sluta"/"nej", den som avanmält sig på annat sätt,
+# och adresser som studsat. Den som står här får varken första utskicket
+# eller fler uppföljningar (mejl 2 och 3). Filen läses av både
+# outbound_send.py och followup_send.py.
 #
 # Rader som börjar med # ignoreras, så du kan kommentera bort en adress
 # i stället för att radera den.
 #
 # 2026-11-18  martin@letsgig.com — "sluta - vi använder Tendium"
 martin@letsgig.com
+
+# 2026-11-18  jonas.bjorkholm@progressu.se — manuellt stopp
+jonas.bjorkholm@progressu.se
+
+# 2026-11-18  peter.steinwandt@xylem.com — studsade (user unknown)
+peter.steinwandt@xylem.com
