@@ -1,0 +1,23 @@
+name: Blocklista till Brevo
+
+# Speglar .github/outbound/svarat.txt till Brevos egen blocklista, så att ett stopp
+# gäller även utanför våra scripts. Körs när filen ändras.
+
+on:
+  push:
+    paths: [".github/outbound/svarat.txt"]
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  blocka:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Blockera adresserna i Brevo
+        run: python scripts/brevo_block.py
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
