@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <style>
+.checkout-note{margin:14px auto 0;max-width:460px;padding:12px 14px;border:1px solid #22d3ee55;border-radius:12px;background:#22d3ee10;color:#c7d0e6;font-size:13px;line-height:1.55;text-align:left}
 :root{--ink:#070b18;--ink2:#0e1530;--line:#ffffff1a;--mut:#9aa6c4;--txt:#f4f6fb;--y:#fbbf24;--o:#fb7185;--c:#22d3ee;--b:#6366f1}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--ink);color:var(--txt);font:16px/1.5 "Inter Tight",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
@@ -87,6 +88,7 @@ footer a{color:#dbe3f5}
   <form class="search" id="f" onsubmit="return false">
     <input id="q" placeholder="Testa: städ, IT-konsult, catering, mark…" autocomplete="off" aria-label="Sökord">
     <select id="lan" aria-label="Län"><option value="">Hela Sverige</option></select>
+    <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px">
     <button class="btn y" type="button" id="go">Visa mina affärer →</button>
   </form>
   <div class="chips" id="chips"></div>
@@ -127,6 +129,7 @@ footer a{color:#dbe3f5}
     <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
     <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
     <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
+    <div class="checkout-note" id="checkout-note">0 kr idag. Betalningsmetod och faktureringsadress krävs för att starta provperioden. Efter 7 dagar kostar tjänsten 990 kr/mån om du inte säger upp innan dess.</div>
   </div></div>
 </section>
 
@@ -153,11 +156,40 @@ footer a{color:#dbe3f5}
 <script>
 const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CFG=window.KOMMUNRADAR||{};const FREE=3;
+const CHECKOUT_API_ENABLED = CFG.checkoutApiEnabled === true;
+const CHECKOUT_API_URL = CFG.checkoutApiUrl || '/api/create-checkout-session';
+window.__krPageLoadedAt = Date.now();
+const checkoutNote = $('checkout-note');
+if(checkoutNote)checkoutNote.textContent = CHECKOUT_API_ENABLED
+  ? '0 kr idag. Betalningsmetod och faktureringsadress krävs för att starta provperioden. Efter 7 dagar kostar tjänsten 990 kr/mån om du inte säger upp innan dess. Dina valda bevakningsord och län följer med automatiskt till kassan.'
+  : '0 kr idag. Betalningsmetod och faktureringsadress krävs för att starta provperioden. Efter 7 dagar kostar tjänsten 990 kr/mån om du inte säger upp innan dess. Ange dina bevakningsord och välj län i Stripe-kassan.';
 const fmt=n=>n.toLocaleString('sv-SE');
 const mkr=v=>!v?'':v>=1e9?(v/1e9).toFixed(1).replace('.',',')+' mdr kr':v>=1e6?Math.round(v/1e6)+' mkr':Math.round(v/1e3)+' tkr';
 const days=d=>{if(!d)return null;const x=Math.ceil((new Date(d)-new Date())/864e5);return x};
-// Buttons go straight to Stripe once the Payment Link is configured; otherwise to the pricing section.
-document.querySelectorAll('[data-buy]').forEach(a=>{if(CFG.paymentLink)a.href=CFG.paymentLink;else a.href='#pris'});
+// Legacy Payment Link remains the safe fallback until the server endpoint is deployed and enabled.
+async function startCheckout(trigger){
+  if(!CHECKOUT_API_ENABLED){if(CFG.paymentLink)location.assign(CFG.paymentLink);else location.hash='#pris';return;}
+  if(trigger?.dataset.busy==='1')return;
+  if(trigger){trigger.dataset.busy='1';trigger.setAttribute('aria-disabled','true');}
+  try{
+    const response=await fetch(CHECKOUT_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',body:JSON.stringify({
+      keywords:$('q')?.value||'',lan:$('lan')?.value||'',pageLoadedAt:window.__krPageLoadedAt,
+      website:document.querySelector('[name="website"]')?.value||''
+    })});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||'Checkout kunde inte startas. Försök igen.');
+    if(typeof result.url!=='string'||!result.url.startsWith('https://checkout.stripe.com/'))throw new Error('Stripe returnerade ingen giltig checkout-länk.');
+    location.assign(result.url);
+  }catch(error){
+    alert(error?.message||'Checkout kunde inte startas. Försök igen.');
+    if(trigger){delete trigger.dataset.busy;trigger.removeAttribute('aria-disabled');}
+  }
+}
+document.querySelectorAll('[data-buy]').forEach(a=>{
+  if(CHECKOUT_API_ENABLED){a.href='#pris';a.addEventListener('click',event=>{event.preventDefault();startCheckout(a);});}
+  else if(CFG.paymentLink)a.href=CFG.paymentLink;
+  else a.href='#pris';
+});
 if(CFG.trialDays===0)$('trialli').remove();else if(CFG.trialDays>0)$('trialli').textContent=`Prova gratis i ${CFG.trialDays} dagar`;
 let L=[];
 function card(l){const d=days(l.deadline);return `<div class="card"><div><a href="${E(l.url)}" target="_blank" rel="noopener">${E(l.title)}</a><div class="meta">${E(l.buyer)}${l.region?' · '+E(l.region):''}${l.categories?.length?' · '+E(l.categories[0]):''}</div>${d!==null&&d>=0?`<div class="dl">Sista anbudsdag om ${d} ${d===1?'dag':'dagar'}</div>`:''}</div><div class="val">${mkr(l.value_sek)}</div></div>`}
@@ -168,10 +200,12 @@ function search(){
   if(!words.length&&!lan){$('res').innerHTML='';return}
   $('res').innerHTML=`<div class="rhead"><div><div class="big">${fmt(hits.length)} öppna affärer</div><div class="meta">${value?'värda ca '+mkr(value)+' · ':''}${E(words.join(', ')||'alla branscher')} · ${E(lan||'hela Sverige')}</div></div></div>`+
    (hits.length?hits.slice(0,FREE).map(card).join(''):'<p class="meta">Inga öppna just nu — men nya publiceras varje dag. Starta bevakning så får du dem direkt.</p>')+
-   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><a class="btn y" href="${E(CFG.paymentLink||'#pris')}">Starta bevakning →</a></div></div></div>`:'');
+   (hits.length>FREE?`<div class="lock">${hits.slice(FREE,FREE+3).map(card).join('')}<div class="gate"><div><div class="big" style="font-size:30px">+${fmt(hits.length-FREE)} till som matchar dig</div><p class="meta">Få alla — och varje ny träff — i mejlen varje morgon.</p><button class="btn y" type="button" data-checkout>Starta bevakning →</button></div></div></div>`:'')+
+   `<div style="margin-top:14px"><button class="btn y" type="button" data-checkout>Starta bevakning med dessa val →</button></div>`;
   const top=hits.slice(0,4);$('mailn').textContent=`${hits.length} nya upphandlingar för dig`;$('mailq').textContent='Bevakning: '+(words.join(', ')||'alla')+' · '+(lan||'hela Sverige');$('mailrows').innerHTML=top.map(l=>`<div class="row"><b>${E(l.title)}</b><span>${E(l.buyer)}${l.value_sek?' · '+mkr(l.value_sek):''}</span></div>`).join('');
 }
 $('go').onclick=search;$('q').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(search,250)});$('lan').onchange=search;
+$('res').addEventListener('click',event=>{const button=event.target.closest('[data-checkout]');if(button){event.preventDefault();startCheckout(button);}});
 const DATA=CFG.dataUrl||'https://raw.githubusercontent.com/studiolex031/kommunradar-feed/main/leads.json';
 const getJSON=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw r.status;return r.json()});
 // Freshest of: the copy GitHub updates every morning, and the copy uploaded with the site.
