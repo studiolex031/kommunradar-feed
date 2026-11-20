@@ -299,7 +299,7 @@ def send_weekly(smtp, dry, recipients, current, today, welcome):
         hits, fallback = weekly_hits(current, sub, today)
         if not hits: continue
         msg = weekly_message(sub, hits, fallback, welcome, site, pro_url, portal, reply_to)
-        if dry: print(f"[dry-run] veckobrev till {sub['email']}: {msg['Subject']}")
+        if dry: print(f"[dry-run] veckobrev till maskerad mottagare: {msg['Subject']}")
         else: smtp.send_message(msg)
         sent += 1
     return sent
@@ -354,7 +354,7 @@ def main():
         msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
         if reply_to: msg["Reply-To"] = reply_to
         msg.set_content(text)
-        if dry: print(f"[dry-run] provmejl till {sub['email']}: {subject}")
+        if dry: print(f"[dry-run] provmejl till maskerad mottagare: {subject}")
         else: smtp.send_message(msg)
         sent += 1
     for sub in subs:
@@ -369,7 +369,7 @@ def main():
             if reply_to: msg["Reply-To"] = reply_to
             msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch))
             msg.add_alternative(render(batch, sub, site, portal), subtype="html")
-            if dry: print(f"[dry-run] {sub['email']}: {len(batch)} träffar")
+            if dry: print(f"[dry-run] maskerad mottagare: {len(batch)} träffar")
             else: smtp.send_message(msg)
             sent += 1
     if smtp: smtp.quit()
