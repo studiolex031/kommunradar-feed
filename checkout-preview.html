@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kommunradar – förenklad registrering (prototyp)</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#070b18;--panel:#101a34;--line:#ffffff20;--mut:#aab5d0;--txt:#f4f6fb;--y:#fbbf24;--c:#22d3ee;--ok:#86efac}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(50rem 35rem at 90% 0%,#22d3ee20,transparent),radial-gradient(40rem 30rem at 0% 80%,#6366f122,transparent),var(--ink);color:var(--txt);font:16px/1.5 "Inter Tight",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:36px 18px 70px}.brand{font-weight:900;letter-spacing:.04em;color:var(--c)}.eyebrow{color:var(--y);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:12px;margin-top:34px}
+h1{font-size:clamp(34px,7vw,58px);line-height:1.02;letter-spacing:-.045em;margin:12px 0}p{color:var(--mut)}.panel{margin-top:26px;padding:clamp(20px,5vw,34px);border:1px solid var(--line);border-radius:24px;background:#101a34dd;box-shadow:0 24px 80px #0005}
+label{display:block;font-weight:700;margin:20px 0 8px}input,select{width:100%;border:1px solid #ffffff30;border-radius:12px;padding:15px;background:#080f22;color:var(--txt);font:inherit}input:focus,select:focus{outline:2px solid var(--c);outline-offset:2px}.hint{font-size:13px;margin:7px 0 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.price{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-top:1px solid var(--line);margin-top:24px}.price strong{font-size:22px}.btn{margin-top:24px;width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(100deg,var(--c),#86efac);color:#07111f;font:900 17px inherit;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.notice{font-size:13px;color:var(--mut);margin-top:14px}.result{display:none;border:1px solid #86efac66;background:#86efac12;border-radius:16px;padding:18px;margin-top:20px}.result strong{color:var(--ok)}.tag{display:inline-block;border:1px solid #fbbf2466;color:var(--y);border-radius:99px;padding:5px 10px;font-size:12px;font-weight:800}
+@media(max-width:560px){.row{grid-template-columns:1fr}.panel{border-radius:18px}}
+</style></head>
+<body><main>
+<div class="brand">◉ KOMMUNRADAR</div><div class="eyebrow">Experiment · inte produktionssida</div>
+<h1>Din bevakning.<br>På under en minut.</h1>
+<p>Det här är en fristående prototyp för att testa en enklare registreringsordning. Välj vad du vill bevaka först. Betalning och kontoanslutning är avstängda.</p>
+<div class="panel">
+<span class="tag">Steg 1 av 2 · skapa bevakning</span>
+<form id="setup">
+<label for="email">E-postadress</label><input id="email" type="email" autocomplete="email" placeholder="namn@foretag.se" required>
+<label for="keywords">Vad säljer ditt företag?</label><input id="keywords" type="text" maxlength="160" placeholder="Exempel: städning, bygg, IT-support" required>
+<p class="hint">Skriv ett eller flera ord, separerade med kommatecken.</p>
+<div class="row"><div><label for="region">Län</label><select id="region" required><option value="">Välj län</option><option>Hela Sverige</option><option>Stockholms län</option><option>Uppsala län</option><option>Södermanlands län</option><option>Östergötlands län</option><option>Jönköpings län</option><option>Kronobergs län</option><option>Kalmar län</option><option>Gotlands län</option><option>Blekinge län</option><option>Skåne län</option><option>Hallands län</option><option>Västra Götalands län</option><option>Värmlands län</option><option>Örebro län</option><option>Västmanlands län</option><option>Dalarnas län</option><option>Gävleborgs län</option><option>Västernorrlands län</option><option>Jämtlands län</option><option>Västerbottens län</option><option>Norrbottens län</option></select></div>
+<div><label for="plan">Plan</label><select id="plan"><option value="990">Pro · 990 kr/mån</option><option value="490">Grundare · 490 kr/mån</option><option value="7900">Årsplan · 7 900 kr/år</option></select></div></div>
+<div class="price"><span>Provperiod</span><strong>7 dagar gratis</strong></div>
+<button class="btn" type="submit">Förhandsgranska min bevakning →</button>
+<p class="notice">Prototyp: uppgifterna valideras endast i din webbläsare och skickas inte till Kommunradar eller Stripe. Ingen betalning sker.</p>
+</form>
+<div class="result" id="result" aria-live="polite"><strong>Bevakningen är förhandsgranskad.</strong><p id="summary"></p><p>Det här steget testar bara formulärets tydlighet och längd. Nästa steg skulle i en godkänd implementation skapa en säker Checkout-session i Stripe testläge.</p></div>
+</div></main>
+<script>
+const form=document.getElementById('setup');
+form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;
+const email=document.getElementById('email').value.trim();
+const words=document.getElementById('keywords').value.split(',').map(x=>x.trim()).filter(Boolean);
+const region=document.getElementById('region').value;
+const plan=document.getElementById('plan');
+document.getElementById('summary').textContent='E-post: '+email+' · Bevakningsord: '+words.join(', ')+' · Område: '+region+' · Vald plan: '+plan.options[plan.selectedIndex].text;
+document.getElementById('result').style.display='block';
+document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+</script></body></html>
