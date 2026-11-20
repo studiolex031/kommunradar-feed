@@ -1,4 +1,9 @@
 {
+ "0242e65fbd1f0aa6": {
+  "bolag": "Vretmaskin AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:07"
+ },
  "04f1d81059819864": {
   "bolag": "Knightec Group Compliance and Management AB",
   "datum": "2026-11-18"
@@ -89,15 +94,30 @@
   "bolag": "Cochlear Deutschland Gmbh 6 Co.KG",
   "datum": "2026-11-18"
  },
+ "1b843570e4450c6b": {
+  "bolag": "Medistim Sverige AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:45"
+ },
  "1c9bf61d72396429": {
   "bolag": "Recruitive AB",
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:41:33"
  },
+ "1d0016b854e68c0f": {
+  "bolag": "Idhammar Produktion AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:56"
+ },
  "1dcc777a5807d271": {
   "bolag": "Vårdbemanning Sverige AB",
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:29:41"
+ },
+ "1e033d9d351d3a79": {
+  "bolag": "NETZSCH-Gerätebau GmbH",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:12"
  },
  "1f328dfd3977a9f3": {
   "bolag": "Sandahls Entreprenad",
@@ -141,6 +161,11 @@
   "bolag": "Svenskt Kretslopp AB",
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:27:51"
+ },
+ "26159abfcc44e3e1": {
+  "bolag": "Profile Vehicles Sweden AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:29"
  },
  "2627f6a4172817c0": {
   "bolag": "Bonliva AB",
@@ -209,6 +234,11 @@
   "bolag": "Freys Express i Uppsala AB",
   "datum": "2026-11-18"
  },
+ "35131d2199795558": {
+  "bolag": "Landhs Konditori AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:06"
+ },
  "36024e2c00a5f150": {
   "bolag": "Doc Care AB",
   "datum": "2026-11-18",
@@ -255,6 +285,11 @@
   "bolag": "Kyte Powertech Ltd",
   "datum": "2026-11-18"
  },
+ "4a4da55ea4954fbf": {
+  "bolag": "Väsby Lås & Alarm AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:04:51"
+ },
  "4a8829e0107c45e1": {
   "bolag": "Linde Gas",
   "datum": "2026-11-18"
@@ -262,6 +297,11 @@
  "4aba38e69df464d2": {
   "bolag": "Bröderna Berner AB",
   "datum": "2026-11-18"
+ },
+ "4ac21d7d6fef69d4": {
+  "bolag": "Runda rum Ab",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:21"
  },
  "4c579de19602deab": {
   "bolag": "Aspira Medical AB",
@@ -312,6 +352,16 @@
   "bolag": "Skanova Aktiebolag",
   "datum": "2026-11-18"
  },
+ "5e0ae62eed65ea75": {
+  "bolag": "Akademiska Hus Aktiebolag",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:02"
+ },
+ "5f03e97a84aabe08": {
+  "bolag": "Ergo-Nova Sweden AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:38"
+ },
  "5f3779f58c3cdf25": {
   "bolag": "Markkompaniet Syd AB",
   "datum": "2026-11-18",
@@ -339,6 +389,11 @@
  "643389902f141934": {
   "bolag": "Cemi AB",
   "datum": "2026-11-18"
+ },
+ "643e2cdd0ae3d511": {
+  "bolag": "Hossmo Gård Cafe & Konferens",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:35"
  },
  "64ae806b5d88b0d1": {
   "bolag": "Foyen Advokatfirma Kommanditbolag",
@@ -400,6 +455,11 @@
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:40:39"
  },
+ "732202d3d19097ab": {
+  "bolag": "Svea Hamn AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:52"
+ },
  "73b3a3a8180d04d9": {
   "bolag": "K.W. Bilservice Aktiebolag",
   "datum": "2026-11-18"
@@ -421,6 +481,11 @@
   "bolag": "Forefront Consulting AB",
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:41:59"
+ },
+ "796c8c69eeee16c0": {
+  "bolag": "Nord Service i Kiruna AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:20"
  },
  "7b4d4fa2de6c8589": {
   "bolag": "Gothenburg Management Institute Handelsbolag",
@@ -514,6 +579,11 @@
   "bolag": "K-IT Sweden AB",
   "datum": "2026-11-18"
  },
+ "94bc0ab9daa2ba03": {
+  "bolag": "Micromedic AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:43"
+ },
  "96515e576855998f": {
   "bolag": "Zimmer Biomet Sweden AB",
   "datum": "2026-11-18"
@@ -576,6 +646,11 @@
   "bolag": "Osteotec Nordics AB",
   "datum": "2026-11-18"
  },
+ "aab6a77aaf5d6a87": {
+  "bolag": "Lysio Research AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:04:59"
+ },
  "ab113ddd933863d1": {
   "bolag": "Agnesbergs Grävtjänst i Kungälv AB",
   "datum": "2026-11-18"
@@ -600,6 +675,11 @@
  "b39bf4e5e8597289": {
   "bolag": "ETTELVA ARKITEKTER",
   "datum": "2026-11-18"
+ },
+ "b5ef6cf4950c5bcd": {
+  "bolag": "Stiftsgården Södra Hoka",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:10"
  },
  "b83f96297a6ff9cb": {
   "bolag": "Digital Interpretations Scandinavia AB",
@@ -679,6 +759,11 @@
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:29:33"
  },
+ "c55558707b4daf22": {
+  "bolag": "Brodins Entreprenad AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:48"
+ },
  "c5cc0d7906aa1ed3": {
   "bolag": "Rk Projektledning AB",
   "datum": "2026-11-18"
@@ -721,6 +806,11 @@
  "d1722bb0b8b56d3a": {
   "bolag": "Trygg-Hansa försäkring filial",
   "datum": "2026-11-18"
+ },
+ "d225f6121998e304": {
+  "bolag": "Tjärö Drift AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:15"
  },
  "d3b0fccb2966667e": {
   "bolag": "Swemac Orthopaedics Aktiebolag",
@@ -880,6 +970,11 @@
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:42:59"
  },
+ "f71147ffe2331fe3": {
+  "bolag": "Asa Herrgård AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:05:29"
+ },
  "f8c34728f4572068": {
   "bolag": "Farmartjänst Kungsbacka AB",
   "datum": "2026-11-18"
@@ -887,6 +982,11 @@
  "f8f2138f31b7c761": {
   "bolag": "Henrik Isbergs Entreprenad AB",
   "datum": "2026-11-18"
+ },
+ "fbf143ec1ee84b62": {
+  "bolag": "Entercast AB",
+  "datum": "2026-11-20",
+  "tid": "2026-11-20T15:06:24"
  },
  "fc7c999a6023a972": {
   "bolag": "Versalift Sweden AB",
