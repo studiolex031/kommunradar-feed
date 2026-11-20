@@ -27,6 +27,9 @@ header{display:flex;justify-content:space-between;align-items:center;padding:20p
 .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:16px 24px;font:800 17px/1 "Inter Tight",system-ui,sans-serif;text-decoration:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .btn:hover{transform:translateY(-2px)}.y{background:var(--y);color:#111;box-shadow:0 10px 40px #fbbf2455}.g{border:1px solid var(--line);color:var(--txt);background:#ffffff08}
 .sm{padding:10px 16px;font-size:14px;border-radius:10px}
+.checkout-note{max-width:520px;margin:16px auto 0;padding:14px 16px;border:1px solid #ffffff26;border-radius:14px;background:#ffffff08;color:#c7d0e6;font-size:14px;text-align:left}
+.checkout-note strong{color:var(--y)}
+.preview-note{max-width:760px;margin:10px auto 0;color:var(--mut);font-size:13px}
 .hero{position:relative;padding:40px 0 30px;text-align:center}
 .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid #22d3ee55;background:#22d3ee14;color:#a5f3fc;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:700}
 .dot{width:8px;height:8px;border-radius:50%;background:#22d3ee;box-shadow:0 0 0 0 #22d3eeaa;animation:ping 1.6s infinite}@keyframes ping{70%{box-shadow:0 0 0 10px #22d3ee00}}
@@ -79,7 +82,7 @@ footer a{color:#dbe3f5}
 @media(prefers-reduced-motion:reduce){.radar,.dot{animation:none}}
 </style></head><body><div class="glow"></div>
 <div class="w">
-<header><a class="logo" href="#"><span class="radar"></span>KOMMUNRADAR</a><a class="btn y sm hide-m" data-buy href="#pris">Starta bevakning</a></header>
+<header><a class="logo" href="#"><span class="radar"></span>KOMMUNRADAR</a><a class="btn y sm hide-m" href="#pris">Se pris och provperiod</a></header>
 
 <div class="hero">
   <span class="pill"><span class="dot"></span><span id="upd">Uppdateras varje morgon från EU:s upphandlingsdatabas</span></span>
@@ -91,6 +94,7 @@ footer a{color:#dbe3f5}
     <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px">
     <button class="btn y" type="button" id="go">Visa mina affärer →</button>
   </form>
+  <p class="preview-note">Förhandsvisning: sökningen ovan visar exempel på träffar. Dina bevakningsord och ditt län anges i nästa steg och förs inte automatiskt över till Stripe.</p>
   <div class="chips" id="chips"></div>
   <div class="res" id="res"></div>
 </div>
@@ -114,7 +118,7 @@ footer a{color:#dbe3f5}
     <div class="step"><i>3</i><div class="ico">✉</div><h3>Affärer i inkorgen</h3><p>Varje morgon: nya träffar med köpare, värde, sista anbudsdag och direktlänk.</p></div>
   </div>
   <div class="mail">
-    <div><h2>Ditt morgonmejl.</h2><p class="sub">Inga konton att logga in på. Inga portaler. Bara de upphandlingar som är värda din tid — innan konkurrenterna hunnit läsa dem.</p><a class="btn y" data-buy href="#pris">Starta bevakning →</a></div>
+    <div><h2>Ditt morgonmejl.</h2><p class="sub">Inga konton att logga in på. Inga portaler. Bara de upphandlingar som är värda din tid — innan konkurrenterna hunnit läsa dem.</p><a class="btn y" href="#pris">Se pris och provperiod →</a></div>
     <div class="inbox"><div class="top">KOMMUNRADAR<b id="mailn">7 nya upphandlingar för dig</b><span style="color:#94a3b8;font-size:13px" id="mailq">Bevakning: städ · Stockholm</span></div><div id="mailrows"></div></div>
   </div>
 </section>
@@ -128,6 +132,7 @@ footer a{color:#dbe3f5}
     <ul><li>Dagligt mejl med nya matchande upphandlingar</li><li>Alla branscher, hela Sverige eller ditt län</li><li>Köpare, uppskattat värde och sista anbudsdag</li><li>Direktlänk till underlaget</li><li id="trialli">Prova gratis i 7 dagar</li></ul>
     <a class="btn y" data-buy href="#" style="width:100%;justify-content:center;font-size:19px;padding:20px">Starta min bevakning →</a>
     <div class="roi">En enda vunnen upphandling betalar årsavgiften många gånger om.</div>
+    <div class="checkout-note" role="note"><strong>Så fungerar provperioden:</strong> 0 kr idag. En betalningsmetod och faktureringsadress krävs när du startar. Efter 7 dagar debiteras 990 kr/mån tills du säger upp. I Stripe anger du även bevakningsord och län. Sökningen ovan är bara en förhandsvisning och följer inte med till betalningen.</div>
     <div style="color:var(--mut);font-size:13px;margin-top:12px">Genom att starta godkänner du <a href="villkor.html">villkoren</a>. Säg upp när som helst — ingen bindningstid.</div>
     <div class="checkout-note" id="checkout-note">0 kr idag. Betalningsmetod och faktureringsadress krävs för att starta provperioden. Efter 7 dagar kostar tjänsten 990 kr/mån om du inte säger upp innan dess.</div>
   </div></div>
@@ -151,7 +156,7 @@ footer a{color:#dbe3f5}
 </div>
 <div style="margin-top:14px">Data från TED (ted.europa.eu), EU:s officiella upphandlingsdatabas. Kommunradar är inte en myndighet och är inte ansluten till EU eller Upphandlingsmyndigheten.</div></footer>
 </div>
-<div class="sticky"><a class="btn y" data-buy href="#">Starta bevakning — 990 kr/mån →</a></div>
+<div class="sticky"><a class="btn y" href="#pris">7 dagar gratis · 990 kr/mån →</a></div>
 
 <script>
 const $=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
