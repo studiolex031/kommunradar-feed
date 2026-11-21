@@ -1,6 +1,6 @@
 name: x-dagligt
-# Ett eget inlägg på X varje vardag (07:41 vintertid) från färsk leads.json, plus annonsmaterial till REPORT_TO.
-# Saknas X-nycklarna byggs och mejlas inlägget men postas inte.
+# Ett eget inlägg på X varje vardag (07:41 vintertid) om publicering är uttryckligen aktiverad.
+# Default-off: kräver SOCIAL_PUBLISHING_ENABLED=true i repository variables.
 on:
   schedule: [{cron: "41 6 * * 1-5"}]
   workflow_dispatch:
@@ -10,6 +10,8 @@ permissions: {contents: read}
 concurrency: {group: x-dagligt, cancel-in-progress: false}
 jobs:
   post:
+    # Default-off: inga publika X-inlägg utan uttrycklig aktivering.
+    if: ${{ vars.SOCIAL_PUBLISHING_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

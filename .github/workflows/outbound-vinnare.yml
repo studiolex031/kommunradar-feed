@@ -5,8 +5,9 @@ name: outbound-vinnare
 # En batch per vardag, inte hela listan på en gång: en brevlåda som skickar
 # hundratals kalla mejl i en burst blir blockerad. Det hände 2026-11-18 —
 # Simply.com spärrade kontot efter 149 mejl på två timmar, och deras policy
-# förbjuder uttryckligen cold mailing på smtp.simply.com. Workflowen är därför
-# AVSTÄNGD tills SMTP flyttats till en transaktionell leverantör (Brevo, 0 kr).
+# förbjuder uttryckligen cold mailing på smtp.simply.com.
+# Skicka-jobbet är default-off och kräver OUTBOUND_PROSPECT_EMAILS_ENABLED=true
+# i repository variables efter separat uttryckligt godkännande.
 # Se kommunradar/outbound/vinnar-leads.md.
 on:
   schedule: [{cron: "0 6 * * 1-5"}]   # vardagar 07:00 svensk tid
@@ -22,6 +23,8 @@ permissions: {contents: write}
 concurrency: {group: outbound-vinnare, cancel-in-progress: false}
 jobs:
   skicka:
+    # Default-off: inga prospektmejl utan uttrycklig aktivering.
+    if: ${{ vars.OUTBOUND_PROSPECT_EMAILS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
