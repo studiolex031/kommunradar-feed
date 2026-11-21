@@ -28,6 +28,8 @@ jobs:
         if: ${{ steps.awards.outputs.cache-hit != 'true' }}
         run: python atlas/scripts/fetch_ted.py 1095
       - run: python atlas/scripts/build.py
+        env:
+          ATLAS_NEWSLETTER_URL: ${{ vars.ATLAS_NEWSLETTER_URL }}
       - name: Stoppa om bygget ser fel ut
         run: |
           n=$(find atlas/dist/upphandlingar -name index.html | wc -l)
@@ -45,3 +47,17 @@ jobs:
             open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
             mirror -R --delete --parallel=6 atlas/dist/upphandlingar ${FTP_DIR}upphandlingar; \
             mput -O ${FTP_DIR} atlas/dist/sitemap-atlas-*.xml"
+      - name: Skapa veckans brev (måndagar och manuella körningar)
+        id: brev
+        continue-on-error: true
+        run: |
+          if [ "$(date +%u)" = "1" ] || [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            python atlas/scripts/newsletter.py
+            echo "skapat=1" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: ${{ steps.brev.outputs.skapat == '1' }}
+        with:
+          name: veckobrev
+          path: atlas/dist/veckobrev/
+          retention-days: 14
