@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-21T13:17:06+00:00",
+ "updated": "2026-11-22T13:08:40+00:00",
  "source": "TED (ted.europa.eu)",
- "count": 1508,
+ "count": 1480,
  "leads": [
   {
    "id": "810804-2026",
@@ -30920,29 +30920,6 @@
    "score": 10
   },
   {
-   "id": "737029-2026",
-   "title": "Autoklav miljöstation",
-   "buyer": "Region Västerbotten",
-   "city": "Umeå",
-   "region": "Västerbotten",
-   "regions": [
-    "Västerbotten"
-   ],
-   "published": "2026-10-23",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "33191000",
-    "33191110"
-   ],
-   "categories": [
-    "Medicinteknik & läkemedel"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/737029-2026",
-   "score": 10
-  },
-  {
    "id": "737019-2026",
    "title": "Saneringstjänster",
    "buyer": "Upphandlingscenter Falun Borlänge-regionen",
@@ -31495,27 +31472,6 @@
    "score": 0
   },
   {
-   "id": "735439-2026",
-   "title": "Kartproduktionssystem",
-   "buyer": "Huddinge kommun",
-   "city": "Huddinge",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-23",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48326000"
-   ],
-   "categories": [
-    "Programvara & system"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/735439-2026",
-   "score": 30
-  },
-  {
    "id": "735430-2026",
    "title": "Bemanningstjänster inom samhällsbyggnad, teknik och infrastruktur",
    "buyer": "Haninge kommun",
@@ -31812,27 +31768,6 @@
    "value_sek": null,
    "url": "https://ted.europa.eu/sv/notice/-/detail/734958-2026",
    "score": 0
-  },
-  {
-   "id": "734937-2026",
-   "title": "Geodataplattform",
-   "buyer": "Huddinge kommun",
-   "city": "Huddinge",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-23",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48326000"
-   ],
-   "categories": [
-    "Programvara & system"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/734937-2026",
-   "score": 30
   },
   {
    "id": "734933-2026",
@@ -32551,61 +32486,6 @@
    "score": 30
   },
   {
-   "id": "732414-2026",
-   "title": "IT-stöd för medarbetarundersökning för Västerås stad",
-   "buyer": "Västerås stad",
-   "city": "Västerås",
-   "region": "Västmanland",
-   "regions": [
-    "Västmanland"
-   ],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48460000",
-    "48463000",
-    "79311200",
-    "79320000"
-   ],
-   "categories": [
-    "Företagstjänster",
-    "Programvara & system"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/732414-2026",
-   "score": 30
-  },
-  {
-   "id": "732356-2026",
-   "title": "Kranbilstjänster",
-   "buyer": "Nordvästra Skånes Renhållnings AB",
-   "city": "Helsingborg",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "42414000",
-    "60180000",
-    "63100000",
-    "90512000"
-   ],
-   "categories": [
-    "Avfall, städ & miljö",
-    "Industrimaskiner",
-    "Resor & logistik",
-    "Transporter"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/732356-2026",
-   "score": 0
-  },
-  {
    "id": "732076-2026",
    "title": "Städtjänster",
    "buyer": "STIFTELSEN KALIXBOSTÄDER",
@@ -32767,30 +32647,6 @@
    "score": 0
   },
   {
-   "id": "731738-2026",
-   "title": "Övriga bussresor Åstorp 2026",
-   "buyer": "ÅSTORPS KOMMUN",
-   "city": "Åstorp",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "60100000",
-    "60170000",
-    "60172000"
-   ],
-   "categories": [
-    "Transporter"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/731738-2026",
-   "score": 10
-  },
-  {
    "id": "731601-2026",
    "title": "Tryckeritjänster",
    "buyer": "Borås Stad",
@@ -32862,26 +32718,6 @@
    "score": 0
   },
   {
-   "id": "731311-2026",
-   "title": "Inköp av kompositslipers",
-   "buyer": "Göteborgs Spårvägar AB",
-   "city": "GÖTEBORG",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "34940000"
-   ],
-   "categories": [
-    "Fordon & transportmedel"
-   ],
-   "value_sek": 40000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/731311-2026",
-   "score": 10
-  },
-  {
    "id": "731260-2026",
    "title": "Nykroppagatan E1",
    "buyer": "Exploateringskontoret",
@@ -32906,29 +32742,6 @@
    ],
    "value_sek": 75000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/731260-2026",
-   "score": 0
-  },
-  {
-   "id": "731254-2026",
-   "title": "Miljökonsult",
-   "buyer": "Myndigheten för civilt försvar",
-   "city": "Karlstad",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "90700000",
-    "90711000"
-   ],
-   "categories": [
-    "Avfall, städ & miljö"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/731254-2026",
    "score": 0
   },
   {
@@ -33069,55 +32882,6 @@
    ],
    "value_sek": 80000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/730803-2026",
-   "score": 10
-  },
-  {
-   "id": "730797-2026",
-   "title": "Revisionstjänster Linköpings Stadshus AB",
-   "buyer": "Linköpings kommun",
-   "city": "Linköping",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "79200000",
-    "79212000"
-   ],
-   "categories": [
-    "Företagstjänster"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/730797-2026",
-   "score": 28
-  },
-  {
-   "id": "730742-2026",
-   "title": "Verksamhetsresor med taxibilar, specialfordon och bussar i olika storlekar",
-   "buyer": "Skellefteå kommun",
-   "city": "Skellefteå",
-   "region": "Västerbotten",
-   "regions": [
-    "Västerbotten"
-   ],
-   "published": "2026-10-22",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "34000000",
-    "34114400",
-    "34115200",
-    "34120000",
-    "34121000",
-    "60120000"
-   ],
-   "categories": [
-    "Fordon & transportmedel",
-    "Transporter"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/730742-2026",
    "score": 10
   },
   {
@@ -33307,32 +33071,6 @@
    "score": 20
   },
   {
-   "id": "729321-2026",
-   "title": "Parkeringssamordning och övervakning Falun",
-   "buyer": "Upphandlingscenter Falun Borlänge-regionen",
-   "city": "Ludvika",
-   "region": "Dalarna",
-   "regions": [
-    "Dalarna"
-   ],
-   "published": "2026-10-21",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "63712400",
-    "98351000",
-    "98351100",
-    "98351110"
-   ],
-   "categories": [
-    "Resor & logistik",
-    "Övriga tjänster"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/729321-2026",
-   "score": 10
-  },
-  {
    "id": "729154-2026",
    "title": "Nytt systemstöd för Handläggning",
    "buyer": "Socialstyrelsen",
@@ -33355,32 +33093,6 @@
    "value_sek": 378000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/729154-2026",
    "score": 20
-  },
-  {
-   "id": "729070-2026",
-   "title": "Måleriarbeten - Ramavtal",
-   "buyer": "Ljungby kommun",
-   "city": "Ljungby",
-   "region": "Kronoberg",
-   "regions": [
-    "Kronoberg"
-   ],
-   "published": "2026-10-21",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "45000000",
-    "45400000",
-    "45440000",
-    "45442100",
-    "45442180"
-   ],
-   "categories": [
-    "Bygg & anläggning"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/729070-2026",
-   "score": 10
   },
   {
    "id": "729063-2026",
@@ -33500,81 +33212,6 @@
    "value_sek": null,
    "url": "https://ted.europa.eu/sv/notice/-/detail/728440-2026",
    "score": 10
-  },
-  {
-   "id": "728264-2026",
-   "title": "Mjukpapper, kemisk-tekniska produkter och städredskap",
-   "buyer": "Upphandlingscenter Falun Borlänge-regionen",
-   "city": "Ludvika",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-21",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "18424300",
-    "18935000",
-    "19640000",
-    "33720000",
-    "33760000",
-    "33761000",
-    "33770000",
-    "33772000",
-    "39222110",
-    "39222120",
-    "39224000",
-    "39224200",
-    "39224300",
-    "39224310",
-    "39224320",
-    "39224330",
-    "39224350",
-    "39800000",
-    "39821000",
-    "39822000",
-    "39830000",
-    "39831000",
-    "39831200",
-    "39831300",
-    "39831600",
-    "42968300"
-   ],
-   "categories": [
-    "Industrimaskiner",
-    "Kläder & skor",
-    "Medicinteknik & läkemedel",
-    "Möbler & inredning",
-    "Textil & läder"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/728264-2026",
-   "score": 10
-  },
-  {
-   "id": "728006-2026",
-   "title": "LIN tappningsstation",
-   "buyer": "Uppsala universitet",
-   "city": "Uppsala",
-   "region": "Uppsala",
-   "regions": [
-    "Uppsala"
-   ],
-   "published": "2026-10-21",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "38000000",
-    "39341000",
-    "44600000"
-   ],
-   "categories": [
-    "Byggmaterial",
-    "Labb & mätinstrument",
-    "Möbler & inredning"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/728006-2026",
-   "score": 0
   },
   {
    "id": "727725-2026",
@@ -34062,28 +33699,6 @@
    "value_sek": 140000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/724414-2026",
    "score": 0
-  },
-  {
-   "id": "724310-2026",
-   "title": "Tjänstecyklar, service samt reparationer",
-   "buyer": "Jönköpings kommun",
-   "city": "Jönköping",
-   "region": "Jönköping",
-   "regions": [
-    "Jönköping"
-   ],
-   "published": "2026-10-20",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "34430000"
-   ],
-   "categories": [
-    "Fordon & transportmedel"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/724310-2026",
-   "score": 10
   },
   {
    "id": "724292-2026",
@@ -35143,29 +34758,6 @@
    ],
    "value_sek": 5000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/713261-2026",
-   "score": 10
-  },
-  {
-   "id": "712612-2026",
-   "title": "Vinterväghållning",
-   "buyer": "Ekerö kommun",
-   "city": "Ekerö",
-   "region": "Stockholm",
-   "regions": [
-    "Stockholm"
-   ],
-   "published": "2026-10-15",
-   "deadline": "2026-11-21",
-   "type": "cn-standard",
-   "cpv": [
-    "90620000",
-    "90630000"
-   ],
-   "categories": [
-    "Avfall, städ & miljö"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/712612-2026",
    "score": 10
   },
   {
@@ -36869,294 +36461,6 @@
    "value_sek": 216000000,
    "url": "https://ted.europa.eu/sv/notice/-/detail/693172-2026",
    "score": 0
-  },
-  {
-   "id": "692590-2026",
-   "title": "DIS Medical Devices: Radioactive Sources for Ophthalmic Brachytherapy and accessories",
-   "buyer": "Akutsjukhusnämnden, S:t Eriks Ögonsjukhus",
-   "city": "Solna",
-   "region": "Stockholm",
-   "regions": [
-    "Stockholm"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "09343000",
-    "09344000"
-   ],
-   "categories": [
-    "Bränsle & energi"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/692590-2026",
-   "score": 0
-  },
-  {
-   "id": "692338-2026",
-   "title": "Dynamiskt inköpssystem för Tekniska konsulter",
-   "buyer": "Växjö kommun",
-   "city": "Växjö",
-   "region": "Kronoberg",
-   "regions": [
-    "Kronoberg"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "71000000"
-   ],
-   "categories": [
-    "Arkitekt- & teknikkonsult"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/692338-2026",
-   "score": 20
-  },
-  {
-   "id": "691996-2026",
-   "title": "Upphandling av upphandlingsverktyg",
-   "buyer": "Folke Bernadotteakademin",
-   "city": "Stockholm",
-   "region": "Stockholm",
-   "regions": [
-    "Stockholm"
-   ],
-   "published": "2026-10-07",
-   "deadline": "2026-12-22",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48490000",
-    "72000000"
-   ],
-   "categories": [
-    "IT-tjänster",
-    "Programvara & system"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/691996-2026",
-   "score": 20
-  },
-  {
-   "id": "691188-2026",
-   "title": "Ekonomisystem till PMalmö",
-   "buyer": "Malmö kommun parkerings AB",
-   "city": "Limhamn",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48400000",
-    "48440000",
-    "72220000"
-   ],
-   "categories": [
-    "IT-tjänster",
-    "Programvara & system"
-   ],
-   "value_sek": 15000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/691188-2026",
-   "score": 55
-  },
-  {
-   "id": "691084-2026",
-   "title": "Entreprenaduppföljning miljö Vagnhärad, Ostlänken",
-   "buyer": "Trafikverket Myndighet",
-   "city": "BORLÄNGE",
-   "region": "Södermanland",
-   "regions": [
-    "Södermanland"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "71313000"
-   ],
-   "categories": [
-    "Arkitekt- & teknikkonsult"
-   ],
-   "value_sek": 45000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/691084-2026",
-   "score": 0
-  },
-  {
-   "id": "690928-2026",
-   "title": "Nyttjanderätt och uthyrning av parkeringsytor",
-   "buyer": "Aktiebolaget Kristianstadsbyggen",
-   "city": "KRISTIANSTAD",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "63712400"
-   ],
-   "categories": [
-    "Resor & logistik"
-   ],
-   "value_sek": 61340804,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690928-2026",
-   "score": 10
-  },
-  {
-   "id": "690843-2026",
-   "title": "Övergripande styr- och övervakningssystem (SCADA) för VA",
-   "buyer": "Botkyrka kommun",
-   "city": "Tumba",
-   "region": "Stockholm",
-   "regions": [
-    "Stockholm"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "42961200",
-    "48000000",
-    "48900000",
-    "72000000",
-    "72200000",
-    "72220000",
-    "72250000"
-   ],
-   "categories": [
-    "IT-tjänster",
-    "Industrimaskiner",
-    "Programvara & system"
-   ],
-   "value_sek": 14000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690843-2026",
-   "score": 30
-  },
-  {
-   "id": "690593-2026",
-   "title": "Belgien, Luxemburg, Frankrike, Lettland, Tyskland, Sverige, Grekland, Rumänien, Ungern, Slovakien, Nederländerna, Österrike, Slovenien, Estland, Tjeckien, Spanien – Möbler – Fourniture de mobilier pour l'aménagement et l’équipement des espaces de travail et de convivialité de la Commission européenne et autres entités participantes",
-   "buyer": "Commission européenne, OIB - Office for Infrastructure and Logistics in Brussels",
-   "city": "Brussels",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-07",
-   "deadline": "2026-12-15",
-   "type": "cn-standard",
-   "cpv": [
-    "39100000",
-    "39110000",
-    "39120000",
-    "39121000",
-    "39122100",
-    "39130000"
-   ],
-   "categories": [
-    "Möbler & inredning"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690593-2026",
-   "score": 0
-  },
-  {
-   "id": "690374-2026",
-   "title": "Slåtter och puts",
-   "buyer": "Huddinge kommun",
-   "city": "Huddinge",
-   "region": "Stockholm",
-   "regions": [
-    "Stockholm"
-   ],
-   "published": "2026-10-07",
-   "deadline": "2026-11-28",
-   "type": "cn-standard",
-   "cpv": [
-    "77000000"
-   ],
-   "categories": [
-    "Park, skog & grönyta"
-   ],
-   "value_sek": null,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690374-2026",
-   "score": 10
-  },
-  {
-   "id": "690266-2026",
-   "title": "Serviceresor",
-   "buyer": "Region Skåne, Skånetrafiken",
-   "city": "Hässleholm",
-   "region": "Skåne",
-   "regions": [
-    "Skåne"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "60120000"
-   ],
-   "categories": [
-    "Transporter"
-   ],
-   "value_sek": 200000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690266-2026",
-   "score": 10
-  },
-  {
-   "id": "690075-2026",
-   "title": "Upphandling av IT-Utvecklingspartner",
-   "buyer": "ENERGIMARKNADSINSPEKTIONEN",
-   "city": "ESKILSTUNA",
-   "region": "",
-   "regions": [],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "72220000",
-    "72260000",
-    "72262000",
-    "72263000",
-    "72267000"
-   ],
-   "categories": [
-    "IT-tjänster"
-   ],
-   "value_sek": 91000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/690075-2026",
-   "score": 20
-  },
-  {
-   "id": "689739-2026",
-   "title": "Ekonomisystem Luleå Hamn AB",
-   "buyer": "Luleå kommun",
-   "city": "Luleå",
-   "region": "Norrbotten",
-   "regions": [
-    "Norrbotten"
-   ],
-   "published": "2026-10-07",
-   "deadline": "",
-   "type": "cn-standard",
-   "cpv": [
-    "48000000",
-    "48440000",
-    "72000000"
-   ],
-   "categories": [
-    "IT-tjänster",
-    "Programvara & system"
-   ],
-   "value_sek": 8000000,
-   "url": "https://ted.europa.eu/sv/notice/-/detail/689739-2026",
-   "score": 55
   }
  ]
 }
