@@ -1,4 +1,9 @@
 {
+ "01afc36881aad410": {
+  "bolag": "Erbe Sweden AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:34"
+ },
  "0242e65fbd1f0aa6": {
   "bolag": "Vretmaskin AB",
   "datum": "2026-11-20",
@@ -33,6 +38,11 @@
  "099cf5df579ff610": {
   "bolag": "Kalmar Science Park AB Leverantör",
   "datum": "2026-11-18"
+ },
+ "0b67fb228fdffada": {
+  "bolag": "TT Nyhetsbyrån AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:33"
  },
  "0bce7c591e844556": {
   "bolag": "Gabstru AB",
@@ -81,6 +91,11 @@
   "bolag": "Terranor AB",
   "datum": "2026-11-18"
  },
+ "1552d3cee8895832": {
+  "bolag": "Aranya AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:28"
+ },
  "158dee87fb99171f": {
   "bolag": "Careondemand Sociala Tjänster AB",
   "datum": "2026-11-18",
@@ -118,6 +133,11 @@
   "bolag": "NETZSCH-Gerätebau GmbH",
   "datum": "2026-11-20",
   "tid": "2026-11-20T15:06:12"
+ },
+ "1e0b07f95647b6ff": {
+  "bolag": "Fortgruppen AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:26"
  },
  "1f328dfd3977a9f3": {
   "bolag": "Sandahls Entreprenad",
@@ -218,6 +238,11 @@
   "bolag": "EventAmbulans i Sverige AB",
   "datum": "2026-11-18"
  },
+ "319962150d179716": {
+  "bolag": "TG Tunnelgruppen AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:43:24"
+ },
  "31f45a4424baa09b": {
   "bolag": "Abbott Rapid Diagnostics AB",
   "datum": "2026-11-18"
@@ -256,6 +281,11 @@
  "40322c16be1cef53": {
   "bolag": "Arthrex Sverige AB",
   "datum": "2026-11-18"
+ },
+ "430a68d28b93a080": {
+  "bolag": "Energifabriken i Sverige AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:43:08"
  },
  "4583c2cdd062fbcd": {
   "bolag": "B.Braun Medical AB",
@@ -421,6 +451,11 @@
   "bolag": "Regent AB",
   "datum": "2026-11-18"
  },
+ "6b900144195565fe": {
+  "bolag": "Michael Bo Rudén",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:43:03"
+ },
  "6cb5a35892527255": {
   "bolag": "Holmgrens Bil AB",
   "datum": "2026-11-18"
@@ -438,6 +473,11 @@
   "bolag": "Kraftplan AB",
   "datum": "2026-11-18"
  },
+ "7005a6946aa8a66f": {
+  "bolag": "Dramatoriet ek. för.",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:54"
+ },
  "704eb88c0dbe2111": {
   "bolag": "Etac Sverige AB",
   "datum": "2026-11-18"
@@ -449,6 +489,11 @@
  "7112657081fcd11b": {
   "bolag": "Coordia Consult AB",
   "datum": "2026-11-18"
+ },
+ "7245e62f60fb65b0": {
+  "bolag": "Stage4you AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:20"
  },
  "72f68c466368b9d0": {
   "bolag": "Jurek Rekrytering & Bemanning AB",
@@ -496,6 +541,11 @@
   "bolag": "Stockens Grönsaker AB",
   "datum": "2026-11-18"
  },
+ "7c66a40c5503eb2d": {
+  "bolag": "EducateIT Nordic AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:14"
+ },
  "7c72cb79d8c9593b": {
   "bolag": "Xylem Water Solutions Sweden AB",
   "datum": "2026-11-18"
@@ -516,6 +566,11 @@
  "802e2c8a6205922c": {
   "bolag": "Origo Group Sverige AB",
   "datum": "2026-11-18"
+ },
+ "804347ec5c4452ae": {
+  "bolag": "Tekniska verken i Linköping AB (publ)",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:02"
  },
  "81b5fd32d795dc1f": {
   "bolag": "Nordic Bemanning & Rekrytering AB",
@@ -617,6 +672,11 @@
   "bolag": "Järven Plast & Smide AB",
   "datum": "2026-11-18"
  },
+ "a086800025469234": {
+  "bolag": "IntraMedic AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:40"
+ },
  "a103430c9ccb5cda": {
   "bolag": "Feldts Fisk & Skaldjur AB",
   "datum": "2026-11-18"
@@ -681,6 +741,11 @@
   "datum": "2026-11-20",
   "tid": "2026-11-20T15:05:10"
  },
+ "b66c985ae062e887": {
+  "bolag": "Liljewall Arkitekter Aktiebolag",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:54"
+ },
  "b83f96297a6ff9cb": {
   "bolag": "Digital Interpretations Scandinavia AB",
   "datum": "2026-11-18"
@@ -722,6 +787,11 @@
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:28:15"
  },
+ "c0f04890b5083b0d": {
+  "bolag": "Trädakuten Ekalak AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:21"
+ },
  "c11e573f651b5a9c": {
   "bolag": "WPcon AB",
   "datum": "2026-11-18",
@@ -734,6 +804,11 @@
  "c185d8d29d8ea65b": {
   "bolag": "Curator Hiss AB",
   "datum": "2026-11-18"
+ },
+ "c1bc14b1f08344bb": {
+  "bolag": "Enviroprocess Sweden AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:47"
  },
  "c1eca9f3d9ef38c3": {
   "bolag": "Chas visual management AB",
@@ -790,6 +865,11 @@
   "bolag": "Academic Work Sweden AB",
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:41:27"
+ },
+ "cbcde4ad85d9723b": {
+  "bolag": "Landskapslaget AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:46"
  },
  "ccdc9471a4818277": {
   "bolag": "Transportaktiebolaget i Jönköping",
@@ -927,6 +1007,11 @@
   "bolag": "Tecnicon Byggkonsult AB",
   "datum": "2026-11-18"
  },
+ "ef9751fb10adb41b": {
+  "bolag": "Truck & Transport Teknik Sverige AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:07"
+ },
  "effc3475bfb5653f": {
   "bolag": "RentalCare Sverige AB",
   "datum": "2026-11-18",
@@ -951,6 +1036,11 @@
  "f2ce66ec615a5438": {
   "bolag": "Hagryd Kvarn",
   "datum": "2026-11-18"
+ },
+ "f2e031258c8ed175": {
+  "bolag": "Riksfärdtjänsten Sverige AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:43:15"
  },
  "f3347de8ad24230c": {
   "bolag": "Norconsult Sverige AB",
@@ -983,6 +1073,11 @@
   "bolag": "Henrik Isbergs Entreprenad AB",
   "datum": "2026-11-18"
  },
+ "f95d27b3597e9a2c": {
+  "bolag": "Certego AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:42:39"
+ },
  "fbf143ec1ee84b62": {
   "bolag": "Entercast AB",
   "datum": "2026-11-20",
@@ -991,6 +1086,11 @@
  "fc7c999a6023a972": {
   "bolag": "Versalift Sweden AB",
   "datum": "2026-11-18"
+ },
+ "fd41c44e972a7a83": {
+  "bolag": "Acre AB",
+  "datum": "2026-11-23",
+  "tid": "2026-11-23T17:41:13"
  },
  "fdd54b4ecb99da74": {
   "bolag": "Pollex Aktiebolag",
