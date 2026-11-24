@@ -159,6 +159,8 @@ def bygg(rad, oppna, steg):
             "Svarar ni inte hör jag inte av mig igen.",
         ]
 
+    if (ps := O.black_week()):
+        stycken.append(ps)
     stycken.append(f"Vänligen,\n{O.AVSANDARE}\n{O.ORG}\nSvara \"sluta\" så skickar vi inga fler mejl.")
     return ämne, "\n\n".join(stycken)
 

@@ -42,6 +42,21 @@ AVSANDARE = "Alexander Pålsson, grundare"
 ORG = "Kommunradar · org.nr 19870929-3552 · Rävebergsvägen 130P, 424 67 Angered"
 SIDA = "https://kommunradar.online/?utm_source=outbound&utm_medium=email&utm_campaign=vinnar"
 
+# Black Week 2026: årsplan som betalas direkt (ingen provperiod), 4 900 kr första året,
+# max 10 platser — Stripe stänger länken själv vid 10 köp. Raden försvinner automatiskt
+# ur mejlen efter BW_SLUT, så ingen behöver komma ihåg att ta bort den.
+BW_LANK = "https://buy.stripe.com/3cI6oGbwc3Avcvj6ekg7e09"
+BW_SLUT = date(2026, 11, 30)
+
+
+def black_week(idag=None):
+    """P.S.-raden om Black Week-erbjudandet, eller None när kampanjen är slut."""
+    idag = idag or date.today()
+    if idag > BW_SLUT:
+        return None
+    return (f"P.S. Black Week t.o.m. {BW_SLUT.day}/{BW_SLUT.month}: helt år för 4 900 kr "
+            f"(ord. 7 900 kr), bara 10 platser. Ingen moms: {BW_LANK}")
+
 # Adresser som aldrig ska få utskicket (eget, test, rollkonton hos oss).
 SPÄRR = {"freeline031@gmail.com", "hej@kommunradar.online"}
 
@@ -195,8 +210,10 @@ def bygg(rad, oppna):
     stycken += [
         f"Vill ni ha nästa liknande affär i mejlen i stället? Det tar en minut att svara ja, "
         f"och ni får sju dagar gratis utan kort. Sedan 490 kr i månaden i grundarpris: {SIDA}",
-        f"Vänligen,\n{AVSANDARE}\n{ORG}\nSvara \"sluta\" så skickar vi inga fler mejl.",
     ]
+    if (ps := black_week()):
+        stycken.append(ps)
+    stycken.append(f"Vänligen,\n{AVSANDARE}\n{ORG}\nSvara \"sluta\" så skickar vi inga fler mejl.")
     return ämne, "\n\n".join(stycken)
 
 
