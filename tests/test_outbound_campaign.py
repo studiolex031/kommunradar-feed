@@ -94,7 +94,9 @@ class Leads(unittest.TestCase):
                  vinnare(epost="info@goteborg.se", bolag="Göteborgs kommun"),  # myndighet
                  vinnare(epost="stopp@ettbolag.se", bolag="Ett Bolag AB"),
                  vinnare(epost="gammal@tvabolag.se", bolag="Två Bolag AB"),
-                 vinnare(epost="inte-en-adress", bolag="Trasig AB")]
+                 vinnare(epost="inte-en-adress", bolag="Trasig AB"),
+                 vinnare(epost="f.x@olympus.com", bolag="Olympus Sverige AB"),
+                 vinnare(epost="k@globalcorp.com", bolag="Globalcorp Sweden AB")]
         valda, bort = C.bygg_leads(rader, self.state(), {C.nyckel("gammal@tvabolag.se")},
                                    {C.nyckel("stopp@ettbolag.se")}, mx=lambda d: True)
         self.assertEqual([v["epost"] for v in valda], ["anna.berg@smabolaget.se"])
@@ -103,6 +105,7 @@ class Leads(unittest.TestCase):
         self.assertIn("stopplistan", orsaker)
         self.assertIn("myndighet eller offentlig aktör", orsaker)
         self.assertIn("ogiltig e-post", orsaker)
+        self.assertIn("svenskt dotterbolag till internationell koncern", orsaker)
         self.assertIn("TED 123456-2026", valda[0]["target_reason"])
 
     def test_personlig_adress_fore_anbudsadress_och_ingen_mx_hoppas_over(self):
@@ -126,6 +129,12 @@ class Mallar(unittest.TestCase):
             self.assertIn("veckobrev.html", text)
             self.assertEqual(erbj, "grundare")
         self.assertTrue(C.mejl(r, 1, ÖPPNA, date(2026, 12, 5))[0].startswith("Nästa upphandling efter"))
+
+    def test_amnesrad_utan_upphandling_av(self):
+        self.assertEqual(C.ämnesrad({"upphandling": "Upphandling av server och lagring"}),
+                         "Nästa upphandling efter server och lagring?")
+        self.assertEqual(C.ämnesrad({"upphandling": "Släckbil till Räddningstjänsten"}),
+                         "Nästa upphandling efter släckbil till Räddningstjänsten?")
 
     def test_black_week_bara_till_och_med_slutdatum(self):
         self.assertEqual(C.välj_erbjudande(date(2026, 11, 30))[0], "black_week")

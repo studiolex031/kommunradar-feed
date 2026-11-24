@@ -30,6 +30,9 @@ STORA_DOMANER = {
     "combitech.com", "semcon.com", "cegal.com", "tengbom.se", "manpowergroup.se",
     "randstad.se", "poolia.se", "academicwork.se", "studentconsulting.com",
     "attendo.se",
+    # dagligvaror och grossister (koncerner), funna i torrkörningen 2026-11-24
+    "olympus.com", "coop.se", "ica.se", "axfood.se", "dagab.se", "menigo.se", "martinservera.se",
+    "svenskcater.se", "bergendahls.se",
     # anbudsbyråer: adressen går via en konsult, inte till bolaget självt
     "tenders.se", "stromsholmadvokat.se",
 }
@@ -65,6 +68,10 @@ GRATISMEJL = {"gmail.com", "hotmail.com", "hotmail.se", "outlook.com", "outlook.
               "yahoo.com", "yahoo.se", "icloud.com", "telia.com", "bredband.net", "spray.se"}
 
 
+# "X Sverige AB" med en .com-adress är nästan alltid ett dotterbolag till en internationell koncern.
+DOTTERBOLAG = re.compile(r"\b(sverige|sweden|scandinavia|nordic|nordics)\s+(ab|aktiebolag)\b", re.I)
+
+
 def utanfor_icp(bolag, epost):
     """Varför leadet INTE är målgrupp, eller "" om det är det."""
     bolag = bolag or ""
@@ -77,4 +84,6 @@ def utanfor_icp(bolag, epost):
         return "börsnoterat bolag (publ)"
     if ANBUDSBYRA.search(bolag):
         return "anbudsbyrå"
+    if DOTTERBOLAG.search(bolag) and epost.endswith(".com"):
+        return "svenskt dotterbolag till internationell koncern"
     return ""

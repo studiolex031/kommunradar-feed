@@ -324,7 +324,9 @@ def kort_titel(t, n=48):
 
 
 def ämnesrad(rad):
-    titel = kort_titel(rad.get("upphandling"))
+    titel = re.sub(r"^(upphandling|ramavtal|avtal)\s+(av|avseende|gällande|för)\s+", "",
+                   (rad.get("upphandling") or "").strip(), flags=re.I)
+    titel = kort_titel(titel[:1].lower() + titel[1:] if titel[:2].istitle() else titel)
     if len(titel) < 8 and rad.get("bransch"):
         titel = rad["bransch"].lower()
     return f"Nästa upphandling efter {titel}?"
