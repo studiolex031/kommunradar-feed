@@ -48,6 +48,11 @@
   "bolag": "Gabstru AB",
   "datum": "2026-11-18"
  },
+ "0c2468abc16fdab9": {
+  "bolag": "Wibax Sales AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:22"
+ },
  "0dceb5e331386b13": {
   "bolag": "Slöjd-Detaljer i Skara Aktiebolag",
   "datum": "2026-11-18"
@@ -69,6 +74,11 @@
   "bolag": "Forsman Tema Markmiljö AB",
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:28:28"
+ },
+ "121b0bff3e8b88ec": {
+  "bolag": "Coop Östra Försäljning AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:10"
  },
  "12970e444efceeaa": {
   "bolag": "nimacare ab",
@@ -123,6 +133,11 @@
   "bolag": "Idhammar Produktion AB",
   "datum": "2026-11-20",
   "tid": "2026-11-20T15:05:56"
+ },
+ "1d89f32eb40a74bb": {
+  "bolag": "Lindgrens Plåt & Ventilation i Dalarna Aktiebolag",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:24"
  },
  "1dcc777a5807d271": {
   "bolag": "Vårdbemanning Sverige AB",
@@ -221,6 +236,11 @@
   "bolag": "Northern Lights JV",
   "datum": "2026-11-18"
  },
+ "2f00cf2297280636": {
+  "bolag": "Sensio Care AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:59"
+ },
  "2f0b9340f58e402f": {
   "bolag": "Medtronic Aktiebolag",
   "datum": "2026-11-18"
@@ -242,6 +262,11 @@
   "bolag": "TG Tunnelgruppen AB",
   "datum": "2026-11-23",
   "tid": "2026-11-23T17:43:24"
+ },
+ "31e1c21038b6ef33": {
+  "bolag": "Nordea Finans Sverige AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:50"
  },
  "31f45a4424baa09b": {
   "bolag": "Abbott Rapid Diagnostics AB",
@@ -303,6 +328,11 @@
   "bolag": "IT-Total Sweden AB",
   "datum": "2026-11-18"
  },
+ "4649516a4d00842e": {
+  "bolag": "Olympus Sverige AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:05"
+ },
  "46825bef8c13ad8f": {
   "bolag": "Lyreco Sverige AB",
   "datum": "2026-11-18"
@@ -314,6 +344,11 @@
  "497a91582fd58ff3": {
   "bolag": "Kyte Powertech Ltd",
   "datum": "2026-11-18"
+ },
+ "49aea1c80d2dfb50": {
+  "bolag": "Textilia Tvätt & Textilservice AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:15:25"
  },
  "4a4da55ea4954fbf": {
   "bolag": "Väsby Lås & Alarm AB",
@@ -581,6 +616,11 @@
   "bolag": "Infrakonsult Sverige AB",
   "datum": "2026-11-18"
  },
+ "832978b6c6c7c598": {
+  "bolag": "Triolab AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:15:04"
+ },
  "842857a36c6571ef": {
   "bolag": "K-Allservice AB",
   "datum": "2026-11-18"
@@ -601,6 +641,11 @@
  "8870b916d65f1aeb": {
   "bolag": "H-B Bygg i Hälsingland AB",
   "datum": "2026-11-18"
+ },
+ "8a81e67910d7f9f9": {
+  "bolag": "Wist Last & Buss AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:35"
  },
  "8a84fe8ae8e7374f": {
   "bolag": "Tikk Takk Time Sweden AB",
@@ -634,6 +679,11 @@
   "bolag": "K-IT Sweden AB",
   "datum": "2026-11-18"
  },
+ "945781ace8660424": {
+  "bolag": "Steripolar AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:31"
+ },
  "94bc0ab9daa2ba03": {
   "bolag": "Micromedic AB",
   "datum": "2026-11-20",
@@ -650,6 +700,11 @@
  "97b3312ae912cbca": {
   "bolag": "MED-EL Nordic AB",
   "datum": "2026-11-18"
+ },
+ "97bc69c181a936df": {
+  "bolag": "Tranemo Trädgårdstjänst Aktiebolag",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:15:17"
  },
  "9bf17830038772a2": {
   "bolag": "Sydsvenska Städ Aktiebolag",
@@ -694,6 +749,11 @@
   "bolag": "Johnson & Johnson Aktiebolag",
   "datum": "2026-11-18"
  },
+ "a5d387ecceefed3b": {
+  "bolag": "Kungshamnsfiskarna AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:41"
+ },
  "a756f7daa4377388": {
   "bolag": "Falck Sverige AB",
   "datum": "2026-11-18"
@@ -736,6 +796,11 @@
   "bolag": "ETTELVA ARKITEKTER",
   "datum": "2026-11-18"
  },
+ "b57106f566873b1d": {
+  "bolag": "LäroMedia Bokhandel Örebro Aktiebolag",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:58"
+ },
  "b5ef6cf4950c5bcd": {
   "bolag": "Stiftsgården Södra Hoka",
   "datum": "2026-11-20",
@@ -745,6 +810,11 @@
   "bolag": "Liljewall Arkitekter Aktiebolag",
   "datum": "2026-11-23",
   "tid": "2026-11-23T17:41:54"
+ },
+ "b7d76b2cf98f4132": {
+  "bolag": "Fredins Takentreprenad AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:40"
  },
  "b83f96297a6ff9cb": {
   "bolag": "Digital Interpretations Scandinavia AB",
@@ -887,6 +957,11 @@
   "bolag": "Trygg-Hansa försäkring filial",
   "datum": "2026-11-18"
  },
+ "d19bec420a85d8aa": {
+  "bolag": "Bare Appliance AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:15:31"
+ },
  "d225f6121998e304": {
   "bolag": "Tjärö Drift AB",
   "datum": "2026-11-20",
@@ -895,6 +970,11 @@
  "d3b0fccb2966667e": {
   "bolag": "Swemac Orthopaedics Aktiebolag",
   "datum": "2026-11-18"
+ },
+ "d44d391067ed8c43": {
+  "bolag": "Sala Brand AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:17"
  },
  "d550f6c750eb0bef": {
   "bolag": "Falck Räddningstjänst AB",
@@ -948,6 +1028,11 @@
   "bolag": "Fix Cleaning Service Ab",
   "datum": "2026-11-19",
   "tid": "2026-11-19T15:28:47"
+ },
+ "e3e9fcef4696e98b": {
+  "bolag": "Västerdala Tak AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:46"
  },
  "e4720177cca1c617": {
   "bolag": "Movator AB",
@@ -1012,6 +1097,16 @@
   "datum": "2026-11-23",
   "tid": "2026-11-23T17:42:07"
  },
+ "ef9aae31d4011b57": {
+  "bolag": "Volvo Truck Center Sweden Aktiebolag",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:14:27"
+ },
+ "efc5d97a66eca332": {
+  "bolag": "EUROIMMUN",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:15:10"
+ },
  "effc3475bfb5653f": {
   "bolag": "RentalCare Sverige AB",
   "datum": "2026-11-18",
@@ -1054,6 +1149,11 @@
   "bolag": "Medlink Nordic AB",
   "datum": "2026-11-18",
   "tid": "2026-11-18T12:39:23"
+ },
+ "f70b5f34323a5666": {
+  "bolag": "Medpeople AB",
+  "datum": "2026-11-24",
+  "tid": "2026-11-24T17:13:53"
  },
  "f70d72de95986f16": {
   "bolag": "Boss Business Partner North AB",
