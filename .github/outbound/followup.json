@@ -11,6 +11,12 @@
   "steg": 2,
   "tid": "2026-11-23T18:42:00"
  },
+ "08d7fff50294e05f": {
+  "bolag": "NIMAB Entreprenad AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:11"
+ },
  "099cf5df579ff610": {
   "bolag": "Kalmar Science Park AB Leverantör",
   "datum": "2026-11-23",
@@ -22,6 +28,18 @@
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:40:15"
+ },
+ "0f6cb0a6b4753849": {
+  "bolag": "Skillinge Fisk-Impex Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:05"
+ },
+ "1080cdc59786a146": {
+  "bolag": "Ljusdals Montage AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:01"
  },
  "139cbb321de585d6": {
   "bolag": "Doctors Of Competence Diagnostics Sweden AB",
@@ -35,11 +53,47 @@
   "steg": 2,
   "tid": "2026-11-23T18:41:55"
  },
+ "1f328dfd3977a9f3": {
+  "bolag": "Sandahls Entreprenad",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:30"
+ },
+ "20294502a47b4890": {
+  "bolag": "JLB Mark & Asfalt AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:46"
+ },
+ "21a6736673cc8b45": {
+  "bolag": "Edström Pettersson Bygg AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:36"
+ },
+ "22ab7612be729a24": {
+  "bolag": "Byggpartner i Dalarna AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:59"
+ },
  "23da053f6e2c0d78": {
   "bolag": "Hybrid Solutions in Orebro AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:43:33"
+ },
+ "26cdadeecc128190": {
+  "bolag": "Björk & Magnusson i Helsingborg AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:53"
+ },
+ "28b237412527538e": {
+  "bolag": "Nordic MasterCar AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:07"
  },
  "291d4fcf725f42ed": {
   "bolag": "Svenska Jägareförbundet",
@@ -53,6 +107,12 @@
   "steg": 2,
   "tid": "2026-11-23T18:40:51"
  },
+ "2f9533296cde93db": {
+  "bolag": "Jord & Berg i Kungsbacka AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:07"
+ },
  "30485f781f15d778": {
   "bolag": "EventAmbulans i Sverige AB",
   "datum": "2026-11-23",
@@ -64,6 +124,30 @@
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:38:29"
+ },
+ "344d1a8fb8ff2ec8": {
+  "bolag": "Freys Express i Uppsala AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:38"
+ },
+ "3621fd90bd694d87": {
+  "bolag": "Bemannia AB (PUBL.)",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:53"
+ },
+ "3d30ffcfd2304d08": {
+  "bolag": "Karin Larsson Psykoterapi & Handledning AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:42"
+ },
+ "40322c16be1cef53": {
+  "bolag": "Arthrex Sverige AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:11"
  },
  "45f933b738b98516": {
   "bolag": "Sakura Finetek Sweden AB",
@@ -89,6 +173,30 @@
   "steg": 2,
   "tid": "2026-11-23T18:40:22"
  },
+ "4aba38e69df464d2": {
+  "bolag": "Bröderna Berner AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:05"
+ },
+ "4c579de19602deab": {
+  "bolag": "Aspira Medical AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:13"
+ },
+ "51db4de6d2c48b62": {
+  "bolag": "Passéra AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:20"
+ },
+ "5209e2abde2dd4a7": {
+  "bolag": "LIHAB, Lindbergh & Hagelin Byggnads Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:52"
+ },
  "5560cd1a001160c6": {
   "bolag": "Bygg Dialog AB",
   "datum": "2026-11-23",
@@ -107,11 +215,29 @@
   "steg": 2,
   "tid": "2026-11-23T18:38:37"
  },
+ "58ee0076004d7f2d": {
+  "bolag": "Direct Healthcare Group Sverige AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:51"
+ },
+ "596577e2a8d96516": {
+  "bolag": "PutsMan Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:37"
+ },
  "61dc4fd468f75c67": {
   "bolag": "Höglandsschakt AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:39:13"
+ },
+ "643389902f141934": {
+  "bolag": "Cemi AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:07:36"
  },
  "64d72454e8952aab": {
   "bolag": "Branteviks Fisk i Simrishamn AB",
@@ -143,11 +269,35 @@
   "steg": 2,
   "tid": "2026-11-23T18:43:25"
  },
+ "73b3a3a8180d04d9": {
+  "bolag": "K.W. Bilservice Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:20"
+ },
+ "7ba8fb86c30cc9ed": {
+  "bolag": "Stockens Grönsaker AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:13:06"
+ },
+ "7dd069c4671b3cb4": {
+  "bolag": "Binab Entreprenad AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:07:30"
+ },
  "802e2c8a6205922c": {
   "bolag": "Origo Group Sverige AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:39:53"
+ },
+ "81bb0425c2cf4f72": {
+  "bolag": "Infrakonsult Sverige AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:07"
  },
  "842857a36c6571ef": {
   "bolag": "K-Allservice AB",
@@ -160,6 +310,12 @@
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:38:50"
+ },
+ "8870b916d65f1aeb": {
+  "bolag": "H-B Bygg i Hälsingland AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:45"
  },
  "8de4de5b5339ce10": {
   "bolag": "Pontarius AB",
@@ -179,17 +335,53 @@
   "steg": 2,
   "tid": "2026-11-23T18:40:29"
  },
+ "9c4d7469a544b2ea": {
+  "bolag": "Peyo AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:35"
+ },
  "9ce5f2c087864676": {
   "bolag": "Timik AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:42:58"
  },
+ "a103430c9ccb5cda": {
+  "bolag": "Feldts Fisk & Skaldjur AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:57"
+ },
  "a1f0253eae60784f": {
   "bolag": "Holm Trävaror AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:41:38"
+ },
+ "a8f0a2dc6417b317": {
+  "bolag": "Osteotec Nordics AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:18"
+ },
+ "ab113ddd933863d1": {
+  "bolag": "Agnesbergs Grävtjänst i Kungälv AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:07:50"
+ },
+ "afba03b94b92b599": {
+  "bolag": "RC Hisservice AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:33"
+ },
+ "b154ec778eb0d3ac": {
+  "bolag": "Medema Physio AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:45"
  },
  "b2aa521a145f292e": {
   "bolag": "HumaNova Utbildning AB",
@@ -209,11 +401,29 @@
   "steg": 2,
   "tid": "2026-11-23T18:44:00"
  },
+ "bb6a03048a6fcaff": {
+  "bolag": "Purac AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:16"
+ },
  "bb7fcbb0f47c3449": {
   "bolag": "Zwero AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:42:17"
+ },
+ "c127e5e87c51081f": {
+  "bolag": "Aarsleff Pipe Technologies AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:46"
+ },
+ "c185d8d29d8ea65b": {
+  "bolag": "Curator Hiss AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:25"
  },
  "c426f76f50d40e7d": {
   "bolag": "Skolon AB",
@@ -233,11 +443,59 @@
   "steg": 2,
   "tid": "2026-11-23T18:43:20"
  },
+ "ccdc9471a4818277": {
+  "bolag": "Transportaktiebolaget i Jönköping",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:25"
+ },
+ "cde1ff9f6d57d009": {
+  "bolag": "KG Knutsson AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:29"
+ },
+ "d16432424b82ed11": {
+  "bolag": "Ottosson Truck Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:50"
+ },
+ "d3b0fccb2966667e": {
+  "bolag": "Swemac Orthopaedics Aktiebolag",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:25"
+ },
+ "d75c3beafbe1867e": {
+  "bolag": "Solarwater Solutions Oy",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:15"
+ },
+ "d9041141698c5ed0": {
+  "bolag": "Städ och fönsterputs dags i väst Sverige AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:12:29"
+ },
  "d9e039f4fc3bd9e3": {
   "bolag": "SR Intelligence AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:41:45"
+ },
+ "db88ceb6a91f33a4": {
+  "bolag": "Mercado Medic AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:07:57"
+ },
+ "e4720177cca1c617": {
+  "bolag": "Movator AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:33"
  },
  "e602338553815008": {
   "bolag": "Stamford AB",
@@ -257,6 +515,18 @@
   "steg": 2,
   "tid": "2026-11-23T18:42:25"
  },
+ "e75baf523c87a2c1": {
+  "bolag": "Mediplast AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:07:45"
+ },
+ "e89cc1f6262157ce": {
+  "bolag": "Caretec",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:10:59"
+ },
  "e89d1e4532d8dc8b": {
   "bolag": "Taiga Aktiebolag",
   "datum": "2026-11-23",
@@ -275,11 +545,41 @@
   "steg": 2,
   "tid": "2026-11-23T18:42:06"
  },
+ "f0a086a423a98029": {
+  "bolag": "AB Gilbert Gustafssons",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:11:21"
+ },
+ "f0cba49002c0792b": {
+  "bolag": "Breas Medical AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:22"
+ },
+ "f23c267928c1d99c": {
+  "bolag": "Enter Ställningar AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:08:29"
+ },
+ "f54d60d2cadce033": {
+  "bolag": "Avloppsrallarna AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:09:39"
+ },
  "f8c34728f4572068": {
   "bolag": "Farmartjänst Kungsbacka AB",
   "datum": "2026-11-23",
   "steg": 2,
   "tid": "2026-11-23T18:41:50"
+ },
+ "f8f2138f31b7c761": {
+  "bolag": "Henrik Isbergs Entreprenad AB",
+  "datum": "2026-11-24",
+  "steg": 2,
+  "tid": "2026-11-24T18:13:01"
  },
  "fc7c999a6023a972": {
   "bolag": "Versalift Sweden AB",
