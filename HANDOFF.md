@@ -31,6 +31,7 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 - All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-24 Claude: ny automatisk outbound-kedja (PR `outbound-vinnare-kedja`, ej sammanslagen): `scripts/outbound_campaign.py` + `scripts/outbound_guard.py`, egen sänddomän via OUTREACH_*-secrets, uppvärmning 10/20/40, uppföljning dag 3 och 7, svarsläsning via IMAP, nödstopp. Torrkörning tills Alexander satt flaggorna. Runbook: `docs/outbound-vinnare.md`. Ersätter `followup-vinnare.yml`.
 - 2026-11-24 Claude: "nyckeln" → "listan" i första mejlet (outbound_send.py, winner_leads.py); workflow-kommentaren säger nu Resend/Brevo i stället för "avstängd".
 - 2026-11-24 Claude: skapade Black Week-priset och betallänken i Stripe (live). La in
   erbjudandet som P.S. i första mejlet och i uppföljning 2 och 3 (`black_week()` i

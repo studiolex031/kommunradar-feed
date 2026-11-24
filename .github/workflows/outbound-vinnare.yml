@@ -1,53 +1,106 @@
 name: outbound-vinnare
-# Skickar det personliga första-mejlet till bolag som nyss vunnit en svensk
-# offentlig upphandling (scripts/outbound_send.py).
+# Automatisk outbound till bolag som nyss vunnit en svensk offentlig upphandling:
+# första mejl + uppföljning dag 3 och dag 7, i scripts/outbound_campaign.py.
+# Runbook, nödstopp och inställningar: docs/outbound-vinnare.md.
 #
-# En batch per vardag, inte hela listan på en gång: en brevlåda som skickar
-# hundratals kalla mejl i en burst blir blockerad. Det hände 2026-11-18 —
-# Simply.com spärrade kontot efter 149 mejl på två timmar, och deras policy
-# förbjuder uttryckligen cold mailing på smtp.simply.com. Sedan dess går all
-# utgående post via Resend och Brevo (secrets SMTP_*), aldrig via Simply.
-# Se kommunradar/outbound/vinnar-leads.md.
+# SÄKER STANDARD: utan repo-variablerna OUTBOUND_ENABLED, OUTBOUND_PROSPECT_EMAILS_ENABLED
+# och OUTBOUND_APPROVED = true blir varje körning en torrkörning (visar mejlen, skickar inget).
+# Även med flaggorna vägrar scripts/outbound_guard.py att skicka om sänddomänen är Simply.com
+# eller huvuddomänen, om SPF/DMARC saknas, om svarsläsningen (IMAP) saknas eller om spärrfilen
+# .github/outbound/SPARRAD finns.
+#
+# Egna SMTP-hemligheter (OUTREACH_*): kall post får aldrig dela avsändare med kundmejlen och
+# veckobrevet (SMTP_* i weekly.yml/daily.yml), annars tar de skada om outreach-domänen gör det.
 on:
-  schedule: [{cron: "0 6 * * 1-5"}]   # vardagar 07:00 svensk tid
+  schedule:
+    # 06:30 och 07:30 UTC = 07:30/08:30 vintertid, 08:30/09:30 sommartid. Skriptet väntar in
+    # 08:30 svensk tid, skickar till senast 11:30 och hoppar över om dagens tak redan är nått.
+    - cron: "30 6 * * 1-5"
+    - cron: "30 7 * * 1-5"
   workflow_dispatch:
     inputs:
-      limit:
-        description: "Mejl i den här körningen (tak: OUTBOUND_MAX_DAG)"
-        default: "20"
-      days:
-        description: "Lookback i dagar (fler = större lista)"
-        default: "7"
+      mode:
+        description: "torrkorning = visa mejlen | test = skicka 3 testmejl till OUTBOUND_TEST_TO | live = riktiga utskick (kräver flaggorna)"
+        type: choice
+        options: [torrkorning, test, live]
+        default: torrkorning
+      visa:
+        description: "Antal exempelmejl i torrkörningen"
+        default: "5"
 permissions: {contents: write}
 concurrency: {group: outbound-vinnare, cancel-in-progress: false}
 jobs:
-  skicka:
+  kampanj:
     runs-on: ubuntu-latest
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - name: Skicka nästa batch
-        run: python scripts/outbound_send.py --fresh --limit "$LIMIT" --days "$DAYS" --report
+      - name: Välj läge
+        id: lage
         env:
-          LIMIT: ${{ inputs.limit || '20' }}
-          DAYS: ${{ inputs.days || '7' }}
-          OUTBOUND_MAX_DAG: "20"
-          OUTBOUND_MAX_TIMME: "30"
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          MAIL_FROM: ${{ secrets.MAIL_FROM }}
-          REPLY_TO: ${{ secrets.REPLY_TO }}
+          INPUT_MODE: ${{ inputs.mode }}
+          EVENT: ${{ github.event_name }}
+          ENABLED: ${{ vars.OUTBOUND_ENABLED }}
+          PROSPECT: ${{ vars.OUTBOUND_PROSPECT_EMAILS_ENABLED }}
+          APPROVED: ${{ vars.OUTBOUND_APPROVED }}
+        run: |
+          mode="torrkorning"
+          if [ "$EVENT" = "workflow_dispatch" ]; then mode="$INPUT_MODE"; fi
+          # Schemat skickar bara på riktigt när alla tre flaggorna är satta.
+          if [ "$EVENT" = "schedule" ] && [ "$ENABLED" = "true" ] && [ "$PROSPECT" = "true" ] && [ "$APPROVED" = "true" ]; then
+            mode="live"
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "Läge: $mode"
+      - name: Kör kampanjen
+        env:
+          MODE: ${{ steps.lage.outputs.mode }}
+          VISA: ${{ inputs.visa || '5' }}
+          OUTBOUND_ENABLED: ${{ vars.OUTBOUND_ENABLED }}
+          OUTBOUND_PROSPECT_EMAILS_ENABLED: ${{ vars.OUTBOUND_PROSPECT_EMAILS_ENABLED }}
+          OUTBOUND_APPROVED: ${{ vars.OUTBOUND_APPROVED }}
+          OUTBOUND_WARMUP_START: ${{ vars.OUTBOUND_WARMUP_START }}
+          OUTBOUND_DKIM_SELECTOR: ${{ vars.OUTBOUND_DKIM_SELECTOR }}
+          OUTBOUND_MAX_DAG: ${{ vars.OUTBOUND_MAX_DAG }}
+          OUTBOUND_REPORT_DIR: ${{ runner.temp }}/outbound-rapport
+          SMTP_HOST: ${{ secrets.OUTREACH_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.OUTREACH_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.OUTREACH_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.OUTREACH_SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.OUTREACH_MAIL_FROM }}
+          REPLY_TO: hej@kommunradar.online
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          BREVO_API_KEY: ${{ secrets.OUTREACH_BREVO_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           REPORT_TO: ${{ secrets.REPORT_TO }}
-      - name: Spara state och eventuell spärr
+          OUTBOUND_TEST_TO: ${{ secrets.OUTBOUND_TEST_TO }}
+        run: |
+          case "$MODE" in
+            live)  python scripts/outbound_campaign.py --live ;;
+            test)  [ -n "$OUTBOUND_TEST_TO" ] || { echo "::error::Lägg in secret OUTBOUND_TEST_TO (din egen adress)"; exit 1; }
+                   python scripts/outbound_campaign.py --test-to "$OUTBOUND_TEST_TO" ;;
+            *)     [[ "$VISA" =~ ^[0-9]+$ ]] || { echo "::error::visa måste vara ett heltal"; exit 1; }
+                   python scripts/outbound_campaign.py --visa "$VISA" ;;
+          esac
+      - name: Rapport (bara siffror, inga namn eller adresser)
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: outbound-rapport-${{ github.run_id }}
+          path: ${{ runner.temp }}/outbound-rapport/
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Spara state och eventuell spärr
+        if: always() && steps.lage.outputs.mode == 'live'
         run: |
           git config user.name "outbound-bot"
           git config user.email "bot@users.noreply.github.com"
           git add .github/outbound/
           git diff --staged --quiet && echo "Ingen ny state" && exit 0
-          git commit -m "Outbound: batch $(date -u +%F)"
+          git commit -m "Outbound vinnare: state $(date -u +%F)"
           git pull --rebase origin main
           git push
