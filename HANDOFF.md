@@ -27,11 +27,11 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 4. Ändra inte volymtaken (`OUTBOUND_MAX_DAG=20`, uppföljning 50) utan Alexanders ok — det var
    volymen som spärrade Simply 2026-11-18.
 
-## Öppna frågor
-- Vilken SMTP kör outbound nu (Brevo eller Simply)? Workflow-kommentaren säger "avstängd" men
-  batcher committas dagligen. Den som vet uppdaterar kommentaren i `outbound-vinnare.yml`.
+## Fakta
+- All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-24 Claude: "nyckeln" → "listan" i första mejlet (outbound_send.py, winner_leads.py); workflow-kommentaren säger nu Resend/Brevo i stället för "avstängd".
 - 2026-11-24 Claude: skapade Black Week-priset och betallänken i Stripe (live). La in
   erbjudandet som P.S. i första mejlet och i uppföljning 2 och 3 (`black_week()` i
   `outbound_send.py`), med tester i `tests/test_black_week.py`. 91 tester gröna.

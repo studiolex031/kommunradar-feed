@@ -194,7 +194,7 @@ def bygg(rad, oppna):
         " — vi såg beslutet i TED och tänkte att ni redan kan vara ute efter nästa.",
         "Vi driver Kommunradar. Vi bevakar alla svenska offentliga upphandlingar över EU:s "
         "tröskelvärden och mejlar de som matchar en viss bransch och ett visst län. Kunder får "
-        "nyckeln varje morgon, med köpare, uppskattat värde och sista anbudsdag.",
+        "listan varje morgon, med köpare, uppskattat värde och sista anbudsdag.",
     ]
 
     ex = exempel(rad, oppna)

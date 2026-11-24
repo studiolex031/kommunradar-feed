@@ -5,8 +5,8 @@ name: outbound-vinnare
 # En batch per vardag, inte hela listan på en gång: en brevlåda som skickar
 # hundratals kalla mejl i en burst blir blockerad. Det hände 2026-11-18 —
 # Simply.com spärrade kontot efter 149 mejl på två timmar, och deras policy
-# förbjuder uttryckligen cold mailing på smtp.simply.com. Workflowen är därför
-# AVSTÄNGD tills SMTP flyttats till en transaktionell leverantör (Brevo, 0 kr).
+# förbjuder uttryckligen cold mailing på smtp.simply.com. Sedan dess går all
+# utgående post via Resend och Brevo (secrets SMTP_*), aldrig via Simply.
 # Se kommunradar/outbound/vinnar-leads.md.
 on:
   schedule: [{cron: "0 6 * * 1-5"}]   # vardagar 07:00 svensk tid

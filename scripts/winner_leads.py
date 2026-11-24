@@ -136,7 +136,7 @@ def mail(rows, days):
             "Ämne: Grattis till er vinst — " + r['upphandling'][:80] + "\n\n"
             "Hej,\n\n"
             "Grattis till er vinst i " + r['upphandling'] + " — vi såg beslutet i TED och tänkte att ni redan kan vara ute efter nästa.\n\n"
-            "Vi driver Kommunradar. Vi bevakar alla svenska offentliga upphandlingar över EU:s tröskelvärden och mejlar de som matchar en viss bransch och ett visst län. Kunder får nyckeln varje morgon, med köpare, uppskattat värde och sista anbudsdag.\n\n"
+            "Vi driver Kommunradar. Vi bevakar alla svenska offentliga upphandlingar över EU:s tröskelvärden och mejlar de som matchar en viss bransch och ett visst län. Kunder får listan varje morgon, med köpare, uppskattat värde och sista anbudsdag.\n\n"
             "Vill ni ha nästa liknande affär i mejlen istället?\n\n"
             "Vänligen,\nAlexander Pålsson, grundare\nKommunradar · org.nr 19870929-3552\nSvara \"sluta\" så skickar vi inga fler mejl.\n"
         )
