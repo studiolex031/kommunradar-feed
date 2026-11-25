@@ -1,0 +1,11 @@
+Just nu ligger 1 492 svenska offentliga upphandlingar öppna.
+
+814 av dem har ett uppskattat värde, och tillsammans är de värda över 100 miljarder kronor.
+
+De flesta småföretag som skulle kunna vinna dem ser aldrig annonserna. De letar för hand, när de hinner.
+
+Det är därför jag byggde Kommunradar. Du anger din bransch och ditt län, och varje morgon får du ett mejl med de nya upphandlingar som passar dig: köpare, uppskattat värde och sista anbudsdag. Ingen inloggning, inget system att lära sig.
+
+Under Black Week, fram till 30/11, finns 10 platser för ett helt år till 4 900 kr (ordinarie pris 7 900 kr): https://buy.stripe.com/3cI6oGbwc3Avcvj6ekg7e09
+
+Vill du först se vad du har missat? Skriv din bransch och ditt län i en kommentar, så kör jag dem mot de senaste 30 dagarna och svarar med träffarna.

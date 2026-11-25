@@ -1,0 +1,9 @@
+[project]
+name = "kommunradar-dispatch"
+version = "1.0.0"
+description = "Vercel Cron som startar Kommunradars morgonkörningar på GitHub Actions i tid"
+requires-python = ">=3.12"
+dependencies = ["tzdata"]
+
+[tool.vercel]
+entrypoint = "api.dispatch:handler"

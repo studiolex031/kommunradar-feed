@@ -871,7 +871,7 @@ def kör(args, env=os.environ, hämta=hämta_vinnare, sov=time.sleep):
     start_t, slut_t = fönster(nu)
     if nu < start_t:
         vänta = (start_t - nu).total_seconds()
-        if vänta > 75 * 60:
+        if vänta > 160 * 60:   # Vercel startar 06:00 svensk tid; senare än så tas av schemat
             print("För tidigt — nästa schemalagda körning tar det.")
             skriv_state(state)
             return 0

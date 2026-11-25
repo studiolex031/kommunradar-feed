@@ -14,10 +14,10 @@ Kräver miljövariabler:
 Token går ut efter 60 dagar. Kör linkedin_auth.py igen för att förnya,
 eller sätt LINKEDIN_REFRESH_TOKEN + LINKEDIN_CLIENT_ID/SECRET för automatisk förnyelse.
 """
-import argparse, json, os, sys, urllib.request, urllib.error
+import argparse, json, os, sys, urllib.parse, urllib.request, urllib.error
 
 API = "https://api.linkedin.com/rest/posts"
-VERSION = "202405"
+VERSION = os.environ.get("LINKEDIN_VERSION", "202510")
 
 
 def refresh_token():

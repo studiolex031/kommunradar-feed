@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {"api/dispatch.py": {"maxDuration": 30}},
+  "crons": [{"path": "/api/dispatch", "schedule": "0 5 * * *"}]
+}

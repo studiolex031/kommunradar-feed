@@ -12,18 +12,20 @@ name: outbound-vinnare
 # Egna SMTP-hemligheter (OUTREACH_*): kall post får aldrig dela avsändare med kundmejlen och
 # veckobrevet (SMTP_* i weekly.yml/daily.yml), annars tar de skada om outreach-domänen gör det.
 on:
+  # Huvudstarten är Vercel Cron (dispatch/api/dispatch.py) kl. 06 svensk tid, utan inputs, alltså
+  # läge "auto". GitHubs schema nedan är reserv (det har startat timmar sent). Skriptet väntar in
+  # 08:30 svensk tid, skickar till senast 11:30, och dagens tak räknas ur state, så en andra körning
+  # samma dag skickar inget extra. Därför ingen "gate" här: en sen reservkörning gör ingen skada.
   schedule:
-    # 06:30 och 07:30 UTC = 07:30/08:30 vintertid, 08:30/09:30 sommartid. Skriptet väntar in
-    # 08:30 svensk tid, skickar till senast 11:30 och hoppar över om dagens tak redan är nått.
     - cron: "30 6 * * 1-5"
     - cron: "30 7 * * 1-5"
   workflow_dispatch:
     inputs:
       mode:
-        description: "kontroll = prova inloggningar och DNS, skickar inget | torrkorning = visa mejlen | test = 3 testmejl till OUTBOUND_TEST_TO | live = riktiga utskick (kräver flaggorna)"
+        description: "auto = som schemat (live om flaggorna är satta, annars torrkörning) | kontroll = prova inloggningar och DNS, skickar inget | torrkorning = visa mejlen | test = 3 testmejl till OUTBOUND_TEST_TO | live = riktiga utskick (kräver flaggorna)"
         type: choice
-        options: [torrkorning, kontroll, test, live]
-        default: torrkorning
+        options: [auto, torrkorning, kontroll, test, live]
+        default: auto
       visa:
         description: "Antal exempelmejl i torrkörningen"
         default: "5"
@@ -32,7 +34,7 @@ concurrency: {group: outbound-vinnare, cancel-in-progress: false}
 jobs:
   kampanj:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 350   # start 06:00, väntan till 08:30, sändning till 11:30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,11 +48,12 @@ jobs:
           PROSPECT: ${{ vars.OUTBOUND_PROSPECT_EMAILS_ENABLED }}
           APPROVED: ${{ vars.OUTBOUND_APPROVED }}
         run: |
-          mode="torrkorning"
-          if [ "$EVENT" = "workflow_dispatch" ]; then mode="$INPUT_MODE"; fi
-          # Schemat skickar bara på riktigt när alla tre flaggorna är satta.
-          if [ "$EVENT" = "schedule" ] && [ "$ENABLED" = "true" ] && [ "$PROSPECT" = "true" ] && [ "$APPROVED" = "true" ]; then
-            mode="live"
+          mode="${INPUT_MODE:-auto}"
+          [ "$EVENT" = "schedule" ] && mode="auto"
+          # Schema och Vercel-start (auto) skickar bara på riktigt när alla tre flaggorna är satta.
+          if [ "$mode" = "auto" ]; then
+            mode="torrkorning"
+            if [ "$ENABLED" = "true" ] && [ "$PROSPECT" = "true" ] && [ "$APPROVED" = "true" ]; then mode="live"; fi
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "Läge: $mode"
