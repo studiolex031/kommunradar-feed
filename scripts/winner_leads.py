@@ -24,16 +24,24 @@ FIELDS = ["publication-number", "publication-date", "notice-title", "buyer-name"
           "classification-cpv", "winner-name", "received-submissions-type-val", "received-submissions-type-code",
           "organisation-name-tenderer", "organisation-email-tenderer", "organisation-city-tenderer",
           "organisation-internet-address-tenderer"]
+# Organisationsnummer finns i nyare eForms-notiser. Fältet begärs på prov: om TED inte
+# känner till det (HTTP 400) körs sökningen om utan det, så listan aldrig faller på det.
+OPTIONAL_FIELDS = ["organisation-identifier-tenderer"]
+_optional_ok = [True]
 GENERIC = re.compile(r"^(info|kontakt|contact|hej|hello|post|mail|order|offert|anbud|sales|salj|forsaljning|"
                      r"kundservice|kundtjanst|support|reception|admin|office|kontoret|ekonomi|faktura)\b", re.I)
 def fetch(query, page=1, limit=100):
-    body = json.dumps({"query": query, "fields": FIELDS, "page": page, "limit": limit}).encode()
+    fields = FIELDS + (OPTIONAL_FIELDS if _optional_ok[0] else [])
+    body = json.dumps({"query": query, "fields": fields, "page": page, "limit": limit}).encode()
     req = urllib.request.Request(URL, data=body, headers={"Content-Type": "application/json"})
     for attempt in range(6):
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
+            if e.code == 400 and _optional_ok[0]:
+                _optional_ok[0] = False  # okänt fält: försök igen utan de valfria fälten
+                return fetch(query, page, limit)
             if e.code != 429 and e.code < 500 or attempt == 5: raise
             time.sleep(min(retry_after(e.headers.get("Retry-After")) or 5 * 2 ** attempt, 120))
 
@@ -54,6 +62,13 @@ def clean_title(t):
     return parts[-1].strip() if t.startswith("Sverige – ") and len(parts) == 3 else t.strip()
 
 
+def orgnr(v):
+    """Svenskt organisationsnummer (10 siffror) ur TED:s identifierare, annars tomt."""
+    d = re.sub(r"\D", "", v or "")
+    d = d[2:] if len(d) == 12 and d.startswith(("16", "19", "20")) else d
+    return f"{d[:6]}-{d[6:]}" if len(d) == 10 else ""
+
+
 def norm(name):
     return re.sub(r"[^a-z0-9åäö]", "", name.casefold())
 
@@ -63,13 +78,15 @@ def rows_from_notice(n):
     winners = list(dict.fromkeys(values(n.get("winner-name"), True)))
     names, emails = values(n.get("organisation-name-tenderer"), True), values(n.get("organisation-email-tenderer"))
     cities, webs = values(n.get("organisation-city-tenderer")), values(n.get("organisation-internet-address-tenderer"))
+    ids = values(n.get("organisation-identifier-tenderer"))
     # Tenderer fields are parallel lists; pair by position only when they line up, otherwise trust nothing.
     contact, spelled = {}, {}
     if names and len(names) == len(emails):
         for i, name in enumerate(names):
             key, entry = norm(name), {"email": emails[i].lower(),
                                       "city": cities[i] if len(cities) == len(names) else "",
-                                      "web": webs[i] if len(webs) == len(names) else ""}
+                                      "web": webs[i] if len(webs) == len(names) else "",
+                                      "orgnr": orgnr(ids[i]) if len(ids) == len(names) else ""}
             if key in contact and contact[key] != entry:
                 spelled.setdefault(key, set()).add(None)  # same name, conflicting details
             contact.setdefault(key, entry)
@@ -92,7 +109,8 @@ def rows_from_notice(n):
                     "ort": c["city"], "webb": c["web"], "upphandling": clean_title((values(n.get("notice-title"), True) or [""])[0])[:140],
                     "kopare": (values(n.get("buyer-name"), True) or [""])[0], "lan": LAN.get((values(n.get("buyer-country-sub")) or [""])[0], ""),
                     "bransch": CPV.get(cpv[:2], ""), "anbud": max(bids) if bids else "",
-                    "vinnare": len(winners), "ted": n.get("publication-number", ""),
+                    "vinnare": len(winners), "ted": n.get("publication-number", ""), "orgnr": c.get("orgnr", ""),
+                    "cpv": cpv,
                     "publicerad": str(n.get("publication-date", ""))[:10]})
     return out
 

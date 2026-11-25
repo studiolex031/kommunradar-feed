@@ -28,7 +28,7 @@ def stockholm_now():
 
 REPO = "studiolex031/kommunradar-feed"
 VARJE_DAG = ["daily.yml"]
-VARDAGAR = ["winner-leads.yml", "outbound-vinnare.yml", "followup-vinnare.yml",
+VARDAGAR = ["winner-leads.yml", "outbound-vinnare.yml",
             "social-daily.yml", "x-daily.yml"]
 MANDAGAR = ["weekly.yml", "linkedin-network.yml"]
 

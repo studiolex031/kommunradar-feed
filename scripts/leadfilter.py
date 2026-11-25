@@ -30,6 +30,9 @@ STORA_DOMANER = {
     "combitech.com", "semcon.com", "cegal.com", "tengbom.se", "manpowergroup.se",
     "randstad.se", "poolia.se", "academicwork.se", "studentconsulting.com",
     "attendo.se",
+    # dagligvaror och grossister (koncerner), funna i torrkörningen 2026-11-24
+    "olympus.com", "coop.se", "ica.se", "axfood.se", "dagab.se", "menigo.se", "martinservera.se",
+    "svenskcater.se", "bergendahls.se",
     # anbudsbyråer: adressen går via en konsult, inte till bolaget självt
     "tenders.se", "stromsholmadvokat.se",
 }
@@ -49,3 +52,38 @@ def for_stor(bolag, epost):
     return (doman in STORA_DOMANER
             or bool(BIG.search(bolag or ""))
             or bool(ANBUDSAVDELNING.match(epost.split("@")[0])))
+
+
+# --- ICP-filtret för den automatiska kampanjen (scripts/outbound_campaign.py) ---
+# Kommunradar säljer till små och medelstora leverantörer som bjuder regelbundet.
+# Myndigheter, kommunala bolag och anbudsbyråer är aldrig kunder; börsbolag (publ)
+# har nästan alltid en egen anbudsfunktion.
+MYNDIGHET = re.compile(r"(\bkommun$|\bkommun\b(?!.*\b(ab|aktiebolag)\b)|^region(en)?\b(?!.*\b(ab|aktiebolag)\b)|"
+                       r"\blandsting|myndighet\b|\buniversitet\b|\bhögskola\b|länsstyrelsen|kommunalförbund|"
+                       r"^statens\b|försvarsmakten|(trafik|skatte|naturvårds|bo|livsmedels|läkemedels|migrations|"
+                       r"fortifikations)verket\b|försäkringskassan|arbetsförmedlingen)", re.I)
+BORSBOLAG = re.compile(r"\(\s*publ\s*\)", re.I)
+ANBUDSBYRA = re.compile(r"(anbudsbyr[åa]|upphandlingskonsult|tender\s*(service|consult)|anbudshjälp|anbudsservice)", re.I)
+GRATISMEJL = {"gmail.com", "hotmail.com", "hotmail.se", "outlook.com", "outlook.se", "live.se",
+              "yahoo.com", "yahoo.se", "icloud.com", "telia.com", "bredband.net", "spray.se"}
+
+
+# "X Sverige AB" med en .com-adress är nästan alltid ett dotterbolag till en internationell koncern.
+DOTTERBOLAG = re.compile(r"\b(sverige|sweden|scandinavia|nordic|nordics)\s+(ab|aktiebolag)\b", re.I)
+
+
+def utanfor_icp(bolag, epost):
+    """Varför leadet INTE är målgrupp, eller "" om det är det."""
+    bolag = bolag or ""
+    epost = (epost or "").strip().lower()
+    if for_stor(bolag, epost):
+        return "stor koncern eller anbudsavdelning"
+    if MYNDIGHET.search(bolag):
+        return "myndighet eller offentlig aktör"
+    if BORSBOLAG.search(bolag):
+        return "börsnoterat bolag (publ)"
+    if ANBUDSBYRA.search(bolag):
+        return "anbudsbyrå"
+    if DOTTERBOLAG.search(bolag) and epost.endswith(".com"):
+        return "svenskt dotterbolag till internationell koncern"
+    return ""

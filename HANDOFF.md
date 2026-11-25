@@ -42,10 +42,12 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 - All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-25 Claude: Alexander godkände live ("kör live"). PR #18 sammanslagen: gamla kedjan (`outbound_send.py`/`followup-vinnare.yml`) ersatt av `outbound_campaign.py`. Vercel-starten kör outbound-vinnare i läge `auto` (live när flaggorna är satta); skriptet väntar till 08:30. Ingen gate i outbound-vinnare: dagens tak räknas ur state. `followup-vinnare.yml` borttagen ur dispatch.
 - 2026-11-25 Claude: Vercel-bygget av `dispatch/` lyckas (pyproject med entrypoint `api.dispatch:handler`). Första skarpa körning: 2026-11-26 kl. 06–07. **Kontrollera då** att morgonens workflows har event `workflow_dispatch` och att GitHubs sena schemakörningar visar `run=false` i gate-jobbet.
 - 2026-11-25 Alexander: kopplade repot till Vercel-projektet, satte Root Directory `dispatch`, GH_DISPATCH_TOKEN och CRON_SECRET, redeploy. Claude verifierar via Vercels commit-status.
 - 2026-11-25 Claude: la till `dispatch/` (Vercel Cron → workflow_dispatch) och gate-jobb i 8 workflows mot GitHubs förseningar. Se uppgift 5.
 - 2026-11-25 Claude: status — 0 köp (1 Black Week-kassa öppnad 11-24, ej betald). 20 första mejl + 50 uppföljningar gick 11-24 (cron körde ~11 h sent). 3 nya "nej" (Bemanningstjänster, Amfimarin, Holmgrens Bil) låg kvar i inkorgen och saknades i svarat.txt — inlagda nu. **opencode: uppgift 2 (stopplistan samma dag) och 3 (daglig rapport) är inte igång.**
+- 2026-11-24 Claude: ny automatisk outbound-kedja (PR `outbound-vinnare-kedja`, ej sammanslagen): `scripts/outbound_campaign.py` + `scripts/outbound_guard.py`, egen sänddomän via OUTREACH_*-secrets, uppvärmning 10/20/40, uppföljning dag 3 och 7, svarsläsning via IMAP, nödstopp. Torrkörning tills Alexander satt flaggorna. Runbook: `docs/outbound-vinnare.md`. Ersätter `followup-vinnare.yml`.
 - 2026-11-24 Claude: "nyckeln" → "listan" i första mejlet (outbound_send.py, winner_leads.py); workflow-kommentaren säger nu Resend/Brevo i stället för "avstängd".
 - 2026-11-24 Claude: skapade Black Week-priset och betallänken i Stripe (live). La in
   erbjudandet som P.S. i första mejlet och i uppföljning 2 och 3 (`black_week()` i
