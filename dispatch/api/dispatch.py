@@ -14,9 +14,17 @@ import json
 import os
 import urllib.error
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler
-from zoneinfo import ZoneInfo
+
+
+def stockholm_now():
+    """Svensk tid. Faller tillbaka på UTC+1 om tidszonsdata saknas i miljön."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("Europe/Stockholm"))
+    except Exception:
+        return datetime.now(timezone(timedelta(hours=1)))
 
 REPO = "studiolex031/kommunradar-feed"
 VARJE_DAG = ["daily.yml"]
@@ -63,7 +71,7 @@ class handler(BaseHTTPRequestHandler):
             return self._svar(401, {"error": "unauthorized"})
         if not token:
             return self._svar(500, {"error": "GH_DISPATCH_TOKEN saknas"})
-        idag = datetime.now(ZoneInfo("Europe/Stockholm")).date()
+        idag = stockholm_now().date()
         res = {wf: dispatch(wf, token) for wf in workflows_for(idag)}
         ok = all(k == 204 for k in res.values())
         return self._svar(200 if ok else 502, {"datum": idag.isoformat(), "resultat": res})
