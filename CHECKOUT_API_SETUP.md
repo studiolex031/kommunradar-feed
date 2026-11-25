@@ -74,3 +74,20 @@ Projektets standarddomän `kommunradar-checkout-api.vercel.app` finns reserverad
 Git-repot har avsiktligt inte kopplats in. Att koppla en repo med `main` som produktionsgren kan utlösa automatiska byggen/deployments när framtida commits kommer in. Innan Git-koppling bör produktionsgrenen och deployment-policy ställas in så att endast en uttryckligen vald preview-branch kan byggas.
 
 Projektet har skapats utan att koppla domän, lägga till hemligheter, ändra den befintliga sajten eller starta en deployment. Ingen användningsbaserad serverkörning har startats.
+
+## Förifylld kassa på Simply (2026-11-25) – ersätter Vercel-vägen ovan
+
+Sajten kör PHP på Simply, så kassan skapas nu där i stället: `api/checkout.php` + `checkout-prefill.js`,
+publicerade av workflowet `checkout-forifylld`. Ingen ny hosting och ingen ändring av betallänkarna.
+
+- Klick på en köpknapp (buy.stripe.com-länk, `[data-buy]`, `[data-checkout]`, gate-knappen "Få alla i mejlen")
+  skickar bevakningsord, län och e-post som redan finns på sidan (hero-sökningen, demoformuläret, gate-mejlrutan).
+- PHP slår upp betallänken i Stripe och skapar en Checkout Session med samma pris, provperiod, villkor, rabattkoder,
+  text och tack-sida – men utan frågorna om bevakningsord/län när de redan är besvarade. Svaren sparas som
+  `metadata[keywords]`/`metadata[lan]` på prenumerationen, som `digest.py` redan läser först.
+- Begränsade länkar (grundarpris, Black Week) räknar både länkens egna köp och förifyllda köp mot platstaket.
+- Svarar API:t inte inom 6 s eller med fel går besökaren till den vanliga betallänken (med e-posten ifylld).
+- Nyckel: secret `STRIPE_CHECKOUT_KEY` om den finns (rekommenderas: begränsad nyckel med läsrätt på Payment Links
+  och skrivrätt på Checkout Sessions), annars `STRIPE_SECRET_KEY`. Den skrivs till `kommunradar-private/` utanför
+  public_html.
+- Ta bort: radera `<!--cp:s-->…<!--cp:e-->` från live-startsidan, så gäller betallänkarna som förut.

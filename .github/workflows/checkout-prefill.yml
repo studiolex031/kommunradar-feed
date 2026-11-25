@@ -1,0 +1,92 @@
+name: checkout-forifylld
+# Bevakningsord, län och e-post som besökaren redan angett på kommunradar.online följer med till
+# Stripe-kassan, så de slipper skriva dem igen. Laddar upp api/checkout.php + checkout-prefill.js till
+# Simply, lägger Stripe-nyckeln i en fil UTANFÖR public_html och kopplar in skriptet på live-startsidan.
+# Faller tillbaka till de vanliga betallänkarna om något inte svarar.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api/checkout.php"
+      - "checkout-prefill.js"
+      - "scripts/checkout_prefill_patch.py"
+      - ".github/workflows/checkout-prefill.yml"
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: site-index, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}  # tomt = bygg men publicera inte
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Testa
+        run: |
+          python -m unittest tests.test_checkout_prefill -v
+          php -l api/checkout.php
+      - name: Hämta och patcha live startsida
+        run: |
+          curl -fsSL "https://kommunradar.online/index.html?nocache=$GITHUB_RUN_ID" -o live.html
+          python scripts/checkout_prefill_patch.py live.html index.out.html "$(git rev-parse --short HEAD)"
+      - name: Publicera på Simply
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+          # Helst en begränsad nyckel (rk_live_…) med läsrätt på Payment Links och Checkout Sessions och
+          # skrivrätt på Checkout Sessions. Finns den inte används den vanliga Stripe-nyckeln.
+          STRIPE_KEY: ${{ secrets.STRIPE_CHECKOUT_KEY || secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq lftp
+          [[ "$STRIPE_KEY" =~ ^(sk|rk)_(live|test)_[A-Za-z0-9]+$ ]] || { echo "::error::Stripe-nyckel saknas"; exit 1; }
+          umask 077; mkdir -p private
+          printf "<?php\nreturn '%s';\n" "$STRIPE_KEY" > private/stripe-key.php
+          root="$(dirname "${FTP_DIR%/}")"; [ "$root" = "." ] && root="" || root="$root/"
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            mkdir -pf ${root}kommunradar-private; \
+            put private/stripe-key.php -o ${root}kommunradar-private/stripe-key.php; \
+            mkdir -pf ${FTP_DIR}api; \
+            put api/checkout.php -o ${FTP_DIR}api/checkout.php; \
+            put checkout-prefill.js -o ${FTP_DIR}checkout-prefill.js"
+          sleep 3
+          if ! curl -fsS "https://kommunradar.online/api/checkout.php?health=1" | tee health.json | grep -q '"key":true'; then
+            echo "Nyckeln kunde inte läsas utanför public_html – lägger den i api/ bakom .htaccess-spärr."
+            printf '<Files ".stripe-key.php">\n  Require all denied\n</Files>\n' > private/api.htaccess
+            lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+              open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+              put private/api.htaccess -o ${FTP_DIR}api/.htaccess; \
+              put private/stripe-key.php -o ${FTP_DIR}api/.stripe-key.php"
+          fi
+          rm -rf private
+      - name: Kontrollera API innan startsidan ändras
+        if: ${{ env.FTP_SERVER != '' }}
+        run: |
+          sleep 3
+          curl -fsS "https://kommunradar.online/api/checkout.php?health=1" | tee health.json
+          grep -q '"key":true' health.json || { echo "::error::checkout.php hittar ingen Stripe-nyckel"; exit 1; }
+          grep -q '"curl":true' health.json || { echo "::error::PHP saknar curl på Simply"; exit 1; }
+          code=$(curl -sS -o /dev/null -w '%{http_code}' "https://kommunradar.online/api/.stripe-key.php")
+          echo "nyckelfil direkt: $code"; [ "$code" != "200" ] || { echo "::error::nyckelfilen är nåbar"; exit 1; }
+          code=$(curl -sS -o /dev/null -w '%{http_code}' "https://kommunradar.online/checkout-prefill.js?n=$GITHUB_RUN_ID")
+          [ "$code" = "200" ] || { echo "::error::checkout-prefill.js saknas ($code)"; exit 1; }
+      - name: Publicera startsidan
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            put index.out.html -o ${FTP_DIR}index.html"
+          sleep 5
+          curl -sS "https://kommunradar.online/?n=$GITHUB_RUN_ID" -o page.html
+          grep -q "checkout-prefill.js" page.html && echo "skriptet: ok" || { echo "::error::skriptet saknas på startsidan"; exit 1; }
+          grep -q "<!--pp:s-->" page.html && echo "prissektionen: ok" || { echo "::error::prissektionen saknas"; exit 1; }
+          grep -q 'id="kr-demo-form"' page.html && echo "demoformuläret: ok" || { echo "::error::demoformuläret saknas"; exit 1; }
