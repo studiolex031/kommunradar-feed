@@ -1,0 +1,83 @@
+name: kundpanel
+# Kundpanelen på kommunradar.online/konto/: inloggning med engångslänk, ändra bevakningsord/län,
+# pausa mejlen och "Hantera betalning" (Stripes kundportal). Laddar upp konto/index.php till Simply och
+# lägger Stripe-nyckeln + SMTP för kundmejl i en fil UTANFÖR public_html. Rör inte startsidan,
+# kassan eller outbound-kedjan.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "konto/**"
+      - ".github/workflows/kundpanel.yml"
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: kundpanel, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}  # tomt = testa men publicera inte
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Testa
+        run: |
+          php -l konto/index.php
+          python -m unittest tests.test_panel -v
+      - name: Publicera på Simply
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+          # Samma nyckel som digest.py använder: länkarna "Ändra din bevakning" i mejlen signeras med den.
+          STRIPE_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq lftp
+          [[ "$STRIPE_KEY" =~ ^(sk|rk)_(live|test)_[A-Za-z0-9]+$ ]] || { echo "::error::STRIPE_SECRET_KEY saknas"; exit 1; }
+          [ -n "$SMTP_HOST" ] || { echo "::error::SMTP_HOST saknas"; exit 1; }
+          umask 077; mkdir -p private
+          python - <<'EOF'
+          import os
+          q = lambda v: "'" + (v or "").replace("\\", "\\\\").replace("'", "\\'") + "'"
+          cfg = {"stripe": "STRIPE_KEY", "smtp_host": "SMTP_HOST", "smtp_port": "SMTP_PORT", "smtp_user": "SMTP_USER",
+                 "smtp_pass": "SMTP_PASS", "mail_from": "MAIL_FROM"}
+          body = ",\n".join(f"  {q(k)} => {q(os.environ.get(v, ''))}" for k, v in cfg.items())
+          open("private/panel-config.php", "w").write(f"<?php\nreturn [\n{body},\n  'reply_to' => 'hej@kommunradar.online',\n];\n")
+          EOF
+          root="$(dirname "${FTP_DIR%/}")"; [ "$root" = "." ] && root="" || root="$root/"
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            mkdir -pf ${root}kommunradar-private; \
+            put private/panel-config.php -o ${root}kommunradar-private/panel-config.php; \
+            mkdir -pf ${FTP_DIR}konto; \
+            put konto/index.php -o ${FTP_DIR}konto/index.php"
+          sleep 3
+          if ! curl -fsS "https://kommunradar.online/konto/?health=1" | grep -q '"key":true'; then
+            echo "Konfigurationen kunde inte läsas utanför public_html – lägger den i konto/ bakom .htaccess-spärr."
+            printf '<FilesMatch "^\\.">\n  Require all denied\n</FilesMatch>\n' > private/konto.htaccess
+            lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+              open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+              put private/konto.htaccess -o ${FTP_DIR}konto/.htaccess; \
+              put private/panel-config.php -o ${FTP_DIR}konto/.panel-config.php"
+          fi
+          rm -rf private
+      - name: Kontrollera panelen
+        if: ${{ env.FTP_SERVER != '' }}
+        run: |
+          sleep 3
+          curl -fsS "https://kommunradar.online/konto/?health=1" | tee health.json; echo
+          grep -q '"key":true' health.json || { echo "::error::kundpanelen hittar ingen Stripe-nyckel"; exit 1; }
+          grep -q '"smtp":true' health.json || { echo "::error::kundpanelen saknar SMTP"; exit 1; }
+          grep -q '"curl":true' health.json || { echo "::error::PHP saknar curl"; exit 1; }
+          code=$(curl -sS -o /dev/null -w '%{http_code}' "https://kommunradar.online/konto/.panel-config.php")
+          echo "konfigurationsfil direkt: $code"; [ "$code" != "200" ] || { echo "::error::konfigurationsfilen är nåbar"; exit 1; }
+          curl -fsS "https://kommunradar.online/konto/" | grep -q 'id="login-form"' && echo "sidan: ok" \
+            || { echo "::error::konto/ visar inte panelen"; exit 1; }
