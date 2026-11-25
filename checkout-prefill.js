@@ -3,7 +3,7 @@
  * När någon klickar på en köpknapp (en buy.stripe.com-länk, [data-buy], [data-checkout] eller
  * "Få alla i mejlen – gratis") tar vi bevakningsord, län och e-post som redan finns på sidan –
  * hero-sökningen, demoformuläret "Visa mina missade upphandlingar" eller gate-mejlrutan – och ber
- * /api/checkout.php om en kassa där de är ifyllda. Svarar servern inte inom 6 sekunder, eller fel,
+ * /api/checkout.php om en kassa där de är ifyllda. Svarar servern inte inom 5 sekunder, eller fel,
  * går besökaren till den vanliga betallänken precis som förut. Inget köp kan alltså tappas.
  */
 (function () {
@@ -16,8 +16,9 @@
   var STORE = 'kr_prefill_v1';
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  function load() { try { return JSON.parse(sessionStorage.getItem(STORE) || '{}') || {}; } catch (e) { return {}; } }
-  function save(v) { try { sessionStorage.setItem(STORE, JSON.stringify(v)); } catch (e) {} }
+  // localStorage så att sökningen följer med även efter omladdning, bakåtknapp eller ny flik.
+  function load() { try { return JSON.parse(localStorage.getItem(STORE) || '{}') || {}; } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(STORE, JSON.stringify(v)); } catch (e) {} }
   function val(sel) { var el = document.querySelector(sel); return el && typeof el.value === 'string' ? el.value.trim() : ''; }
 
   // Demoformuläret skickas via fetch – kom ihåg vad som angavs, även om sidan laddas om.
@@ -31,6 +32,20 @@
     if (mail) s.email = mail;
     save(s);
   }, true);
+
+  // Hero-sökningen och mejlrutan: kom ihåg det besökaren skriver, så det följer med när de sedan väljer pris.
+  function remember(e) {
+    var el = e.target;
+    if (!el || !el.id) return;
+    var s = load(), v = typeof el.value === 'string' ? el.value.trim() : '';
+    if (el.id === 'q') { if (v) s.keywords = v; else delete s.keywords; }
+    else if (el.id === 'lan') { s.lan = v || 'Hela Sverige'; }
+    else if (el.id === 'gatemail' && EMAIL_RE.test(v)) { s.email = v; }
+    else return;
+    save(s);
+  }
+  document.addEventListener('input', remember, true);
+  document.addEventListener('change', remember, true);
 
   function collect() {
     var s = load();
@@ -46,16 +61,37 @@
     return email ? link + (link.indexOf('?') < 0 ? '?' : '&') + 'prefilled_email=' + encodeURIComponent(email) : link;
   }
 
-  var busy = false;
+  // Visar direkt att något händer, och återställs när man kommer tillbaka med bakåtknappen
+  // (annars låg knappen kvar "upptagen" och nästa klick gjorde ingenting).
+  var busyUntil = 0, busyEl = null;
+  function setBusy(el) {
+    busyUntil = Date.now() + 8000;
+    busyEl = el || null;
+    if (busyEl) {
+      busyEl.setAttribute('aria-busy', 'true');
+      busyEl.dataset.krText = busyEl.dataset.krText || busyEl.textContent;
+      busyEl.textContent = 'Öppnar kassan…';
+    }
+  }
+  function clearBusy() {
+    busyUntil = 0;
+    if (busyEl) {
+      busyEl.removeAttribute('aria-busy');
+      if (busyEl.dataset.krText) busyEl.textContent = busyEl.dataset.krText;
+      delete busyEl.dataset.krText;
+    }
+    busyEl = null;
+  }
+  window.addEventListener('pageshow', clearBusy);
+
   function go(link, el) {
     var v = collect();
     if (!v.keywords && !v.lan && !v.email) { location.href = link; return; }
-    if (busy) return;
-    busy = true;
-    if (el) { el.setAttribute('aria-busy', 'true'); el.style.opacity = '.6'; }
-    var fallback = function () { busy = false; location.href = withEmail(link, v.email); };
+    if (Date.now() < busyUntil) return;
+    setBusy(el);
+    var fallback = function () { location.href = withEmail(link, v.email); setTimeout(clearBusy, 3000); };
     var ctrl = window.AbortController ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 6000);
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 5000);
     fetch(API, {
       method: 'POST', credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined,
       headers: { 'Content-Type': 'application/json' },
@@ -65,6 +101,7 @@
       if (d && typeof d.url === 'string' && d.url.indexOf('https://checkout.stripe.com/') === 0) {
         if (window.gtag) gtag('event', 'checkout_prefilled');
         location.href = d.url;
+        setTimeout(clearBusy, 4000);
       } else fallback();
     }).catch(function () { clearTimeout(timer); fallback(); });
   }
