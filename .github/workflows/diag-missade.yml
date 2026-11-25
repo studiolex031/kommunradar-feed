@@ -8,15 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -sS -A "Mozilla/5.0" "https://kommunradar.online/?n=$GITHUB_RUN_ID" -o p.html
-          python3 - <<'PY'
-          import re
-          h=open('p.html',encoding='utf-8',errors='replace').read()
-          i=h.find('demo-signup')
-          s=h.rfind('<script',0,i); e=h.find('</script>',i)
-          print(h[s:e+9])
-          PY
-          for p in api/demo-signup.php api/demo-signup api/demo.php demo-signup.php api/create-checkout-session.py; do
-            echo "GET /$p $(curl -s -o /dev/null -w '%{http_code}' https://kommunradar.online/$p)"
-            echo "POST(honeypot) /$p $(curl -s -o /tmp/b -w '%{http_code}' -X POST -F website=bot https://kommunradar.online/$p) $(head -c 300 /tmp/b | tr '\n' ' ')"
+          for u in https://login.kommunradar.online/ https://login.kommunradar.online/search https://login.kommunradar.online/search/ http://login.kommunradar.online/search https://kommunradar.online/search; do
+            echo "== $u"; curl -sS -o /tmp/b -D - "$u" | grep -Ei "^(HTTP|server|location|x-powered)" ; head -c 400 /tmp/b | tr '\n' ' '; echo
           done
+          dig +short login.kommunradar.online; dig +short kommunradar.online; dig +short CNAME login.kommunradar.online
