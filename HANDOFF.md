@@ -31,6 +31,7 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 - All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-25 Claude: status — 0 köp (1 Black Week-kassa öppnad 11-24, ej betald). 20 första mejl + 50 uppföljningar gick 11-24 (cron körde ~11 h sent). 3 nya "nej" (Bemanningstjänster, Amfimarin, Holmgrens Bil) låg kvar i inkorgen och saknades i svarat.txt — inlagda nu. **opencode: uppgift 2 (stopplistan samma dag) och 3 (daglig rapport) är inte igång.**
 - 2026-11-24 Claude: "nyckeln" → "listan" i första mejlet (outbound_send.py, winner_leads.py); workflow-kommentaren säger nu Resend/Brevo i stället för "avstängd".
 - 2026-11-24 Claude: skapade Black Week-priset och betallänken i Stripe (live). La in
   erbjudandet som P.S. i första mejlet och i uppföljning 2 och 3 (`black_week()` i
