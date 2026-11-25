@@ -42,6 +42,7 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 - All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-25 12:40 Claude: status — 0 köp. 5 kassor öppnade i dag men ingen betald (1 Black Week, 1 Pro, 2 grundare, 1 veckobrev). Nya kedjan stod i torrkörning i dag; flaggorna är nu satta och OUTBOUND_WARMUP_START=2026-11-26, så första live-utskicket (10 st) går i morgon via Vercel-starten. Black Week-erbjudandet ligger i nya kedjan via config.js (blackWeekLink, blackWeekEnds 2026-11-30). X- och LinkedIn-inlägg om Black Week publicerade 11-25.
 - 2026-11-25 Claude: Alexander godkände live ("kör live"). PR #18 sammanslagen: gamla kedjan (`outbound_send.py`/`followup-vinnare.yml`) ersatt av `outbound_campaign.py`. Vercel-starten kör outbound-vinnare i läge `auto` (live när flaggorna är satta); skriptet väntar till 08:30. Ingen gate i outbound-vinnare: dagens tak räknas ur state. `followup-vinnare.yml` borttagen ur dispatch.
 - 2026-11-25 Claude: Vercel-bygget av `dispatch/` lyckas (pyproject med entrypoint `api.dispatch:handler`). Första skarpa körning: 2026-11-26 kl. 06–07. **Kontrollera då** att morgonens workflows har event `workflow_dispatch` och att GitHubs sena schemakörningar visar `run=false` i gate-jobbet.
 - 2026-11-25 Alexander: kopplade repot till Vercel-projektet, satte Root Directory `dispatch`, GH_DISPATCH_TOKEN och CRON_SECRET, redeploy. Claude verifierar via Vercels commit-status.
