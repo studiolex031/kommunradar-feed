@@ -271,3 +271,13 @@ class Korning(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Kontroll(unittest.TestCase):
+    def test_kontroll_skickar_inget_och_flaggar_simply(self):
+        with mock.patch("smtplib.SMTP", side_effect=AssertionError("får inte ansluta")):
+            rader = dict((n, ok) for n, ok, _ in G.kontroll({"SMTP_HOST": "smtp.simply.com",
+                                                             "MAIL_FROM": "a@outreach.kommunradar.online",
+                                                             "SMTP_USER": "u", "SMTP_PASS": "p"}))
+        self.assertFalse(rader["sänddomän (inte Simply, inte huvuddomänen)"])
+        self.assertFalse(rader["SMTP-inloggning"])

@@ -214,7 +214,81 @@ def läge(env=None, dns=None):
     return (not fel), fel, info
 
 
+def kontroll(env=None):
+    """Provar varje inställning utan att skicka något. Returnerar [(namn, ok, detalj)]."""
+    import imaplib, smtplib, ssl
+    env = env if env is not None else os.environ
+    ut = []
+    fel = sänddomän_fel(env.get("SMTP_HOST"), env.get("MAIL_FROM"))
+    ut.append(("sänddomän (inte Simply, inte huvuddomänen)", not fel, "; ".join(fel) or domän(env.get("MAIL_FROM"))))
+    if not fel:
+        d = dns_status(env["MAIL_FROM"], env.get("OUTBOUND_DKIM_SELECTOR", ""))
+        ut.append(("SPF", d["spf"], domän(env["MAIL_FROM"])))
+        ut.append(("DMARC", d["dmarc"], "_dmarc." + domän(env["MAIL_FROM"])))
+        ut.append(("DKIM", d["dkim"] is True, "OUTBOUND_DKIM_SELECTOR saknas" if d["dkim"] is None
+                   else f"{env.get('OUTBOUND_DKIM_SELECTOR')}._domainkey.{domän(env['MAIL_FROM'])}"))
+    # SMTP: anslut och logga in, skicka ingenting
+    if env.get("SMTP_HOST") and env.get("SMTP_USER") and env.get("SMTP_PASS") and not fel:
+        try:
+            port = int(env.get("SMTP_PORT") or 587)
+            if port == 465:
+                s = smtplib.SMTP_SSL(env["SMTP_HOST"], port, timeout=30, context=ssl.create_default_context())
+            else:
+                s = smtplib.SMTP(env["SMTP_HOST"], port, timeout=30)
+                s.starttls(context=ssl.create_default_context())
+            s.login(env["SMTP_USER"], env["SMTP_PASS"])
+            s.quit()
+            ut.append(("SMTP-inloggning", True, env["SMTP_HOST"]))
+        except Exception as e:
+            ut.append(("SMTP-inloggning", False, str(e)[:160]))
+    else:
+        ut.append(("SMTP-inloggning", False, "OUTREACH_SMTP_* saknas eller sänddomänen är fel"))
+    # IMAP: logga in och öppna inkorgen skrivskyddat
+    if all(env.get(k) for k in ("IMAP_HOST", "IMAP_USER", "IMAP_PASS")):
+        try:
+            m = imaplib.IMAP4_SSL(env["IMAP_HOST"], int(env.get("IMAP_PORT") or 993),
+                                  ssl_context=ssl.create_default_context())
+            m.login(env["IMAP_USER"], env["IMAP_PASS"])
+            typ, data = m.select(env.get("IMAP_FOLDER", "INBOX"), readonly=True)
+            m.logout()
+            ut.append(("IMAP-inloggning (svarsläsning)", typ == "OK", f"{env['IMAP_HOST']}, {data[0].decode()} mejl"))
+        except Exception as e:
+            ut.append(("IMAP-inloggning (svarsläsning)", False, str(e)[:160]))
+    else:
+        ut.append(("IMAP-inloggning (svarsläsning)", False, "IMAP_HOST/IMAP_USER/IMAP_PASS saknas"))
+    # Brevo API (valfritt)
+    if env.get("BREVO_API_KEY"):
+        try:
+            req = urllib.request.Request("https://api.brevo.com/v3/account",
+                                         headers={"api-key": env["BREVO_API_KEY"], "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                json.load(r)
+            ut.append(("Brevo API (studs/spam)", True, "nyckeln fungerar"))
+        except Exception as e:
+            ut.append(("Brevo API (studs/spam)", False, str(e)[:160]))
+    else:
+        ut.append(("Brevo API (studs/spam)", False, "valfri: utan den stannar taket på 20/dag"))
+    ut.append(("OUTBOUND_TEST_TO", bool(env.get("OUTBOUND_TEST_TO")), "din egen adress för testläget"))
+    ut.append(("OUTBOUND_WARMUP_START", bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", env.get("OUTBOUND_WARMUP_START", ""))),
+               "sätts först inför live"))
+    for f in FLAGGOR:
+        ut.append((f, env.get(f, "").strip().lower() == "true", "sätts först när du godkänt live"))
+    ut.append(("spärrfil", not spärrad(), spärrad().replace("\n", " — ") or "ingen"))
+    return ut
+
+
 def main():
+    if "--kontroll" in sys.argv:
+        rader = kontroll()
+        for namn, ok, detalj in rader:
+            print(f"{'OK  ' if ok else 'SAKNAS'}  {namn}: {detalj}")
+        sum_fil = os.environ.get("GITHUB_STEP_SUMMARY")
+        if sum_fil:
+            with open(sum_fil, "a", encoding="utf8") as f:
+                f.write("## Outbound-kontroll\n\n| | Kontroll | Detalj |\n|---|---|---|\n")
+                for namn, ok, detalj in rader:
+                    f.write(f"| {'✅' if ok else '❌'} | {namn} | {detalj} |\n")
+        return
     if "--stopp" in sys.argv:
         i = sys.argv.index("--stopp")
         orsak = sys.argv[i + 1] if len(sys.argv) > i + 1 else "manuellt nödstopp"

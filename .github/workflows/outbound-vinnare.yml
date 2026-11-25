@@ -20,9 +20,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "torrkorning = visa mejlen | test = skicka 3 testmejl till OUTBOUND_TEST_TO | live = riktiga utskick (kräver flaggorna)"
+        description: "kontroll = prova inloggningar och DNS, skickar inget | torrkorning = visa mejlen | test = 3 testmejl till OUTBOUND_TEST_TO | live = riktiga utskick (kräver flaggorna)"
         type: choice
-        options: [torrkorning, test, live]
+        options: [torrkorning, kontroll, test, live]
         default: torrkorning
       visa:
         description: "Antal exempelmejl i torrkörningen"
@@ -80,6 +80,7 @@ jobs:
           OUTBOUND_TEST_TO: ${{ secrets.OUTBOUND_TEST_TO }}
         run: |
           case "$MODE" in
+            kontroll) python scripts/outbound_guard.py --kontroll ;;
             live)  python scripts/outbound_campaign.py --live ;;
             test)  [ -n "$OUTBOUND_TEST_TO" ] || { echo "::error::Lägg in secret OUTBOUND_TEST_TO (din egen adress)"; exit 1; }
                    python scripts/outbound_campaign.py --test-to "$OUTBOUND_TEST_TO" ;;
