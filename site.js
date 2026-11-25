@@ -16,4 +16,18 @@
   });
   var portal = (window.KOMMUNRADAR || {}).portalUrl;
   document.querySelectorAll('[data-portal]').forEach(function (el) { if (portal) el.href = portal; else el.removeAttribute('href'); });
+  // Knapp "Ändra bevakning" till kundpanelen, i sidhuvudet bredvid köpknappen och i sidfoten.
+  var head = document.querySelector('header');
+  if (head && !head.querySelector('[data-konto]')) {
+    var b = document.createElement('a');
+    b.href = '/konto/'; b.className = 'btn sm'; b.setAttribute('data-konto', ''); b.textContent = 'Ändra bevakning';
+    b.style.cssText = 'margin-left:auto;margin-right:8px;white-space:nowrap;background:transparent;border:1px solid currentColor';
+    var buy = head.querySelector('[data-buy]');
+    head.insertBefore(b, buy || null);
+  }
+  document.querySelectorAll('[data-portal]').forEach(function (el) {
+    if (el.parentNode.querySelector('[data-konto]')) return;
+    var a = document.createElement('a'); a.href = '/konto/'; a.setAttribute('data-konto', ''); a.textContent = 'Ändra bevakning';
+    el.parentNode.insertBefore(document.createTextNode(' · '), el); el.parentNode.insertBefore(a, el.previousSibling);
+  });
 })();
