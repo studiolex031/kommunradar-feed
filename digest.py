@@ -14,7 +14,7 @@ Två nivåer i samma Stripe-konto, skilda åt med produktens metadata tier:
   veckobrev  gratis 0 kr-prenumeration utan kort: ett mejl i veckan med de bästa träffarna och en länk till Pro.
              Dagen efter anmälan skickar den dagliga körningen ett välkomstmejl med senaste veckans träffar.
 """
-import os, re, sys, ssl, json, html, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
+import os, re, sys, ssl, json, html, hmac, base64, hashlib, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
 from email.message import EmailMessage
 
 LAN_KEYS = {"alla": "", "stockholm": "Stockholm", "uppsala": "Uppsala", "sodermanland": "Södermanland",
@@ -26,6 +26,19 @@ LAN_KEYS = {"alla": "", "stockholm": "Stockholm", "uppsala": "Uppsala", "soderma
 MAX_PER_MAIL = 40
 WEEKLY_MAX = 10   # så många träffar visas i veckobrevet; resten är skälet att uppgradera
 FREE = "veckobrev"
+PANEL_DAYS = 30   # så länge länken "Ändra din bevakning" i ett mejl loggar in direkt i kundpanelen
+
+
+def panel_link(email, now=None):
+    """Signed one-click link to the customer panel (konto/index.php verifies it with the same Stripe key).
+    Without STRIPE_SECRET_KEY the plain login page is returned, where the customer asks for a link."""
+    base = (os.environ.get("SITE_URL") or "https://kommunradar.online").rstrip("/") + "/konto/"
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not key or not email: return base
+    b64 = lambda b: base64.urlsafe_b64encode(b).decode().rstrip("=")
+    payload = f"{email.lower()}|{int((dt.datetime.now(dt.timezone.utc).timestamp() if now is None else now) + PANEL_DAYS * 86400)}".encode()
+    secret = hmac.new(key.encode(), b"kommunradar-panel", hashlib.sha256).digest()
+    return f"{base}?t={b64(payload)}.{b64(hmac.new(secret, payload, hashlib.sha256).digest())}"
 
 
 def stripe_get(path, params=None):
@@ -68,6 +81,7 @@ def subscribers():
                 sessions = stripe_get("checkout/sessions", {"subscription": sub["id"], "limit": 1})["data"]
                 answers = read_answers(sessions[0].get("custom_fields") or []) if sessions else {}
                 meta = sub.get("metadata") or {}
+                if meta.get("paused") == "1": continue  # kunden har pausat mejlen i kundpanelen
                 customer = sub["customer"] if isinstance(sub["customer"], dict) else {}
                 email = customer.get("email") or (sessions[0].get("customer_details") or {}).get("email") if sessions else customer.get("email")
                 if email:
@@ -148,8 +162,9 @@ def render(leads, sub, site, portal):
 <div style="color:#fbbf24;font-size:28px;font-weight:900;margin-top:8px">{len(leads)} nya upphandlingar för dig</div>
 <div style="color:#94a3b8;font-size:13px">Bevakning: {html.escape(sub["keywords"] or "alla branscher")} · {html.escape(LAN_KEYS.get(sub["lan"]) or "hela Sverige")}</div></div>
 <table style="width:100%;border-collapse:collapse;padding:0 24px">{rows}</table>{more}
-<p style="color:#94a3b8;font-size:12px;margin-top:24px">Källa: TED (EU:s officiella upphandlingsdatabas). Svara på mejlet för att ändra din bevakning.
-{f'<a href="{portal}" style="color:#94a3b8">Hantera prenumeration</a>' if portal else ''}</p></div>"""
+<p style="color:#94a3b8;font-size:12px;margin-top:24px">Källa: TED (EU:s officiella upphandlingsdatabas).
+<a href="{html.escape(panel_link(sub.get("email", "")))}" style="color:#475569;font-weight:700">Ändra din bevakning</a> (bevakningsord, län, pausa mejlen)
+{f' · <a href="{portal}" style="color:#94a3b8">Hantera prenumeration</a>' if portal else ''}</p></div>"""
 
 
 # Provperioden: tre korta mejl till den som testar. Dagen räknas från provperiodens start; morgonkörningen dagen
@@ -234,7 +249,7 @@ def render_weekly(hits, sub, fallback, welcome, site, pro_url, portal):
 <div style="background:#fef3c7;border-radius:12px;padding:18px 20px;margin-top:20px;color:#0b1020">{upsell}
 <div style="margin-top:12px"><a href="{html.escape(pro_url)}" style="background:#0b1020;color:#fbbf24;font-weight:800;padding:12px 18px;border-radius:10px;text-decoration:none;display:inline-block">Få alla träffar varje morgon →</a></div></div>
 <p style="color:#94a3b8;font-size:12px;margin-top:24px">Källa: TED (EU:s officiella upphandlingsdatabas), bara upphandlingar över EU:s tröskelvärden.
-Du får det här för att du anmälde dig till Kommunradars gratis veckobrev. Svara på mejlet för att ändra bevakningsord eller län.
+Du får det här för att du anmälde dig till Kommunradars gratis veckobrev. <a href="{html.escape(panel_link(sub.get("email", "")))}" style="color:#475569;font-weight:700">Ändra din bevakning</a> (bevakningsord, län, pausa).
 Vill du inte ha fler veckobrev? Svara "avsluta"{f' eller avsluta själv i <a href="{html.escape(portal)}" style="color:#94a3b8">kundportalen</a>' if portal else ''}.</p></div>"""
 
 
@@ -249,6 +264,7 @@ def weekly_message(sub, hits, fallback, welcome, site, pro_url, portal, reply_to
         msg["List-Unsubscribe"] = f"<mailto:{reply_to}?subject=avsluta>" + (f", <{portal}>" if portal else "")
     msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in hits[:WEEKLY_MAX])
                     + f"\n\nFå alla träffar varje morgon med Kommunradar Pro: {pro_url}"
+                    + f"\n\nÄndra din bevakning: {panel_link(sub['email'])}"
                     + "\n\nVill du inte ha fler veckobrev? Svara \"avsluta\"" + (f" eller avsluta i kundportalen: {portal}" if portal else "."))
     msg.add_alternative(render_weekly(hits, sub, fallback, welcome, site, pro_url, portal), subtype="html")
     return msg
@@ -367,7 +383,8 @@ def main():
             msg["Subject"] = f"{len(batch)} nya upphandlingar: {batch[0]['title'][:60]}"
             msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
             if reply_to: msg["Reply-To"] = reply_to
-            msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch))
+            msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch)
+                            + f"\n\nÄndra din bevakning: {panel_link(sub['email'])}")
             msg.add_alternative(render(batch, sub, site, portal), subtype="html")
             if dry: print(f"[dry-run] {sub['email']}: {len(batch)} träffar")
             else: smtp.send_message(msg)
