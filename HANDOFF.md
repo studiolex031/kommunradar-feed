@@ -27,7 +27,7 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 4. Ändra inte volymtaken (`OUTBOUND_MAX_DAG=20`, uppföljning 50) utan Alexanders ok — det var
    volymen som spärrade Simply 2026-11-18.
 
-5. **Aktivera morgonstarten via Vercel (ny, prio 1).** GitHubs schema startar körningarna 7–11 h
+5. **Morgonstarten via Vercel — AKTIVERAD 2026-11-25, verifiera 26/11.** GitHubs schema startar körningarna 7–11 h
    sent varje dag. `dispatch/` är ett eget Vercel-projekt (Root Directory = `dispatch`) med en cron
    kl. 05:00 UTC som startar morgonens workflows via workflow_dispatch. Gör så här:
    - Använd projektet `kommunradar-checkout-api` (prj_54IQdfpZ0FwX98zhWHrSDMeUIgAG) eller ett nytt, med Root Directory `dispatch`.
@@ -42,6 +42,7 @@ Läge 2026-11-24: 250 kalla mejl skickade, 0 betalande kunder. Alla mejl hittill
 - All utgående post går via Resend och Brevo, aldrig via Simply (bekräftat av Alexander 2026-11-24).
 
 ## Logg
+- 2026-11-25 Claude: Vercel-bygget av `dispatch/` lyckas (pyproject med entrypoint `api.dispatch:handler`). Första skarpa körning: 2026-11-26 kl. 06–07. **Kontrollera då** att morgonens workflows har event `workflow_dispatch` och att GitHubs sena schemakörningar visar `run=false` i gate-jobbet.
 - 2026-11-25 Alexander: kopplade repot till Vercel-projektet, satte Root Directory `dispatch`, GH_DISPATCH_TOKEN och CRON_SECRET, redeploy. Claude verifierar via Vercels commit-status.
 - 2026-11-25 Claude: la till `dispatch/` (Vercel Cron → workflow_dispatch) och gate-jobb i 8 workflows mot GitHubs förseningar. Se uppgift 5.
 - 2026-11-25 Claude: status — 0 köp (1 Black Week-kassa öppnad 11-24, ej betald). 20 första mejl + 50 uppföljningar gick 11-24 (cron körde ~11 h sent). 3 nya "nej" (Bemanningstjänster, Amfimarin, Holmgrens Bil) låg kvar i inkorgen och saknades i svarat.txt — inlagda nu. **opencode: uppgift 2 (stopplistan samma dag) och 3 (daglig rapport) är inte igång.**
