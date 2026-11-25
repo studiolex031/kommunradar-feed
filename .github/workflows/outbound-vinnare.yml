@@ -21,7 +21,27 @@ on:
 permissions: {contents: write}
 concurrency: {group: outbound-vinnare, cancel-in-progress: false}
 jobs:
+  gate:
+    # GitHubs schema startar ofta timmar sent. Den riktiga starten görs av Vercel Cron
+    # (dispatch/api/dispatch.py) kl. 06–07. En schemalagd körning hoppar därför över sig
+    # själv om workflowen redan startats i dag; manuella körningar körs alltid.
+    runs-on: ubuntu-latest
+    permissions: {actions: read}
+    outputs: {run: "${{ steps.g.outputs.run }}"}
+    steps:
+      - id: g
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then echo run=true >> "$GITHUB_OUTPUT"; exit 0; fi
+          since=$(python3 -c "from datetime import datetime as d; from zoneinfo import ZoneInfo as Z; print(d.now(Z('Europe/Stockholm')).replace(hour=0,minute=0,second=0,microsecond=0).astimezone(Z('UTC')).strftime('%Y-%m-%dT%H:%M:%SZ'))")
+          wf=$(basename "${GITHUB_WORKFLOW_REF%@*}")
+          n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?created=>=$since&per_page=100" \
+            --jq "[.workflow_runs[] | select(.id != $GITHUB_RUN_ID and .conclusion != \"cancelled\" and .conclusion != \"skipped\")] | length")
+          echo "Körningar i dag före denna: $n"
+          [ "$n" = "0" ] && echo run=true >> "$GITHUB_OUTPUT" || echo run=false >> "$GITHUB_OUTPUT"
   skicka:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
