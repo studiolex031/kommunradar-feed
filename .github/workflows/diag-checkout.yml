@@ -1,11 +1,21 @@
 name: diag-checkout
-on: {push: {branches: [diag-checkout]}}
+on:
+  push:
+    branches: [diag-checkout]
 permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm i playwright@1.48.2 >/dev/null 2>&1 && npx playwright install chromium >/dev/null 2>&1 && node diag/probe.js
-      - run: curl -sS -m 30 -w '\nHTTP %{http_code} %{time_total}s\n' -X POST -H 'Content-Type: application/json' -H 'Origin: https://kommunradar.online' -d '{"link":"https://buy.stripe.com/7sYeVcbwc5ID9j7fOUg7e03","keywords":"städ","lan":"Skåne"}' https://kommunradar.online/api/checkout.php | cut -c1-300
-      - run: grep -n -o '.\{0,200\}\(</body>\|cp:s\|data-buy\|addEventListener(.click\).\{0,200\}' live.html | head -40
+      - name: probe
+        run: |
+          npm i playwright@1.48.2 >/dev/null 2>&1 && npx playwright install chromium >/dev/null 2>&1 && node diag/probe.js
+      - name: api
+        if: always()
+        run: |
+          curl -sS -m 30 -w '\nHTTP %{http_code} %{time_total}s\n' -X POST -H 'Content-Type: application/json' -H 'Origin: https://kommunradar.online' -d '{"link":"https://buy.stripe.com/7sYeVcbwc5ID9j7fOUg7e03","keywords":"städ","lan":"Skåne"}' https://kommunradar.online/api/checkout.php | cut -c1-300
+      - name: page
+        if: always()
+        run: |
+          grep -n -o '.\{0,200\}\(</body>\|cp:s\|data-buy\|addEventListener(.click\).\{0,200\}' live.html | head -40 || true
