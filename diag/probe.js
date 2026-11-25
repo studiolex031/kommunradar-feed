@@ -1,18 +1,20 @@
 const {chromium}=require('playwright');
 (async()=>{
- global.T0=Date.now();const b=await chromium.launch();const p=await b.newPage();
- const log=[];p.on('console',m=>log.push('console '+m.type()+': '+m.text()));p.on('pageerror',e=>log.push('pageerror: '+e.message));
- p.on('response',async r=>{if(r.url().includes('checkout.php')){log.push('T+'+(Date.now()-T0));let t='';try{t=(await r.text()).slice(0,300)}catch(e){}log.push('API '+r.status()+' '+t)}});
- p.on('request',r=>{if(r.url().includes('checkout.php'))log.push('T+'+(Date.now()-T0)+' POST '+r.postData());if(/stripe|checkout/.test(r.url()))log.push('REQ '+r.method()+' '+r.url().slice(0,120))});
- await p.route(/checkout\.stripe\.com|buy\.stripe\.com/,r=>{log.push('T+'+(Date.now()-T0)+' NAV-STRIPE '+r.request().url().slice(0,100));r.fulfill({body:'stripe'})});
+ const b=await chromium.launch();const p=await b.newPage();const log=[];
+ p.on('request',r=>{if(r.url().includes('checkout.php'))log.push('POST '+r.postData())});
+ p.on('response',r=>{if(r.url().includes('checkout.php'))log.push('API '+r.status())});
  await p.goto('https://kommunradar.online/?n='+Date.now(),{waitUntil:'networkidle'});
- const html=await p.content();require('fs').writeFileSync('live.html',html);
- const links=await p.$$eval('a[href*="stripe"],[data-buy],[data-checkout],#pris a,#pris button',els=>els.map(e=>e.outerHTML.slice(0,220)));
- console.log('LINKS\n'+links.join('\n'));
- const sel=['a.bwcta','a[href*="bJe4gy"]','#pris a[data-buy]','[data-checkout]'];
- for(const s of sel){const el=await p.$(s);if(!el){console.log('MISSING',s);continue}
-   log.length=0;const t0=Date.now();global.T0=t0;
-   await p.fill('#q','städ');await p.selectOption('#lan',{index:3}).catch(e=>log.push('sel '+e.message));await p.click('#go').catch(()=>{});await p.waitForTimeout(800);log.push('lanval='+await p.$eval('#lan',e=>e.value));await el.scrollIntoViewIfNeeded();await el.click({noWaitAfter:true}).catch(e=>log.push('clickerr '+e.message));
-   await p.waitForTimeout(9000);console.log('== CLICK',s,'url now',p.url(),'after',Date.now()-t0,'ms\n'+log.join('\n'));
-   await p.goto('https://kommunradar.online/?n='+Date.now(),{waitUntil:'networkidle'});}
- await b.close();})();
+ const js=await (await p.request.get('https://kommunradar.online/checkout-prefill.js?n='+Date.now())).text();
+ console.log('new js live:',js.includes('Öppnar kassan'));
+ await p.fill('#q','städ');await p.selectOption('#lan',{index:3});
+ const f='a[href*="7sYeVc"]:not(.bwcta)';
+ for (const step of ['1st','2nd-after-back']){
+   await p.click(f,{noWaitAfter:true});
+   try{await p.waitForURL(/checkout\.stripe\.com/,{timeout:10000});console.log(step,'OK ->',p.url().slice(0,60))}catch(e){console.log(step,'FAILED url',p.url())}
+   await p.goBack({waitUntil:'load'});await p.waitForTimeout(800);
+ }
+ await p.goto('https://kommunradar.online/?n='+Date.now(),{waitUntil:'networkidle'});
+ console.log('after reload q=',JSON.stringify(await p.inputValue('#q')));
+ await p.click('a[href*="bJe4gy"]',{noWaitAfter:true});
+ try{await p.waitForURL(/checkout\.stripe\.com/,{timeout:10000});console.log('reload-yearly OK')}catch(e){console.log('reload-yearly FAILED',p.url())}
+ console.log(log.join('\n'));await b.close();})();
