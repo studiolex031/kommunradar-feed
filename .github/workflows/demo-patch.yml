@@ -1,0 +1,46 @@
+name: startsida-demoformular
+# Demoformuläret "Visa mina missade upphandlingar" skickade besökaren till
+# login.kommunradar.online/search som ger 404. Patchen visar träffarna på sidan i stället.
+# Utgår från den live filen (som startsida-fixa) så inget annat på sidan rörs.
+on:
+  push:
+    branches: [main]
+    paths: ["scripts/demo_patch.py", ".github/workflows/demo-patch.yml"]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: site-index, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Hämta live startsida
+        run: curl -fsSL "https://kommunradar.online/index.html?nocache=$GITHUB_RUN_ID" -o live.html
+      - name: Patcha
+        run: python scripts/demo_patch.py live.html index.out.html
+      - name: Spara före/efter
+        uses: actions/upload-artifact@v4
+        with: {name: startsida-demo, path: "live.html\nindex.out.html"}
+      - name: Publicera på kommunradar.online (Simply.com)
+        if: ${{ env.FTP_SERVER != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+        run: |
+          sudo apt-get install -y -qq lftp
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; set net:max-retries 3; \
+            open --env-password -u \"$FTP_USERNAME\" \"$FTP_SERVER\"; \
+            put index.out.html -o ${FTP_DIR}index.html"
+      - name: Kontrollera
+        if: ${{ env.FTP_SERVER != '' }}
+        run: |
+          sleep 5
+          curl -sS "https://kommunradar.online/?n=$GITHUB_RUN_ID" -o page.html
+          grep -q "/\*dp:v1\*/" page.html && echo "demoformulär: ok" || { echo "::error::demofixen saknas"; exit 1; }
+          grep -q "<!--pp:s-->" page.html && echo "prissektionen: ok" || { echo "::error::prissektionen saknas"; exit 1; }
+          grep -q 'id="kr-demo-form"' page.html && echo "formuläret: ok" || { echo "::error::formuläret saknas"; exit 1; }
