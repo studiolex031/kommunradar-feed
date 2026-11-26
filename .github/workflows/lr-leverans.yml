@@ -1,0 +1,54 @@
+name: leverantorsregistret-leverans
+on:
+  schedule: [{cron: "5 * * * *"}]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Vilken prenumerationsplan som ska köras"
+        required: false
+        default: all
+        type: choice
+        options: [all, p1, p2, first]
+      dry_run:
+        description: "Skicka bara till hej@kommunradar.online"
+        required: false
+        default: false
+        type: boolean
+      test_to:
+        description: "Mottagare vid torrkörning"
+        required: false
+        default: hej@kommunradar.online
+        type: string
+permissions: {contents: write}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  leverans:
+    runs-on: ubuntu-latest
+    env:
+      MODE: ${{ inputs.mode || 'all' }}
+      DRY_RUN: ${{ inputs.dry_run || false }}
+      TEST_TO: ${{ inputs.test_to || 'hej@kommunradar.online' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      LR_RESEND_API_KEY: ${{ secrets.LR_RESEND_API_KEY || secrets.RESEND_API_KEY }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://kommunradar.online/' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Leverera Excel per prenumeration
+        run: |
+          args=(--mode "$MODE" --test-to "$TEST_TO")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python -m leverantorsregistret.cli "${args[@]}"
+      - name: Spara leveranslogg och rapport
+        run: |
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
+          git add .github/leverantorsregistret/leveranser.json .github/leverantorsregistret/rapport.json
+          if ! git diff --cached --quiet; then
+            git commit -m "leverantorsregistret: uppdatera leveranslogg"
+            git push
+          fi
