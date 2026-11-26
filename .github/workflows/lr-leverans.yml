@@ -31,7 +31,12 @@ jobs:
       DRY_RUN: ${{ inputs.dry_run || false }}
       TEST_TO: ${{ inputs.test_to || 'hej@kommunradar.online' }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-      LR_RESEND_API_KEY: ${{ secrets.LR_RESEND_API_KEY || secrets.RESEND_API_KEY }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
+      REPLY_TO: ${{ secrets.REPLY_TO }}
       SITE_URL: ${{ vars.SITE_URL || 'https://kommunradar.online/' }}
     steps:
       - uses: actions/checkout@v4

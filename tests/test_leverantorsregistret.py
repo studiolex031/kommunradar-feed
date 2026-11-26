@@ -145,7 +145,7 @@ class StateTest(unittest.TestCase):
 
 
 class DeliveryTest(unittest.TestCase):
-    def test_resend_payload_innehaller_kalla_och_bilaga(self):
+    def test_smtp_payload_innehaller_kalla_och_bilaga(self):
         skickat = []
 
         def post(path, payload):
@@ -153,7 +153,7 @@ class DeliveryTest(unittest.TestCase):
             return {"id": "mejl_1"}
 
         sub = {"email": "kund@example.se", "plan": "p1", "customer_id": "cus_1", "id": "sub_1"}
-        with mock.patch.object(deliver, "post_json", post), mock.patch.object(
+        with mock.patch.object(deliver, "smtp_post", post), mock.patch.object(
                 deliver, "portal_lank", return_value="https://example.se/avsluta"):
             deliver.send_email(sub, "p1", [{"Upphandling": "Test"}], b"xlsx", dry_run=False)
         path, payload = skickat[0]
@@ -163,6 +163,37 @@ class DeliveryTest(unittest.TestCase):
         self.assertIn("TED, © Europeiska unionen, CC BY 4.0, bearbetad av Kommunradar", payload["text"])
         self.assertIn("https://example.se/avsluta", payload["text"])
         self.assertEqual(base64.b64decode(payload["attachments"][0]["content"]), b"xlsx")
+
+    def test_smtp_post_bygger_meddelande_med_bilaga(self):
+        payload = {"from": "Kommunradar <hej@kommunradar.online>",
+                   "to": ["mottagare@example.se"], "subject": "TEST Leverantörsregistret",
+                   "text": "Här kommer bilagan.", "reply_to": "hej@kommunradar.online",
+                   "attachments": [{"filename": "rapport.xlsx",
+                                    "content": base64.b64encode(b"xlsx").decode("ascii")}]}
+        env = {"SMTP_HOST": "smtp.example", "SMTP_PORT": "587", "SMTP_USER": "user",
+               "SMTP_PASS": "pass", "MAIL_FROM": "Kommunradar <hej@example.se>",
+               "REPLY_TO": "hej@example.se"}
+        smtp_ctx = mock.MagicMock()
+        smtp = smtp_ctx.__enter__.return_value
+        with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(
+                deliver.smtplib, "SMTP", return_value=smtp_ctx) as factory, mock.patch.object(
+                deliver.ssl, "create_default_context", return_value=mock.MagicMock()):
+            result = deliver.smtp_post("emails", payload)
+        factory.assert_called_once_with("smtp.example", 587, timeout=30)
+        smtp.starttls.assert_called_once()
+        smtp.login.assert_called_once_with("user", "pass")
+        msg = smtp.send_message.call_args.args[0]
+        self.assertEqual(msg["Subject"], payload["subject"])
+        self.assertEqual(msg["To"], "mottagare@example.se")
+        self.assertEqual(msg["From"], env["MAIL_FROM"])
+        self.assertEqual(msg["Reply-To"], env["REPLY_TO"])
+        self.assertTrue(any(part.get_filename() == "rapport.xlsx" for part in msg.walk()))
+        self.assertEqual(result, {"id": ""})
+
+    def test_smtp_post_kraver_uppgifter(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "Saknar SMTP_HOST/SMTP_USER/SMTP_PASS"):
+                deliver.smtp_post("emails", {})
 
     def test_live_kraver_stripe_kund_id(self):
         with self.assertRaises(RuntimeError):

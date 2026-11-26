@@ -1,5 +1,6 @@
-import base64, json, os, urllib.request
+import base64, os, smtplib, ssl
 from datetime import date
+from email.message import EmailMessage
 from . import data, stripe_sync
 
 FROM = "Kommunradar <hej@kommunradar.online>"
@@ -7,16 +8,35 @@ TEST_TO = "hej@kommunradar.online"
 RETURN_URL = "https://kommunradar.online/"
 
 
-def post_json(path, payload):
-    key = os.environ.get("LR_RESEND_API_KEY") or os.environ.get("RESEND_API_KEY")
-    if not key:
-        raise RuntimeError("Saknar LR_RESEND_API_KEY/RESEND_API_KEY")
-    request = urllib.request.Request("https://api.resend.com/" + path,
-                                     data=json.dumps(payload).encode(),
-                                     headers={"Authorization": "Bearer " + key,
-                                              "Content-Type": "application/json"})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+def smtp_post(path, payload):
+    """Skicka samma payload som tidigare gick till Resend via befintlig Brevo SMTP."""
+    if path != "emails":
+        raise RuntimeError(f"Okänd e-posttyp: {path}")
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASS")
+    if not host or not user or not password:
+        raise RuntimeError("Saknar SMTP_HOST/SMTP_USER/SMTP_PASS")
+
+    msg = EmailMessage()
+    msg["From"] = os.environ.get("MAIL_FROM") or payload["from"]
+    msg["To"] = ", ".join(payload["to"])
+    msg["Subject"] = payload["subject"]
+    reply_to = os.environ.get("REPLY_TO") or payload.get("reply_to")
+    if reply_to:
+        msg["Reply-To"] = reply_to
+    msg.set_content(payload["text"])
+    for attachment in payload.get("attachments", []):
+        msg.add_attachment(base64.b64decode(attachment["content"]),
+                           maintype="application",
+                           subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                           filename=attachment["filename"])
+
+    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=30) as smtp:
+        smtp.starttls(context=ssl.create_default_context())
+        smtp.login(user, password)
+        smtp.send_message(msg)
+    return {"id": ""}
 
 
 def portal_lank(customer_id):
@@ -48,7 +68,7 @@ def filnamn(plan):
 
 def send_email(subscriber, plan, rader, xlsx_bytes, dry_run=False, test_to=TEST_TO,
                post=None, portal_url=None):
-    send = post or post_json
+    send = post or smtp_post
     mottagare = test_to if dry_run else subscriber.get("email")
     if not mottagare:
         raise RuntimeError("Prenumeranten saknar e-postadress")
