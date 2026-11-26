@@ -79,6 +79,34 @@ LÄNKAR = {
     "gratis": "https://kommunradar.online/veckobrev.html",
 }
 
+# Kort P.S. om Leverantörsregistret: mottagarens län när det är känt, annars hela Sverige.
+# Nycklarna är samma lännamn som TED-bevakningen skriver i leadets "lan"-fält.
+PROV_LANK = "https://drive.google.com/file/d/1lgG_xdSNNZNBomvInjbaJyyaa89F0a_1/view"
+HELA_SVERIGE_REGISTRET = "https://buy.stripe.com/00w8wOfMsdb5eDr1Y4g7e0a"
+REGISTRET_LANKAR = {
+    "Stockholm": "https://buy.stripe.com/9B6aEWas82wrcvj7iog7e0b",
+    "Uppsala": "https://buy.stripe.com/00w9AS43K7QL0MBdGMg7e0c",
+    "Södermanland": "https://buy.stripe.com/28E14m2ZG8UP0MB5agg7e0d",
+    "Östergötland": "https://buy.stripe.com/4gM8wO57OfjddznbyEg7e0e",
+    "Örebro": "https://buy.stripe.com/9B6bJ0gQw3AvgLzeKQg7e0f",
+    "Västmanland": "https://buy.stripe.com/fZueVc9o44Ez52ReKQg7e0g",
+    "Jönköping": "https://buy.stripe.com/fZufZg8k09YT3YN46cg7e0h",
+    "Kronoberg": "https://buy.stripe.com/14AdR8bwc8UP66VdGMg7e0i",
+    "Kalmar": "https://buy.stripe.com/28EfZg9o4c7152R0U0g7e0j",
+    "Gotland": "https://buy.stripe.com/8x228qcAg1sn1QF8msg7e0k",
+    "Blekinge": "https://buy.stripe.com/5kQ3cueIo9YTdzn8msg7e0l",
+    "Skåne": "https://buy.stripe.com/fZuaEW9o4ef99j746cg7e0m",
+    "Halland": "https://buy.stripe.com/5kQcN48k0b2XeDrauAg7e0n",
+    "Västra Götaland": "https://buy.stripe.com/fZubJ00Rygnhanb1Y4g7e0o",
+    "Värmland": "https://buy.stripe.com/4gM5kC0Ry6MH66VcCIg7e0p",
+    "Dalarna": "https://buy.stripe.com/9B63cu43K4Ez66V7iog7e0q",
+    "Gävleborg": "https://buy.stripe.com/cNi28qbwc2wr0MB8msg7e0r",
+    "Västernorrland": "https://buy.stripe.com/5kQeVcfMsgnhcvj6ekg7e0s",
+    "Jämtland": "https://buy.stripe.com/9B6fZgdEk0oj52R8msg7e0t",
+    "Västerbotten": "https://buy.stripe.com/00w7sK43Kfjd3YN6ekg7e0u",
+    "Norrbotten": "https://buy.stripe.com/28E4gy0Rygnh1QF9qwg7e0v",
+}
+
 # Priserna är kontrollerade mot Stripe 2026-11-24 (pris-id i HANDOFF.md / stripe_setup.py).
 ERBJUDANDEN = {
     "black_week": ("Black Week t.o.m. {slut}: helt år för 4 900 kr (ord. 7 900 kr). Betalas direkt, "
@@ -338,6 +366,20 @@ def fot(rad):
             f"{rad.get('ted', '')}. Så hanterar vi uppgifter: {INTEGRITET}\n{STOPPRAD}")
 
 
+def registret_ps(lan):
+    """Kort P.S. med en köplänk och gratisprovet."""
+    namn = (lan or "").strip()
+    länk = REGISTRET_LANKAR.get(namn)
+    if länk:
+        omradde, pris = namn, "490 kr"
+    else:
+        omradde, pris = "hela Sverige", "1 990 kr"
+        länk = HELA_SVERIGE_REGISTRET
+    return (f"P.S. Vill du se vilka konkurrenter som vinner offentliga kontrakt i {omradde}? "
+            f"Leverantörsregistret visar alla tilldelningar senaste året i Excel. "
+            f"Köp för {pris}: {länk}. Gratisprov: {PROV_LANK}")
+
+
 def mejl(rad, steg, öppna, idag=None, slutsålda=()):
     """(ämne, text, erbjudande) för steg 1 (dag 1), 2 (dag 3) eller 3 (dag 7)."""
     idag = idag or date.today()
@@ -394,7 +436,10 @@ def mejl(rad, steg, öppna, idag=None, slutsålda=()):
             "Hör ni inte av er skickar jag inget mer.",
             "Hälsningar",
         ]
-    return ämne, "\n\n".join(stycken) + "\n" + fot(rad), namn
+    text = "\n\n".join(stycken) + "\n" + fot(rad)
+    if steg == 1:
+        text += "\n\n" + registret_ps(rad.get("lan"))
+    return ämne, text, namn
 
 
 def bygg_meddelande(rad, steg, öppna, från, svar_till, till=None, test=False, idag=None):

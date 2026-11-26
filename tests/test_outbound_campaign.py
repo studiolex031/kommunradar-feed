@@ -118,16 +118,20 @@ class Leads(unittest.TestCase):
 
 
 class Mallar(unittest.TestCase):
-    def test_alla_steg_har_optout_avsandare_och_exakt_en_betallank(self):
+    def test_alla_steg_har_optout_avsandare_och_ps_i_forsta_steget(self):
         r = {**vinnare(), "lead_id": "abc"}
         for steg in (1, 2, 3):
             ämne, text, erbj = C.mejl(r, steg, ÖPPNA, date(2026, 12, 5))
             self.assertIn(C.STOPPRAD, text)
             self.assertIn("org.nr", text)
             self.assertIn("TED-notisen 123456-2026", text)
-            self.assertEqual(text.count("buy.stripe.com"), 1, text)
+            self.assertEqual(text.count("client_reference_id="), 1, text)
+            self.assertEqual(text.count("buy.stripe.com"), 2 if steg == 1 else 1, text)
             self.assertIn("veckobrev.html", text)
             self.assertEqual(erbj, "grundare")
+        forsta = C.mejl(r, 1, ÖPPNA, date(2026, 12, 5))[1]
+        self.assertIn("P.S. Vill du se vilka konkurrenter", forsta)
+        self.assertLess(forsta.index(C.STOPPRAD), forsta.index("P.S. Vill du se"))
         self.assertTrue(C.mejl(r, 1, ÖPPNA, date(2026, 12, 5))[0].startswith("Nästa upphandling efter"))
 
     def test_amnesrad_utan_upphandling_av(self):
@@ -154,6 +158,35 @@ class Mallar(unittest.TestCase):
         self.assertEqual(msg["List-Unsubscribe"], "<mailto:hej@kommunradar.online?subject=STOPP>")
         self.assertEqual(msg["In-Reply-To"], "<kr-abc-1@outreach.kommunradar.online>")
         self.assertIn("client_reference_id=kr_abc_2", msg.get_content())
+
+
+class RegisterPs(unittest.TestCase):
+    def test_kant_lan_ger_lanespecifik_kopplank_och_gratisprov(self):
+        ps = C.registret_ps("Skåne")
+        self.assertIn("i Skåne?", ps)
+        self.assertIn(f"Köp för 490 kr: {C.REGISTRET_LANKAR['Skåne']}", ps)
+        self.assertIn(f"Gratisprov: {C.PROV_LANK}", ps)
+        self.assertEqual(ps.count("http"), 2)
+        _, text, _ = C.mejl({**vinnare(), "lead_id": "abc", "lan": "Skåne"}, 1, ÖPPNA, date(2026, 12, 5))
+        self.assertIn(C.REGISTRET_LANKAR["Skåne"], text)
+        self.assertIn(f"Köp för 490 kr: {C.REGISTRET_LANKAR['Skåne']}", text)
+        self.assertEqual(text.count("buy.stripe.com"), 2)
+
+    def test_okant_lan_faller_tillbaka_till_hela_sverige(self):
+        ps = C.registret_ps("")
+        self.assertIn("i hela Sverige?", ps)
+        self.assertIn(f"Köp för 1 990 kr: {C.HELA_SVERIGE_REGISTRET}", ps)
+        self.assertIn(f"Gratisprov: {C.PROV_LANK}", ps)
+        self.assertEqual(ps.count("http"), 2)
+        _, text, _ = C.mejl({**vinnare(), "lead_id": "abc", "lan": ""}, 1, ÖPPNA, date(2026, 12, 5))
+        self.assertIn(C.HELA_SVERIGE_REGISTRET, text)
+        self.assertNotIn(C.REGISTRET_LANKAR["Skåne"], text)
+        self.assertEqual(text.count("buy.stripe.com"), 2)
+
+    def test_alla_21_lan_har_unika_kopplankar(self):
+        self.assertEqual(len(C.REGISTRET_LANKAR), 21)
+        self.assertEqual(len(set(C.REGISTRET_LANKAR.values())), 21)
+        self.assertNotIn(C.HELA_SVERIGE_REGISTRET, C.REGISTRET_LANKAR.values())
 
 
 def inkommande(text, från="anna.berg@smabolaget.se", ämne="Re: Nästa upphandling", **headers):
