@@ -85,3 +85,7 @@ def main(argv=None):
         skriv_rapport(args.rapport, rapport)
     print(json.dumps(rapport, ensure_ascii=False, indent=2, sort_keys=True))
     return rapport
+
+
+if __name__ == "__main__":
+    main()

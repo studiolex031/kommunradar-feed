@@ -1,4 +1,4 @@
-import base64, io, json, os, sys, tempfile, unittest, zipfile
+import base64, io, json, os, subprocess, sys, tempfile, unittest, zipfile
 from datetime import datetime, timezone
 from unittest import mock
 
@@ -221,6 +221,14 @@ class CliTest(unittest.TestCase):
                     cli.deliver, "send_email", side_effect=AssertionError("Ska inte skickas")):
                 with self.assertRaises(RuntimeError):
                     cli.main(["--mode", "p2", "--state", state_path, "--rapport", rapport_path])
+
+
+class CliEntrypointTest(unittest.TestCase):
+    def test_python_m_kor_hjalp(self):
+        result = subprocess.run([sys.executable, "-m", "leverantorsregistret.cli", "--help"],
+                                cwd=ROOT, capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("usage:", result.stdout)
 
 
 if __name__ == "__main__":
