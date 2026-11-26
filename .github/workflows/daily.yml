@@ -2,6 +2,12 @@ name: kommunradar-daily
 on:
   schedule: [{cron: "0 5 * * *"}]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Kör utan kundmejl, FTP-publicering och GitHub-commit (standard)"
+        required: false
+        type: boolean
+        default: true
 permissions: {contents: write}
 jobs:
   gate:
@@ -54,15 +60,24 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           SITE_URL: ${{ vars.SITE_URL }}
           PORTAL_URL: ${{ vars.PORTAL_URL }}
-        run: python digest.py --prev "$RUNNER_TEMP/prev.json"
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Manuell kontroll: inga kundmejl skickas."
+            python digest.py --prev "$RUNNER_TEMP/prev.json" --dry-run
+          else
+            python digest.py --prev "$RUNNER_TEMP/prev.json"
+          fi
       - name: Publicera färsk data på kommunradar.online (Simply.com)
-        if: ${{ env.FTP_SERVER != '' }}
+        if: ${{ env.FTP_SERVER != '' && (github.event_name != 'workflow_dispatch' || !inputs.dry_run) }}
         env:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_DIR: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
         run: curl --fail --ssl-reqd -sS -T leads.json --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/${FTP_DIR}leads.json"
-      - run: |
+      - name: Spara uppdaterad feed i GitHub
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
+        run: |
           git config user.name bot && git config user.email bot@users.noreply.github.com
           git add leads.json && git commit -m "daglig uppdatering" || exit 0
           git push
