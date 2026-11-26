@@ -41,6 +41,9 @@ FÖRBJUDNA_VÄRDAR = ("simply.com", "simply.se", "smtp.simply")
 TRAPPA = ((3, 10), (7, 20))
 FULLT_TAK = 40
 HÅLL_TAK = 20
+BREVO_DAGSTAK = 300
+P1P2_RESERV = 50
+P1P2_STATE = os.path.join(ROOT, ".github", "leverantorsregistret", "leveranser.json")
 
 # Hälsogränser över de senaste 7 dagarna. Under MIN_UNDERLAG skickade mejl säger en
 # kvot ingenting, då räknas bara absoluta tal (klagomål).
@@ -178,6 +181,29 @@ def dagstak(dag_nr, beslut, klagomål_kända=True, tak=FULLT_TAK):
     if beslut != "ok" or not klagomål_kända:
         return min(HÅLL_TAK, tak)
     return min(FULLT_TAK, tak)
+
+
+def p1p2_idag(dag=None, path=P1P2_STATE):
+    dag = dag or date.today().isoformat()
+    try:
+        with open(path, encoding="utf8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return 0
+    return sum(1 for v in (data.get("leveranser") or {}).values()
+               if str(v.get("tid", ""))[:10] == dag)
+
+
+def brevo_plats(p1p2, dagstak=None, reserv=None):
+    try:
+        gräns = int(dagstak if dagstak is not None else os.environ.get("BREVO_DAGSTAK", BREVO_DAGSTAK))
+    except (TypeError, ValueError):
+        gräns = BREVO_DAGSTAK
+    try:
+        skydd = int(reserv if reserv is not None else os.environ.get("P1P2_RESERV", P1P2_RESERV))
+    except (TypeError, ValueError):
+        skydd = P1P2_RESERV
+    return max(0, gräns - p1p2 - skydd)
 
 
 def läge(env=None, dns=None):

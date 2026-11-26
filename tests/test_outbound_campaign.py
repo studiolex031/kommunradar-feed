@@ -1,4 +1,4 @@
-import email, os, smtplib, sys, tempfile, unittest
+import email, json, os, smtplib, sys, tempfile, unittest
 from datetime import date, datetime, timedelta
 from unittest import mock
 
@@ -60,6 +60,22 @@ class Guard(unittest.TestCase):
         self.assertEqual([G.dagstak(d, "ok") for d in (1, 3, 4, 7, 8, 30)], [10, 10, 20, 20, 40, 40])
         self.assertEqual(G.dagstak(8, "håll"), 20)
         self.assertEqual(G.dagstak(8, "ok", klagomål_kända=False), 20)
+
+    def test_brevo_reserv_ger_p1p2_foretrade(self):
+        self.assertEqual(G.brevo_plats(0, dagstak=300, reserv=50), 250)
+        self.assertEqual(G.brevo_plats(260, dagstak=300, reserv=50), 0)
+        self.assertEqual(G.brevo_plats(10, dagstak=10, reserv=50), 0)
+
+    def test_p1p2_idag_raknar_bara_dagens_leveranser(self):
+        path = os.path.join(self.tmp, "leveranser.json")
+        with open(path, "w", encoding="utf8") as f:
+            json.dump({"version": 1, "leveranser": {
+                "a|p1|week": {"tid": "2026-11-26T08:00:00+01:00"},
+                "b|p2|month": {"tid": "2026-11-26T09:00:00+01:00"},
+                "c|p1|week": {"tid": "2026-11-25T08:00:00+01:00"}}}, f)
+        self.assertEqual(G.p1p2_idag("2026-11-26", path), 2)
+        self.assertEqual(G.p1p2_idag("2026-11-27", path), 0)
+        self.assertEqual(G.p1p2_idag("2026-11-26", os.path.join(self.tmp, "saknas.json")), 0)
 
     def test_sandningsdag_raknar_dagar_med_utskick(self):
         start = date(2026, 11, 24)
@@ -284,6 +300,14 @@ class Korning(unittest.TestCase):
         self.assertEqual(l["status"], "active")
         self.assertNotIn("epost", l)
         self.assertNotIn("@", str(state))  # inga adresser i den publika state-filen
+
+    def test_p1p2_reserv_stoppar_kallt_utskick(self):
+        with mock.patch.object(G, "p1p2_idag", lambda: 260), \
+             mock.patch.object(C.Sändare, "skicka", side_effect=AssertionError("får inte skicka")), \
+             mock.patch.object(C, "lokal_tid", lambda: datetime(2026, 11, 24, 9, 0)), \
+             mock.patch.object(C, "fönster", lambda nu=None: (datetime(2026, 11, 24, 8, 30),
+                                                                datetime(2026, 11, 24, 11, 30))):
+            self.assertEqual(C.kör(["--live"], env=LIVE_ENV, hämta=lambda d: self.rader, sov=lambda s: None), 0)
 
     def test_leverantorsspärr_stoppar_allt(self):
         def spärr(self_, m):

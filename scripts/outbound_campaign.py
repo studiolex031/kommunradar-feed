@@ -852,9 +852,13 @@ def kör(args, env=os.environ, hämta=hämta_vinnare, sov=time.sleep):
     dag_nr = G.sändningsdag(state["dagar"].keys(), date.fromisoformat(start))
     tak = G.dagstak(dag_nr, beslut, klagomål_kända=brevo is not None,
                     tak=int(env.get("OUTBOUND_MAX_DAG") or G.FULLT_TAK))
+    betalt = G.p1p2_idag()
+    plats = G.brevo_plats(betalt)
+    tak = min(tak, plats)
     redan = sum(state["dagar"].get(date.today().isoformat(), {}).values())
     kvar = max(0, tak - redan)
-    print(f"Sändningsdag {dag_nr}, tak {tak}, redan skickat i dag {redan}. Hälsa: {h} -> {beslut} {orsak}")
+    print(f"Sändningsdag {dag_nr}, tak {tak}, redan skickat i dag {redan}. "
+          f"P1/P2 i dag {betalt}, plats kvar för kallt {plats}. Hälsa: {h} -> {beslut} {orsak}")
 
     # 3. leads: nya vinnare + ombyggd lista för uppföljning
     rader_nya = hämta(LOOKBACK_NYA)
