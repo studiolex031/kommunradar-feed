@@ -208,6 +208,42 @@ class VeckobrevTest(unittest.TestCase):
         msg = digest.weekly_message(self.free(), many, False, False, "https://k", "https://k/#pris", "https://portal", "hej@k.se")
         self.assertIn("mailto:hej@k.se?subject=avsluta", msg["List-Unsubscribe"])
 
+    def test_registret_tillagg_ar_segmenterat(self):
+        skane = digest.registret_ps(self.free())
+        self.assertIn("i Skåne?", skane)
+        self.assertIn("https://buy.stripe.com/fZuaEW9o4ef99j746cg7e0m", skane)
+        hela = digest.registret_ps(self.free(lan="alla"))
+        self.assertIn("i hela Sverige?", hela)
+        self.assertIn("https://buy.stripe.com/00w8wOfMsdb5eDr1Y4g7e0a", hela)
+        out = digest.render([self.lead], self.free(), "https://k", "")
+        self.assertIn("P.S. Vill du se", out)
+        self.assertEqual(out.count('href="https://buy.stripe.com/fZuaEW9o4ef99j746cg7e0m"'), 1)
+        self.assertEqual(out.count('href="https://drive.google.com/file/d/1lgG_xdSNNZNBomvInjbaJyyaa89F0a_1/view"'), 1)
+
+    def test_weekly_och_provmejl_innehaller_registret(self):
+        hits, _ = digest.weekly_hits([self.lead], self.free(), self.today)
+        msg = digest.weekly_message(self.free(), hits, False, False, "https://k", "https://k/#pris", "https://portal", "hej@k.se")
+        plain = msg.get_body(preferencelist=("plain",)).get_content()
+        self.assertIn("P.S. Vill du se", plain)
+        self.assertIn("P.S. Vill du se", digest.render_weekly(hits, self.free(), False, False, "https://k", "https://k/#pris", "https://portal"))
+        prov = digest.onboarding_mail({"email": "a@b.se", "keywords": "", "lan": "skane",
+                                       "status": "trialing", "trial_start": self.ts(2026, 11, 15)}, self.today)
+        self.assertIsNotNone(prov)
+        self.assertIn("P.S. Vill du se", prov[1])
+
+    def test_daily_plain_text_innehaller_registret(self):
+        from unittest import mock
+        smtp = mock.MagicMock()
+        sub = {"email": "a@b.se", "keywords": "städ", "lan": "skane", "status": "active", "tier": "pro"}
+        with mock.patch.dict(os.environ, {"STRIPE_SECRET_KEY": "sk_test_x"}), mock.patch.object(sys, "argv", ["digest.py"]), \
+                mock.patch("digest.new_leads", return_value=[self.lead]), \
+                mock.patch("builtins.open", mock.mock_open(read_data=json.dumps({"leads": []}))), \
+                mock.patch("digest.smtp_connect", return_value=smtp), mock.patch("sys.stdout"), \
+                mock.patch("digest.subscribers", return_value=iter([sub])):
+            digest.main()
+        plain = smtp.send_message.call_args_list[-1].args[0].get_body(preferencelist=("plain",)).get_content()
+        self.assertIn("P.S. Vill du se", plain)
+
     def run_main(self, argv, subs, now):
         from unittest import mock
         import datetime as dt

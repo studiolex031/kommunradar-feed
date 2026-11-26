@@ -17,6 +17,9 @@ Två nivåer i samma Stripe-konto, skilda åt med produktens metadata tier:
 import os, re, sys, ssl, json, html, hmac, base64, hashlib, smtplib, unicodedata, datetime as dt, urllib.request, urllib.parse
 from email.message import EmailMessage
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts"))
+import outbound_campaign as O  # noqa: E402
+
 LAN_KEYS = {"alla": "", "stockholm": "Stockholm", "uppsala": "Uppsala", "sodermanland": "Södermanland",
             "ostergotland": "Östergötland", "orebro": "Örebro", "vastmanland": "Västmanland", "jonkoping": "Jönköping",
             "kronoberg": "Kronoberg", "kalmar": "Kalmar", "gotland": "Gotland", "blekinge": "Blekinge", "skane": "Skåne",
@@ -27,6 +30,24 @@ MAX_PER_MAIL = 40
 WEEKLY_MAX = 10   # så många träffar visas i veckobrevet; resten är skälet att uppgradera
 FREE = "veckobrev"
 PANEL_DAYS = 30   # så länge länken "Ändra din bevakning" i ett mejl loggar in direkt i kundpanelen
+
+
+def registret_lan(sub):
+    """Prenumerantens län som lännamn; tomt ger Hela Sverige i P.S.:en."""
+    return LAN_KEYS.get((sub.get("lan") or "").strip(), "")
+
+
+def registret_ps(sub):
+    """Samma korta P.S. som i vinnarutskicket: en köplänk + gratisprov."""
+    return O.registret_ps(registret_lan(sub))
+
+
+def registret_html(sub):
+    text = html.escape(registret_ps(sub))
+    for url in (O.HELA_SVERIGE_REGISTRET, O.PROV_LANK, *O.REGISTRET_LANKAR.values()):
+        link = html.escape(url)
+        text = text.replace(link, f'<a href="{link}">{link}</a>')
+    return f'<p style="color:#475569;font-size:13px;margin-top:18px">{text}</p>'
 
 
 def panel_link(email, now=None):
@@ -162,6 +183,7 @@ def render(leads, sub, site, portal):
 <div style="color:#fbbf24;font-size:28px;font-weight:900;margin-top:8px">{len(leads)} nya upphandlingar för dig</div>
 <div style="color:#94a3b8;font-size:13px">Bevakning: {html.escape(sub["keywords"] or "alla branscher")} · {html.escape(LAN_KEYS.get(sub["lan"]) or "hela Sverige")}</div></div>
 <table style="width:100%;border-collapse:collapse;padding:0 24px">{rows}</table>{more}
+<div style="padding:0 24px">{registret_html(sub)}</div>
 <p style="color:#94a3b8;font-size:12px;margin-top:24px">Källa: TED (EU:s officiella upphandlingsdatabas).
 <a href="{html.escape(panel_link(sub.get("email", "")))}" style="color:#475569;font-weight:700">Ändra din bevakning</a> (bevakningsord, län, pausa mejlen)
 {f' · <a href="{portal}" style="color:#94a3b8">Hantera prenumeration</a>' if portal else ''}</p></div>"""
@@ -204,7 +226,7 @@ def onboarding_mail(sub, today, portal=""):
     if day not in ONBOARDING:
         return None
     subject, text = ONBOARDING[day]
-    return subject, text.replace("{portal}", f" här: {portal}" if portal else "")
+    return subject, text.replace("{portal}", f" här: {portal}" if portal else "") + "\n\n" + registret_ps(sub)
 
 
 def days_since(ts, today):
@@ -246,6 +268,7 @@ def render_weekly(hits, sub, fallback, welcome, site, pro_url, portal):
 <div style="color:#94a3b8;font-size:13px">Bevakning: {html.escape(sub["keywords"] or "alla branscher")} · {area}</div></div>
 <p style="color:#334155;font-size:15px">{intro}</p>
 <table style="width:100%;border-collapse:collapse">{rows_html(shown)}</table>
+{registret_html(sub)}
 <div style="background:#fef3c7;border-radius:12px;padding:18px 20px;margin-top:20px;color:#0b1020">{upsell}
 <div style="margin-top:12px"><a href="{html.escape(pro_url)}" style="background:#0b1020;color:#fbbf24;font-weight:800;padding:12px 18px;border-radius:10px;text-decoration:none;display:inline-block">Få alla träffar varje morgon →</a></div></div>
 <p style="color:#94a3b8;font-size:12px;margin-top:24px">Källa: TED (EU:s officiella upphandlingsdatabas), bara upphandlingar över EU:s tröskelvärden.
@@ -265,6 +288,7 @@ def weekly_message(sub, hits, fallback, welcome, site, pro_url, portal, reply_to
     msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in hits[:WEEKLY_MAX])
                     + f"\n\nFå alla träffar varje morgon med Kommunradar Pro: {pro_url}"
                     + f"\n\nÄndra din bevakning: {panel_link(sub['email'])}"
+                    + "\n\n" + registret_ps(sub)
                     + "\n\nVill du inte ha fler veckobrev? Svara \"avsluta\"" + (f" eller avsluta i kundportalen: {portal}" if portal else "."))
     msg.add_alternative(render_weekly(hits, sub, fallback, welcome, site, pro_url, portal), subtype="html")
     return msg
@@ -384,7 +408,8 @@ def main():
             msg["From"] = os.environ.get("MAIL_FROM", os.environ.get("SMTP_USER", "")); msg["To"] = sub["email"]
             if reply_to: msg["Reply-To"] = reply_to
             msg.set_content("\n".join(f"{l['title']} — {l['buyer']} — {l['url']}" for l in batch)
-                            + f"\n\nÄndra din bevakning: {panel_link(sub['email'])}")
+                            + f"\n\nÄndra din bevakning: {panel_link(sub['email'])}"
+                            + "\n\n" + registret_ps(sub))
             msg.add_alternative(render(batch, sub, site, portal), subtype="html")
             if dry: print(f"[dry-run] {sub['email']}: {len(batch)} träffar")
             else: smtp.send_message(msg)
