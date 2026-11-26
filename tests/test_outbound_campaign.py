@@ -314,3 +314,18 @@ class Kontroll(unittest.TestCase):
                                                              "SMTP_USER": "u", "SMTP_PASS": "p"}))
         self.assertFalse(rader["sänddomän (inte Simply, inte huvuddomänen)"])
         self.assertFalse(rader["SMTP-inloggning"])
+
+
+class IcpLiveFynd(unittest.TestCase):
+    def test_lärosäten_och_utländska_filialer_bort(self):
+        from leadfilter import utanfor_icp
+        self.assertTrue(utanfor_icp("University of Washington", "k@uw.edu"))
+        self.assertTrue(utanfor_icp("Sysmex Nordic ApS, Filial Sverige", "l@sysmex-nordic.se"))
+        self.assertTrue(utanfor_icp("Teledyne Gavia", "v@teledyne.com"))
+        self.assertTrue(utanfor_icp("Acme Ltd", "a@acme.co.uk"))
+
+    def test_vanliga_svenska_smb_kvar(self):
+        from leadfilter import utanfor_icp
+        for bolag, ep in [("Petrobell AB", "c@petrobell.se"), ("Lundstams Återvinning AB", "d@lundstams.se"),
+                          ("CollinSimic Infraprojekt AB", "l@csprojekt.se"), ("SA Bygg AB", "x@sabygg.se"), ("Oy Konsult AB", "x@oyk.se")]:
+            self.assertEqual(utanfor_icp(bolag, ep), "", bolag)
