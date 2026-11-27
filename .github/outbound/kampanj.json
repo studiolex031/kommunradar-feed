@@ -2,9 +2,57 @@
  "dagar": {
   "2026-11-26": {
    "steg1": 10
+  },
+  "2026-11-27": {
+   "steg1": 10
   }
  },
  "leads": {
+  "0564df7a73de0f6c": {
+   "cpv": "72222300",
+   "dh": "e77c46d04f27",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "IT-tjänster",
+   "lan": "Stockholm",
+   "lead_id": "0564df7a73de0f6c",
+   "sent_at": "2026-11-27T07:38:52",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 826751-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch IT-tjänster; 2 anbud i upphandlingen",
+   "ted": "826751-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "182e7c1fa638afb0": {
+   "cpv": "45000000",
+   "dh": "715ebf76a1e6",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Bygg & anläggning",
+   "lan": "Norrbotten",
+   "lead_id": "182e7c1fa638afb0",
+   "sent_at": "2026-11-27T07:48:16",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 826161-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Bygg & anläggning; 3 anbud i upphandlingen",
+   "ted": "826161-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "1f9978e804e5f102": {
+   "cpv": "71300000",
+   "dh": "cc590cc3d77e",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Arkitekt- & teknikkonsult",
+   "lan": "Värmland",
+   "lead_id": "1f9978e804e5f102",
+   "sent_at": "2026-11-27T07:35:02",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 826369-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Arkitekt- & teknikkonsult; 1 anbud i upphandlingen",
+   "ted": "826369-2026",
+   "template_version": "v1-2026-11-24"
+  },
   "2c521385ec721dde": {
    "cpv": "79414000",
    "dh": "7cfd337ce563",
@@ -80,6 +128,81 @@
    "ted": "824272-2026",
    "template_version": "v1-2026-11-24"
   },
+  "70702feb57b71465": {
+   "cpv": "71311200",
+   "dh": "b8be7e1f62b5",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Arkitekt- & teknikkonsult",
+   "lan": "Stockholm",
+   "lead_id": "70702feb57b71465",
+   "sent_at": "2026-11-27T07:32:29",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 825649-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Arkitekt- & teknikkonsult; 1 anbud i upphandlingen",
+   "ted": "825649-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "8ac5f831c4869e8a": {
+   "cpv": "71000000",
+   "dh": "54fc252bd11a",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Arkitekt- & teknikkonsult",
+   "lan": "Stockholm",
+   "lead_id": "8ac5f831c4869e8a",
+   "sent_at": "2026-11-27T07:46:39",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 826093-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Arkitekt- & teknikkonsult; 3 anbud i upphandlingen",
+   "ted": "826093-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "8c97fae13b580d8a": {
+   "cpv": "48000000",
+   "dh": "0c658a1ccca2",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Programvara & system",
+   "lan": "Dalarna",
+   "lead_id": "8c97fae13b580d8a",
+   "sent_at": "2026-11-27T07:44:57",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 825292-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Programvara & system; 3 anbud i upphandlingen",
+   "ted": "825292-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "8df9a961959d12fe": {
+   "cpv": "90700000",
+   "dh": "7106029aef24",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Avfall, städ & miljö",
+   "lan": "Kalmar",
+   "lead_id": "8df9a961959d12fe",
+   "sent_at": "2026-11-27T07:30:00",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 825178-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Avfall, städ & miljö; 1 anbud i upphandlingen",
+   "ted": "825178-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "950312b33e6b6633": {
+   "cpv": "50711000",
+   "dh": "0caa0f4d1759",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Service & underhåll",
+   "lan": "Uppsala",
+   "lead_id": "950312b33e6b6633",
+   "sent_at": "2026-11-27T07:43:47",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 824994-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Service & underhåll; 3 anbud i upphandlingen",
+   "ted": "824994-2026",
+   "template_version": "v1-2026-11-24"
+  },
   "9d8fd56c7bab3313": {
    "cpv": "35512400",
    "dh": "a9bed7fe59ac",
@@ -108,6 +231,36 @@
    "status": "active",
    "target_reason": "personlig kontaktadress angiven för vinnaren i TED 823899-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Energi- & vattentjänster; 1 anbud i upphandlingen",
    "ted": "823899-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "c8b41aaea7b7c861": {
+   "cpv": "50711000",
+   "dh": "e7d4ea070204",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "Service & underhåll",
+   "lan": "Uppsala",
+   "lead_id": "c8b41aaea7b7c861",
+   "sent_at": "2026-11-27T07:41:00",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 824994-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch Service & underhåll; 3 anbud i upphandlingen",
+   "ted": "824994-2026",
+   "template_version": "v1-2026-11-24"
+  },
+  "e32fd871420a9220": {
+   "cpv": "72000000",
+   "dh": "5f88efb0b20e",
+   "erbjudande": "black_week",
+   "followup1_at": "",
+   "followup2_at": "",
+   "kategori": "IT-tjänster",
+   "lan": "Värmland",
+   "lead_id": "e32fd871420a9220",
+   "sent_at": "2026-11-27T07:36:12",
+   "status": "active",
+   "target_reason": "personlig kontaktadress angiven för vinnaren i TED 827164-2026; SMB-filter ok (ej koncern, myndighet, börsbolag eller anbudsbyrå); bransch IT-tjänster; 1 anbud i upphandlingen",
+   "ted": "827164-2026",
    "template_version": "v1-2026-11-24"
   },
   "ecd632cb13d7d8af": {
