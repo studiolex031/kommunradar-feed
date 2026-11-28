@@ -33,6 +33,8 @@ STORA_DOMANER = {
     # dagligvaror och grossister (koncerner), funna i torrkörningen 2026-11-24
     "olympus.com", "coop.se", "ica.se", "axfood.se", "dagab.se", "menigo.se", "martinservera.se",
     "svenskcater.se", "bergendahls.se",
+    # funna i första live-körningen 2026-11-26
+    "teledyne.com", "sysmex-nordic.se", "sysmex.com",
     # anbudsbyråer: adressen går via en konsult, inte till bolaget självt
     "tenders.se", "stromsholmadvokat.se",
 }
@@ -72,6 +74,13 @@ GRATISMEJL = {"gmail.com", "hotmail.com", "hotmail.se", "outlook.com", "outlook.
 DOTTERBOLAG = re.compile(r"\b(sverige|sweden|scandinavia|nordic|nordics)\s+(ab|aktiebolag)\b", re.I)
 
 
+# Utländska bolag, filialer och lärosäten (första live-körningen 2026-11-26 nådde ett
+# amerikanskt universitet och en dansk filial). De läser inte svenska säljmejl.
+UTLANDSK_FORM = re.compile(r"\b(filial|aps|gmbh|inc|llc|ltd|limited|plc|oyj)\b|\b(b\.v|s\.a)\.|\boy$", re.I)
+LAROSATE = re.compile(r"\b(university|universitet|college|institute of technology|högskola)\b", re.I)
+LAROSATE_DOMAN = re.compile(r"\.(edu|ac\.[a-z]{2})$")
+
+
 def utanfor_icp(bolag, epost):
     """Varför leadet INTE är målgrupp, eller "" om det är det."""
     bolag = bolag or ""
@@ -84,6 +93,11 @@ def utanfor_icp(bolag, epost):
         return "börsnoterat bolag (publ)"
     if ANBUDSBYRA.search(bolag):
         return "anbudsbyrå"
+    doman = epost.rsplit("@", 1)[-1]
+    if LAROSATE.search(bolag) or LAROSATE_DOMAN.search(doman):
+        return "universitet eller lärosäte"
+    if UTLANDSK_FORM.search(bolag):
+        return "utländskt bolag eller filial"
     if DOTTERBOLAG.search(bolag) and epost.endswith(".com"):
         return "svenskt dotterbolag till internationell koncern"
     return ""

@@ -986,7 +986,9 @@ def kör(args, env=os.environ, hämta=hämta_vinnare, sov=time.sleep):
         dagen[f"steg{steg}"] = dagen.get(f"steg{steg}", 0) + 1
         skriv_state(state)
         privata.append({**rad, "steg": steg, "status": "skickad", "erbjudande": erbj})
-        print(f"  {i + 1}/{len(plan)} steg {steg} -> {maska(rad['epost'])} ({rad.get('bolag')})")
+        # Bara maskad adress i loggen: workflow-loggar är publika (repot är publikt).
+        # Bolagsnamnen finns i den privata rapporten till REPORT_TO.
+        print(f"  {i + 1}/{len(plan)} steg {steg} -> {maska(rad['epost'])}")
         if i + 1 < len(plan):
             sov(random.uniform(*JITTER))
 
